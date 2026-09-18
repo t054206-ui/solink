@@ -17,6 +17,12 @@ create or replace function owns_system(sid uuid) returns boolean language sql st
   select exists (select 1 from solar_systems where id = sid and user_id = auth.uid());
 $$;
 
+-- The caller's current role, read without re-entering user_profiles' own
+-- policies. Used to stop a user from granting themselves a different role.
+create or replace function my_role() returns user_role language sql stable security definer set search_path = public as $$
+  select role from user_profiles where user_id = auth.uid();
+$$;
+
 -- enable
 alter table user_profiles enable row level security;
 alter table solar_profiles enable row level security;
@@ -57,7 +63,7 @@ alter table area_aggregates enable row level security;
 
 -- user_profiles: self read/update; admin all
 create policy "profiles self" on user_profiles for select using (user_id = auth.uid() or is_admin());
-create policy "profiles self update" on user_profiles for update using (user_id = auth.uid()) with check (user_id = auth.uid() and role = (select role from user_profiles where user_id = auth.uid()));
+create policy "profiles self update" on user_profiles for update using (user_id = auth.uid()) with check (user_id = auth.uid() and role = my_role());
 create policy "profiles admin" on user_profiles for all using (is_admin()) with check (is_admin());
 
 -- solar_profiles: owner
@@ -124,7 +130,9 @@ create policy "ai_analyses owner" on ai_analyses for all using (user_id = auth.u
 create policy "ai_conversations owner" on ai_conversations for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "recommendations owner" on recommendations for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "alerts owner" on ai_alerts for all using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "reports owner" on reports for select using (user_id = auth.uid() or is_admin());
+create policy "reports owner read" on reports for select using (user_id = auth.uid() or is_admin());
+create policy "reports owner write" on reports for insert with check (user_id = auth.uid() and owns_system(system_id));
+create policy "reports owner update" on reports for update using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "notifications owner" on notifications for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 create policy "settings read" on platform_settings for select using (true);
@@ -153,4 +161,4 @@ create policy "own folder delete" on storage.objects for delete using (
   bucket_id in ('roof-photos','panel-images','incident-images','maintenance-images') and (storage.foldername(name))[1] = auth.uid()::text
 );
 create policy "product docs read" on storage.objects for select using (bucket_id = 'product-documents');
-create policy "product docs admin" on storage.objects for all using (bucket_id = 'product-documents' and is_admin()) with check (bucket_id = 'product-documents' and is_admin());
+create policy "product docs admin" on storage.objects for all using (bucket_id = 'product-documents' and public.is_admin()) with check (bucket_id = 'product-documents' and public.is_admin());

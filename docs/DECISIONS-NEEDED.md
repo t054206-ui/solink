@@ -23,3 +23,14 @@ until decided. Nothing has been assumed silently.
 | 16 | **Maintenance / installation prices** — entered by providers or platform | `[PLACEHOLDER: MAINTENANCE PRICE]`, `[PLACEHOLDER: INSTALLATION PRICE]` | `provider_prices`, product cost fields |
 | 17 | **Nearby-system comparison** data-sharing & privacy design | `[PLACEHOLDER: ANONYMIZED NEARBY SYSTEM DATA]` | `area_aggregates` |
 | 18 | **GitHub remote** — `gh` CLI is not installed on this machine; the repo is committed locally only. Provide the remote URL (or install `gh`) to push. | — | `git remote add origin …` |
+
+## Not yet verified
+
+The SQL in `supabase/migrations/` has not been executed anywhere. No Solink
+Supabase project exists (decision 1), and there is no local Postgres or Docker on
+this machine, so the schema, policies and triggers are reviewed but unrun. Expect
+to iterate on them the first time they are applied.
+
+Everything above is a decision only you can make. The application itself runs
+today in demo mode, and each decision swaps a placeholder for a real value
+without any rebuild.
