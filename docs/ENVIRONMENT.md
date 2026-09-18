@@ -29,6 +29,7 @@ The project is already imported and connected to Git:
 | Repository | `t054206-ui/solink` (private) |
 | Vercel project | `solink` |
 | Vercel team | `t054206-3843` (Hobby) |
+| Production URL | https://solink-nu.vercel.app |
 | Production branch | `main` |
 
 Pushing to `main` deploys to production; every other branch gets a preview.
@@ -36,6 +37,10 @@ Pushing to `main` deploys to production; every other branch gets a preview.
 **No environment variables are set yet**, so the deployed site runs in demo mode:
 labeled demo data, no accounts, and each integration showing its placeholder.
 That is the intended state until the decisions in `DECISIONS-NEEDED.md` are made.
+
+Importing the repository made Vercel create a variable for every key in
+`.env.example`, each with an empty value. Solink treats a blank value as unset,
+so they are harmless; fill one in rather than creating a new variable.
 
 To connect a real integration:
 1. Add its variables in *Settings → Environment Variables* (Production + Preview).

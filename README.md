@@ -28,6 +28,7 @@ production and any other branch gets a preview build.
 |---|---|
 | Repository | `t054206-ui/solink` (private) |
 | Vercel project | `solink`, team `t054206-3843` |
+| Production URL | https://solink-nu.vercel.app |
 | Production branch | `main` |
 
 With no environment variables set, the deployed site runs in demo mode: labeled
