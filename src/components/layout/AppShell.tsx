@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, X, Bot } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { APP_NAV } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,13 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [agentOpen, setAgentOpen] = useState(false);
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  // Close the mobile nav when the route changes (including back/forward), using
+  // React's "adjust state during render" pattern rather than an effect.
+  const [navPath, setNavPath] = useState(pathname);
+  if (navPath !== pathname) {
+    setNavPath(pathname);
+    if (mobileOpen) setMobileOpen(false);
+  }
 
   const nav = (
     <nav aria-label="App" className="flex flex-col gap-5 px-3 pb-6">

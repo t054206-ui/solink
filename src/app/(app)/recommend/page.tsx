@@ -1,0 +1,60 @@
+import type { Metadata } from "next";
+import { Check, ShieldOff } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { DataBadge } from "@/components/ui/DataBadge";
+import { RecommendForm } from "./_components/RecommendForm";
+
+export const metadata: Metadata = {
+  title: "AI recommendation — Solink",
+  description: "Ask the AI Solar Agent to explain the trade-offs between the panels in the catalog for your situation.",
+};
+
+const ALLOWED = [
+  "Compare only the panels that exist in the Solink catalog, using their recorded specifications.",
+  "Explain trade-offs: power vs. roof area, efficiency, temperature coefficient in a hot climate, warranty length.",
+  "Point out which fields are missing, unverified or demo, and what data would make the advice firmer.",
+  "Suggest who each realistic option might suit, given the priorities you selected.",
+];
+const NOT_ALLOWED = [
+  "Declare one panel objectively “the best” — there is no single winner.",
+  "Invent or guess prices, installation costs, production figures or savings.",
+  "Mention products, manufacturers or specifications that are not in the catalog.",
+  "Treat demo records as real products.",
+];
+
+export default function RecommendPage() {
+  return (
+    <div>
+      <PageHeader
+        eyebrow="Choose"
+        title="AI recommendation"
+        description="Describe your situation and the AI Solar Agent explains how the panels in the catalog trade off against each other. It reasons only from recorded data and tells you what is missing."
+        actions={<Button href="/compare" variant="outline">Compare panels yourself</Button>}
+      />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <RecommendForm />
+        <div className="space-y-5">
+          <Card>
+            <CardHeader title="What the AI may do" action={<DataBadge cls="ai" compact />} />
+            <CardBody>
+              <ul className="space-y-2 text-[13px] text-fg-secondary">
+                {ALLOWED.map((t) => <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-good" aria-hidden />{t}</li>)}
+              </ul>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader title="What the AI must never do" />
+            <CardBody>
+              <ul className="space-y-2 text-[13px] text-fg-secondary">
+                {NOT_ALLOWED.map((t) => <li key={t} className="flex gap-2"><ShieldOff className="mt-0.5 size-4 shrink-0 text-critical" aria-hidden />{t}</li>)}
+              </ul>
+              <p className="mt-4 text-[12.5px] leading-relaxed text-fg-muted">Every AI answer is labeled <DataBadge cls="ai" compact /> so it is never mistaken for source data or a Solink calculation. Treat it as a starting point for your own comparison.</p>
+            </CardBody>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

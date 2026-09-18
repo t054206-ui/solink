@@ -1,11 +1,19 @@
 import { clsx, type ClassValue } from "clsx";
 export function cn(...inputs: ClassValue[]) { return clsx(inputs); }
 
+const TIME_KEYS = ["timeStyle", "hour", "minute", "second", "timeZoneName", "dayPeriod"] as const;
+
+/**
+ * Formats an ISO timestamp. Falls back to "—" for missing or unparsable input.
+ * Uses toLocaleString when the options include a time component, because
+ * toLocaleDateString rejects time options such as timeStyle.
+ */
 export function formatDate(iso: string | null | undefined, opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" }) {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-GB", opts);
+  const hasTime = TIME_KEYS.some((k) => opts[k] !== undefined);
+  return hasTime ? d.toLocaleString("en-GB", opts) : d.toLocaleDateString("en-GB", opts);
 }
 
 export function formatMoney(v: number | null | undefined, currency = "KWD", digits = 0) {

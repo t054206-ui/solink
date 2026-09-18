@@ -33,7 +33,7 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
     if (row.value === null || !(row.key in out)) continue;
     // value stored as {"value": n} or raw object; attach source
     const v = typeof row.value === "object" && row.value !== null && "value" in row.value ? (row.value as { value: number }).value : row.value;
-    (out as Record<string, unknown>)[row.key] = typeof v === "number" ? { value: v, source: row.source ?? "platform setting" } : { ...(row.value as object), source: row.source ?? "platform setting" };
+    (out as unknown as Record<string, unknown>)[row.key] = typeof v === "number" ? { value: v, source: row.source ?? "platform setting" } : { ...(row.value as object), source: row.source ?? "platform setting" };
   }
   return out;
 }

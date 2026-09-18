@@ -36,6 +36,8 @@ export interface ProductSource {
   verification_status: VerificationStatus;
   verified_by?: UUID | null;
   verified_at?: ISODate | null;
+  /** Required note recorded when an admin sets verification_status to 'verified'. */
+  verification_note?: string | null;
 }
 
 export interface PanelSpecifications {

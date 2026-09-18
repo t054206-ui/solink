@@ -85,7 +85,7 @@ export default function HomePage() {
             <div>
               <Bot className="size-6 text-[var(--brand-strong)]" />
               <h3 className="mt-3 text-lg font-semibold">One AI Solar Agent</h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-fg-secondary">Ask “Why was my production low today?” or “Explain this warning.” The agent reads your actual data first and says “I don't have enough information” when it doesn't.</p>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-fg-secondary">Ask “Why was my production low today?” or “Explain this warning.” The agent reads your actual data first and says “I don’t have enough information” when it doesn’t.</p>
             </div>
             <div>
               <ShieldCheck className="size-6 text-[var(--brand-strong)]" />
