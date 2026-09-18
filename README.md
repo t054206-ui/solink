@@ -44,6 +44,7 @@ git config user.email "the-email-on-your-github-account"
 ```
 
 ## Docs
+- `HANDOFF.md` — read this first when picking the project up in a new session
 - `docs/ARCHITECTURE.md` — layers, honesty system, real-data architecture, future hooks
 - `docs/ENVIRONMENT.md` — every environment variable and what happens when it is missing
 - `docs/DATA-MODEL.md` — schema overview (`supabase/migrations` is authoritative)
