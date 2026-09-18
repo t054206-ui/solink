@@ -53,14 +53,17 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
 
   return (
     <div className="min-h-dvh bg-bg">
+      {/* Page-level demo notice. Deliberately not sticky: its height varies with
+          wrapping, and a fixed offset for the sticky header would overlap it.
+          The DEMO chip in the header keeps the warning visible while scrolling. */}
       {demoMode && (
-        <div className="demo-stripe sticky top-0 z-50 border-b border-[var(--cls-demo)]/40 bg-[var(--cls-demo-soft)] px-4 py-1.5 text-center text-[12.5px] text-[var(--critical-fg)]">
+        <div className="demo-stripe border-b border-[var(--cls-demo)]/40 bg-[var(--cls-demo-soft)] px-4 py-1.5 text-center text-[12.5px] text-[var(--critical-fg)]">
           <strong>DEMO MODE — NOT REAL.</strong> Supabase, monitoring hardware, and real product data are not connected. Everything shown is labeled demo or placeholder. <Link href="/admin/integrations" className="underline underline-offset-2">Integration status</Link>
         </div>
       )}
       <div className="flex">
         {/* Sidebar (desktop) */}
-        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-elevated lg:flex" style={demoMode ? { top: 0 } : undefined}>
+        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-elevated lg:flex">
           <div className="flex h-16 items-center px-5"><Logo href="/dashboard" /></div>
           <div className="flex-1 overflow-y-auto">{nav}</div>
           <div className="border-t border-border p-4 text-[12px] text-fg-muted truncate">{user.isDemo ? "Demo homeowner (not signed in)" : user.email}</div>
@@ -68,13 +71,22 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Top bar */}
-          <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-bg/85 px-4 backdrop-blur sm:px-6" style={demoMode ? { top: 33 } : undefined}>
+          <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-bg/85 px-4 backdrop-blur sm:px-6">
             <div className="flex items-center gap-2 lg:hidden">
               <button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="grid size-9 place-items-center rounded-[10px] text-fg hover:bg-inset"><Menu className="size-5" /></button>
               <Logo href="/dashboard" compact />
             </div>
             <div className="hidden lg:block text-[13px] text-fg-muted">{breadcrumb(pathname)}</div>
             <div className="flex items-center gap-1.5">
+              {demoMode && (
+                <Link
+                  href="/admin/integrations"
+                  title="Demo mode: Supabase, monitoring hardware and real product data are not connected."
+                  className="demo-stripe mr-1 inline-flex items-center gap-1 rounded-full border border-[var(--cls-demo)]/50 bg-[var(--cls-demo-soft)] px-2 py-0.5 text-[11px] font-semibold tracking-wide text-[var(--critical-fg)]"
+                >
+                  DEMO
+                </Link>
+              )}
               <button onClick={() => setAgentOpen(true)} className="hidden sm:inline-flex h-9 items-center gap-2 rounded-[10px] border border-border bg-elevated px-3 text-[13px] font-medium text-fg hover:bg-inset"><Bot className="size-4 text-[var(--brand-strong)]" /> Ask Solink</button>
               <Link href="/notifications" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`} className="relative grid size-9 place-items-center rounded-[10px] text-fg-muted hover:bg-inset hover:text-fg">
                 <Bell className="size-4" />{unreadCount > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-[var(--bg)]" />}

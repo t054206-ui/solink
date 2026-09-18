@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** Solink wordmark: a sun-disc + link motif. */
+/**
+ * Solink mark: a sun disc over two horizon lines.
+ * Uses solid fills rather than a gradient, so several marks can render on one
+ * page without colliding on a shared <defs> id (which leaves the disc unpainted).
+ */
 export function SolinkMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={cn("size-7", className)} aria-hidden>
-      <defs><linearGradient id="slk-sun" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffd166" /><stop offset="1" stopColor="#f5a524" /></linearGradient></defs>
-      <rect x="1" y="1" width="30" height="30" rx="9" fill="var(--navy)" />
-      <circle cx="16" cy="13.5" r="6.5" fill="url(#slk-sun)" />
+      <rect x="1" y="1" width="30" height="30" rx="9" fill="#0b1f3a" />
+      <circle cx="16" cy="13.5" r="6.5" fill="#f5a524" />
+      <circle cx="14" cy="11.5" r="2.6" fill="#ffd166" />
       <path d="M6 23.5h20" stroke="#ffffff" strokeOpacity=".9" strokeWidth="2.2" strokeLinecap="round" />
       <path d="M9.5 27h13" stroke="#ffffff" strokeOpacity=".45" strokeWidth="2.2" strokeLinecap="round" />
     </svg>
