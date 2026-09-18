@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { publicEnv } from "@/lib/config/env";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   title: { default: "Solink — The complete solar-energy ecosystem", template: "%s · Solink" },
   description: "Solink connects homeowners, solar products, installers, maintenance providers, system data and AI into one solar-energy platform for Kuwait and the GCC. Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize.",
   applicationName: "Solink",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(publicEnv.appUrl),
   openGraph: { title: "Solink", description: "One connected solar-energy ecosystem for Kuwait and the GCC.", siteName: "Solink", type: "website" },
 };
 

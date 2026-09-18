@@ -5,11 +5,24 @@
  * Required variables are documented in docs/ENVIRONMENT.md and .env.example.
  */
 
+/**
+ * Reads an environment variable, treating blank and whitespace-only values as
+ * absent. A hosting provider can create a variable with an empty value (Vercel
+ * does this when it imports a .env.example), and `??` would then hand that empty
+ * string straight through to code expecting a real value.
+ */
+export function envValue(raw: string | undefined, fallback = ""): string {
+  const trimmed = raw?.trim();
+  return trimmed ? trimmed : fallback;
+}
+
+export const DEFAULT_APP_URL = "http://localhost:3000";
+
 export const publicEnv = {
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-  googleMapsBrowserKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? "",
-  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  supabaseUrl: envValue(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  supabaseAnonKey: envValue(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+  googleMapsBrowserKey: envValue(process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY),
+  appUrl: envValue(process.env.NEXT_PUBLIC_APP_URL, DEFAULT_APP_URL),
 };
 
 export function isSupabaseConfigured(): boolean {
@@ -27,12 +40,12 @@ export function serverEnv() {
     throw new Error("serverEnv() must not be called in the browser.");
   }
   return {
-    claudeApiKey: process.env.CLAUDE_API_KEY ?? process.env.ANTHROPIC_API_KEY ?? "",
-    claudeModel: process.env.CLAUDE_MODEL ?? "claude-opus-5",
-    weatherApiKey: process.env.WEATHER_API_KEY ?? "",
-    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY ?? "",
-    googleSolarApiKey: process.env.GOOGLE_SOLAR_API_KEY ?? "",
-    supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+    claudeApiKey: envValue(process.env.CLAUDE_API_KEY, envValue(process.env.ANTHROPIC_API_KEY)),
+    claudeModel: envValue(process.env.CLAUDE_MODEL, "claude-opus-5"),
+    weatherApiKey: envValue(process.env.WEATHER_API_KEY),
+    googleMapsApiKey: envValue(process.env.GOOGLE_MAPS_API_KEY),
+    googleSolarApiKey: envValue(process.env.GOOGLE_SOLAR_API_KEY),
+    supabaseServiceRoleKey: envValue(process.env.SUPABASE_SERVICE_ROLE_KEY),
   };
 }
 
