@@ -19,6 +19,29 @@ npm run dev
 ```
 Without Supabase the app runs in clearly labeled **demo mode**.
 
+## Deploying
+
+The repository is connected to a Vercel project, so a push to `main` deploys to
+production and any other branch gets a preview build.
+
+| | |
+|---|---|
+| Repository | `t054206-ui/solink` (private) |
+| Vercel project | `solink`, team `t054206-3843` |
+| Production branch | `main` |
+
+With no environment variables set, the deployed site runs in demo mode: labeled
+demo data, no accounts, and every integration showing its placeholder. See
+`docs/ENVIRONMENT.md` to connect real services.
+
+**Commit author email matters.** Vercel blocks a deployment when the commit
+author email is not a real address on the GitHub account, which a default
+`user@machine.local` git identity will trigger. Set it once per clone:
+
+```bash
+git config user.email "the-email-on-your-github-account"
+```
+
 ## Docs
 - `docs/ARCHITECTURE.md` — layers, honesty system, real-data architecture, future hooks
 - `docs/ENVIRONMENT.md` — every environment variable and what happens when it is missing
