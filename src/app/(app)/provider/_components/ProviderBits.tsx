@@ -13,8 +13,8 @@ export function ProviderIdentity({ name, mode, isDemoProvider, className }: { na
       <span className="font-medium text-fg-secondary">{name ?? "your provider company"}</span>
       {isDemoProvider && <DataBadge cls="demo" compact />}
       {mode === "supabase"
-        ? <span>· row-level security scopes every case, appointment and price below to this company.</span>
-        : <span>· demo mode is not access-scoped, so every labeled demo case is listed.</span>}
+        ? <span>· row-level security scopes every case, appointment and price to this company.</span>
+        : <span>· demo mode has no access scoping, so every labeled demo record is listed.</span>}
     </p>
   );
 }
