@@ -1,26 +1,184 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+   Solink design tokens
+   Identity: graphite/navy engineering surfaces + solar amber accent
+   + sky-blue data ink. Light + dark selected independently.
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #eceff4;
+  --bg-inset: #f9fafc;
+  --fg: #0d1526;
+  --fg-secondary: #4a5568;
+  --fg-muted: #7b8494;
+  --border: rgba(13, 21, 38, 0.10);
+  --border-strong: rgba(13, 21, 38, 0.20);
+  --ring: rgba(245, 165, 36, 0.45);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --brand: #f5a524;        /* solar amber */
+  --brand-strong: #d98b0e;
+  --brand-soft: #fff4dc;
+  --brand-fg: #1a1200;
+  --navy: #0b1f3a;
+  --navy-soft: #e6ebf3;
+
+  --data: #2a78d6;         /* dataviz slot 1 */
+  --data-soft: #e4effc;
+
+  --good: #0ca30c;  --good-soft: #e6f6e6;  --good-fg: #006300;
+  --warn: #fab219;  --warn-soft: #fff5d6;  --warn-fg: #6b4a00;
+  --serious: #ec835a; --serious-soft: #fdebe3; --serious-fg: #7a2f0f;
+  --critical: #d03b3b; --critical-soft: #fbe5e5; --critical-fg: #8f1d1d;
+
+  /* data classification */
+  --cls-source: #2a78d6;      --cls-source-soft: #e4effc;
+  --cls-calculated: #4a3aa7;  --cls-calculated-soft: #ebe8fa;
+  --cls-estimated: #d98b0e;   --cls-estimated-soft: #fff4dc;
+  --cls-ai: #b8397a;          --cls-ai-soft: #fbe7f1;
+  --cls-demo: #d03b3b;        --cls-demo-soft: #fbe5e5;
+  --cls-unavailable: #7b8494; --cls-unavailable-soft: #eef0f3;
+
+  /* charts */
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --series-5: #e87ba4; --series-6: #008300; --series-7: #4a3aa7; --series-8: #e34948;
+  --grid: #e1e0d9; --axis: #c3c2b7;
+
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 2px rgba(13,21,38,.06), 0 1px 1px rgba(13,21,38,.04);
+  --shadow: 0 4px 14px rgba(13,21,38,.07), 0 1px 3px rgba(13,21,38,.05);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0a1120;
+    --bg-elevated: #111b2e;
+    --bg-sunken: #070d19;
+    --bg-inset: #0e1727;
+    --fg: #f2f5fa;
+    --fg-secondary: #b6c0d1;
+    --fg-muted: #7f8ba0;
+    --border: rgba(255,255,255,.09);
+    --border-strong: rgba(255,255,255,.18);
+    --brand: #ffb84d; --brand-strong: #f5a524; --brand-soft: rgba(245,165,36,.14); --brand-fg: #1a1200;
+    --navy: #16294a; --navy-soft: rgba(255,255,255,.06);
+    --data: #3987e5; --data-soft: rgba(57,135,229,.16);
+    --good: #0ca30c; --good-soft: rgba(12,163,12,.16); --good-fg: #5fd35f;
+    --warn: #fab219; --warn-soft: rgba(250,178,25,.16); --warn-fg: #ffd070;
+    --serious: #ec835a; --serious-soft: rgba(236,131,90,.16); --serious-fg: #ffb08e;
+    --critical: #e66767; --critical-soft: rgba(230,103,103,.16); --critical-fg: #ff9a9a;
+    --cls-source: #3987e5; --cls-source-soft: rgba(57,135,229,.16);
+    --cls-calculated: #9085e9; --cls-calculated-soft: rgba(144,133,233,.16);
+    --cls-estimated: #ffb84d; --cls-estimated-soft: rgba(255,184,77,.16);
+    --cls-ai: #e07ab0; --cls-ai-soft: rgba(224,122,176,.16);
+    --cls-demo: #e66767; --cls-demo-soft: rgba(230,103,103,.16);
+    --cls-unavailable: #8a95a8; --cls-unavailable-soft: rgba(138,149,168,.16);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+    --grid: #22304a; --axis: #354561;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow: 0 6px 18px rgba(0,0,0,.45);
   }
 }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0a1120; --bg-elevated: #111b2e; --bg-sunken: #070d19; --bg-inset: #0e1727;
+  --fg: #f2f5fa; --fg-secondary: #b6c0d1; --fg-muted: #7f8ba0;
+  --border: rgba(255,255,255,.09); --border-strong: rgba(255,255,255,.18);
+  --brand: #ffb84d; --brand-strong: #f5a524; --brand-soft: rgba(245,165,36,.14); --brand-fg: #1a1200;
+  --navy: #16294a; --navy-soft: rgba(255,255,255,.06);
+  --data: #3987e5; --data-soft: rgba(57,135,229,.16);
+  --good: #0ca30c; --good-soft: rgba(12,163,12,.16); --good-fg: #5fd35f;
+  --warn: #fab219; --warn-soft: rgba(250,178,25,.16); --warn-fg: #ffd070;
+  --serious: #ec835a; --serious-soft: rgba(236,131,90,.16); --serious-fg: #ffb08e;
+  --critical: #e66767; --critical-soft: rgba(230,103,103,.16); --critical-fg: #ff9a9a;
+  --cls-source: #3987e5; --cls-source-soft: rgba(57,135,229,.16);
+  --cls-calculated: #9085e9; --cls-calculated-soft: rgba(144,133,233,.16);
+  --cls-estimated: #ffb84d; --cls-estimated-soft: rgba(255,184,77,.16);
+  --cls-ai: #e07ab0; --cls-ai-soft: rgba(224,122,176,.16);
+  --cls-demo: #e66767; --cls-demo-soft: rgba(230,103,103,.16);
+  --cls-unavailable: #8a95a8; --cls-unavailable-soft: rgba(138,149,168,.16);
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+  --grid: #22304a; --axis: #354561;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4); --shadow: 0 6px 18px rgba(0,0,0,.45);
+}
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-elevated: var(--bg-elevated);
+  --color-sunken: var(--bg-sunken);
+  --color-inset: var(--bg-inset);
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-fg: var(--brand-fg);
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+  --color-data: var(--data);
+  --color-data-soft: var(--data-soft);
+  --color-good: var(--good); --color-good-soft: var(--good-soft); --color-good-fg: var(--good-fg);
+  --color-warn: var(--warn); --color-warn-soft: var(--warn-soft); --color-warn-fg: var(--warn-fg);
+  --color-serious: var(--serious); --color-serious-soft: var(--serious-soft); --color-serious-fg: var(--serious-fg);
+  --color-critical: var(--critical); --color-critical-soft: var(--critical-soft); --color-critical-fg: var(--critical-fg);
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius-lg);
+  --shadow-card: var(--shadow);
+  --shadow-sm: var(--shadow-sm);
+}
+
+html { scroll-behavior: smooth; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--brand); color: var(--brand-fg); }
+
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* subtle solar grid background used on hero / shells */
+.solar-grid {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+}
+.sun-glow {
+  background: radial-gradient(60% 55% at 50% 0%, rgba(245,165,36,.28), transparent 70%);
+}
+
+/* stripe used on demo labels */
+.demo-stripe {
+  background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(208,59,59,.10) 6px 12px);
+}
+
+@keyframes shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-sunken) 25%, var(--bg-inset) 50%, var(--bg-sunken) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+/* Scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
