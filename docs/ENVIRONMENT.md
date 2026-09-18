@@ -21,10 +21,28 @@ Nothing under `NEXT_PUBLIC_` may be secret.
 - `[PLACEHOLDER: PANEL-LEVEL MONITORING DATA SOURCE]` — `panel_production_records`.
 
 ## Vercel
-1. Import the GitHub repository into Vercel (framework: Next.js).
-2. Add the variables above in *Settings → Environment Variables* (Production + Preview).
-3. Set `NEXT_PUBLIC_APP_URL` to the deployment URL.
-4. In Supabase → Authentication → URL configuration, add the Vercel URL to the redirect allow-list.
+
+The project is already imported and connected to Git:
+
+| | |
+|---|---|
+| Repository | `t054206-ui/solink` (private) |
+| Vercel project | `solink` |
+| Vercel team | `t054206-3843` (Hobby) |
+| Production branch | `main` |
+
+Pushing to `main` deploys to production; every other branch gets a preview.
+
+**No environment variables are set yet**, so the deployed site runs in demo mode:
+labeled demo data, no accounts, and each integration showing its placeholder.
+That is the intended state until the decisions in `DECISIONS-NEEDED.md` are made.
+
+To connect a real integration:
+1. Add its variables in *Settings → Environment Variables* (Production + Preview).
+2. Set `NEXT_PUBLIC_APP_URL` to the deployment URL.
+3. Redeploy so the new variables are picked up.
+4. For Supabase, add the Vercel URL to *Authentication → URL configuration* in the
+   Supabase dashboard, or sign-in redirects will be rejected.
 
 ## Supabase
 1. Create a Solink project (the current organisation has reached its free-project limit — see `docs/DECISIONS-NEEDED.md`).
