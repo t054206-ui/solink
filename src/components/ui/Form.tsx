@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode, LabelHTMLAttributes } from "react";
 
-const field = "w-full rounded-[var(--radius)] border border-[var(--brass)] bg-elevated px-3 text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
+const field = "w-full rounded-[var(--radius)] border border-border-strong bg-elevated px-2.5 text-[13px] text-fg placeholder:text-fg-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
 
 export function Label({ className, children, hint, ...rest }: LabelHTMLAttributes<HTMLLabelElement> & { hint?: ReactNode }) {
   return (
@@ -12,11 +12,11 @@ export function Label({ className, children, hint, ...rest }: LabelHTMLAttribute
 }
 
 export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(field, "h-10", className)} {...rest} />;
+  return <input className={cn(field, "h-9 max-[767px]:h-11", className)} {...rest} />;
 }
 
 export function Select({ className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={cn(field, "h-10", className)} {...rest}>{children}</select>;
+  return <select className={cn(field, "h-9 max-[767px]:h-11", className)} {...rest}>{children}</select>;
 }
 
 export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {

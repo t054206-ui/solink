@@ -6,25 +6,28 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "outline";
 type Size = "sm" | "md" | "lg";
 
 /**
- * Hover is a deliberate change of surface, never a fade. Opacity transitions
- * read as an element switching off; a colour step reads as a response.
+ * Safety orange is reserved for the primary action on a screen. Hover changes
+ * the surface in 150ms; it never fades, because a fading control reads as
+ * switching off rather than responding.
  */
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-medium whitespace-nowrap select-none " +
-  "transition-[background-color,border-color,color] duration-150 " +
-  "disabled:pointer-events-none disabled:saturate-0 disabled:text-fg-muted disabled:bg-inset disabled:border-border";
+  "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius)] font-medium whitespace-nowrap select-none " +
+  "transition-colors duration-150 " +
+  "disabled:pointer-events-none disabled:border-border disabled:bg-inset disabled:text-fg-muted";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand text-brand-fg hover:bg-[var(--brand-strong)] hover:text-white active:bg-[var(--brand-strong)]",
-  secondary: "bg-[var(--indigo)] text-[#f6f1e8] hover:bg-[color-mix(in_oklab,var(--indigo)_82%,var(--brand))]",
-  outline: "border border-[var(--brass)] bg-elevated text-fg hover:bg-inset hover:border-[var(--brand)]",
+  primary: "bg-[var(--brand)] text-[var(--brand-fg)] hover:bg-[var(--brand-hover)]",
+  secondary: "bg-[var(--indigo)] text-white hover:bg-[color-mix(in_oklab,var(--indigo)_85%,var(--brand))] dark:text-[var(--fg)]",
+  outline: "border border-border-strong bg-elevated text-fg hover:border-[var(--brand)] hover:bg-inset",
   ghost: "text-fg-secondary hover:bg-inset hover:text-fg",
-  danger: "bg-[var(--critical)] text-white hover:bg-[color-mix(in_oklab,var(--critical)_80%,black)]",
+  danger: "bg-[var(--critical)] text-white hover:bg-[color-mix(in_oklab,var(--critical)_82%,black)]",
 };
+/* 36px is the row height; controls sit on the same rhythm as table rows.
+   The 44px touch target is met on coarse pointers via the media query below. */
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-[13px]",
-  md: "h-10 px-4 text-sm",
-  lg: "h-12 px-6 text-[15px]",
+  sm: "h-7 px-2.5 text-[12px]",
+  md: "h-9 px-3 text-[13px]",
+  lg: "h-10 px-4 text-[14px]",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -32,7 +35,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Button({ variant = "primary", size = "md", href, className, children, ...rest }: ButtonProps) {
-  const cls = cn(base, variants[variant], sizes[size], className);
+  const cls = cn(base, variants[variant], sizes[size], "max-[767px]:min-h-11", className);
   if (href) return <Link href={href} className={cls}>{children}</Link>;
   return <button className={cls} {...rest}>{children}</button>;
 }

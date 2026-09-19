@@ -63,7 +63,7 @@ export default function GuidePage() {
   return (
     <>
       {/* ───────────── Hero ───────────── */}
-      <section className="sun-screen relative overflow-hidden border-b border-[var(--brass)]">
+      <section className="sun-screen relative overflow-hidden border-b border-border">
         <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-16 sm:px-6 sm:pb-20 sm:pt-24">
           <h1 className="max-w-3xl text-[36px] font-semibold leading-[1.04] tracking-[-0.03em] sm:text-[56px]">
             How to use Solink

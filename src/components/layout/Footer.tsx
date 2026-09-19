@@ -3,7 +3,7 @@ import { Logo } from "@/components/brand/Logo";
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--brass)] bg-elevated">
+    <footer className="border-t border-border bg-elevated">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
           <Logo />
@@ -27,7 +27,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-[var(--brass)] py-4 text-center text-[12px] text-fg-muted">© {new Date().getFullYear()} Solink · Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize</div>
+      <div className="border-t border-border py-3 text-center text-[11.5px] text-fg-muted">© {new Date().getFullYear()} Solink · Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize</div>
     </footer>
   );
 }

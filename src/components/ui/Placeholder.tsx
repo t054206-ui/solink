@@ -9,7 +9,7 @@ export function Placeholder({ k, className, inline = true }: { k: PlaceholderKey
   return (
     <span
       title={PLACEHOLDER_NOTES[k]}
-      className={cn("font-mono text-[11px] rounded-[2px] border border-dashed border-[var(--cls-estimated)] text-[var(--cls-estimated)] bg-[var(--cls-estimated-soft)] px-1.5 py-0.5 leading-4 tracking-tight", inline ? "inline-flex align-middle" : "flex", className)}
+      className={cn("font-mono text-[11px] rounded-[2px] border border-dashed border-[var(--cls-estimated)] text-[var(--cls-estimated)] bg-[var(--cls-estimated-soft)] px-1 py-px leading-[16px] tracking-tight", inline ? "inline-flex align-middle" : "flex", className)}
     >
       {PLACEHOLDERS[k]}
     </span>

@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 
 function Shell({ icon: Icon, title, children, tone = "neutral", className }: { icon: LucideIcon; title: string; children?: ReactNode; tone?: "neutral" | "warn" | "critical"; className?: string }) {
   return (
-    <div className={cn("flex flex-col items-center justify-center text-center rounded-[var(--radius-lg)] border border-dashed border-[var(--brass)] bg-inset px-6 py-10", className)}>
-      <div className={cn("mb-3 grid size-11 place-items-center rounded-[var(--radius)]", tone === "warn" ? "bg-warn-soft text-warn-fg" : tone === "critical" ? "bg-critical-soft text-critical-fg" : "bg-elevated text-fg-muted border border-[var(--brass)]")}>
+    <div className={cn("flex flex-col items-center justify-center text-center rounded-[var(--radius-lg)] border border-dashed border-border-strong bg-inset px-5 py-8", className)}>
+      <div className={cn("mb-3 grid size-11 place-items-center rounded-[var(--radius)]", tone === "warn" ? "bg-warn-soft text-warn-fg" : tone === "critical" ? "bg-critical-soft text-critical-fg" : "bg-elevated text-fg-muted border border-border")}>
         <Icon className="size-5" aria-hidden />
       </div>
       <h4 className="text-[15px] font-semibold text-fg">{title}</h4>
