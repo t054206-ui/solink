@@ -18,7 +18,7 @@ import { loadOperateContext } from "../../_operate/loadSystem";
 import { loadWeatherForProfile } from "../../_operate/loadWeather";
 import { cleaningEffectiveness, deriveStatus, lastCleaning, sevenVsThirty } from "../../_operate/production";
 
-export const metadata = { title: "Cleaning · Monitoring · Solink" };
+export const metadata = { title: "Cleaning · Monitoring" };
 
 export default async function CleaningPage() {
   const ctx = await loadOperateContext();

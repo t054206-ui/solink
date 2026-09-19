@@ -7,7 +7,7 @@ import type { SavedDesign } from "../designer/designTypes";
 import { PurchaseFlow } from "./PurchaseFlow";
 import type { CatalogItem } from "./purchaseTypes";
 
-export const metadata = { title: "Purchase & Installation — Solink" };
+export const metadata = { title: "Purchase & Installation" };
 
 function toItem(p: Product): CatalogItem {
   const len = specNum(p.specs.length_mm), wid = specNum(p.specs.width_mm);
@@ -51,7 +51,7 @@ export default async function PurchasePage({ searchParams }: { searchParams: Pro
       <PageHeader
         eyebrow="Choose"
         title="Purchase & Installation"
-        description="Turn a design into a request: review the equipment, ask installers for a quote, pick an installer and propose an installation date. Nothing here charges money — no payment provider is connected."
+        description="Turn a design into a request: review the equipment, ask installers for a quote, pick an installer and propose an installation date. Nothing here charges money. No payment provider is connected."
       />
       <PurchaseFlow mode={mode} catalog={catalog} providers={providers.map((p) => ({ id: p.id, name: p.name, kind: p.kind, is_demo: p.is_demo, service_area: p.service_area ?? null, verification_status: p.verification_status }))} serverDesigns={serverDesigns} preselectDesignId={sp.design ?? null} />
     </div>

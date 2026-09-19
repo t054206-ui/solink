@@ -11,7 +11,7 @@ import { GuideToc, type TocEntry } from "./_components/GuideToc";
 import { SECTIONS } from "./sections";
 
 export const metadata: Metadata = {
-  title: "User Guide — Solink",
+  title: "User Guide",
   description:
     "A plain-language guide to using Solink: analyze your home, size and choose a solar system, design it, arrange installation, then monitor, maintain and report on it.",
 };
@@ -43,7 +43,7 @@ const HELP_LAYERS = [
     icon: BookOpen,
     name: "This User Guide",
     question: "How does the website work?",
-    body: "One page, written for people who are new to solar. It explains what each part of Solink is for, the order to use it in, and — just as important — what Solink cannot do yet.",
+    body: "One page, written for people who are new to solar. It explains what each part of Solink is for, the order to use it in, and. Just as important. What Solink cannot do yet.",
   },
   {
     icon: Info,
@@ -63,20 +63,15 @@ export default function GuidePage() {
   return (
     <>
       {/* ───────────── Hero ───────────── */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 sun-glow" aria-hidden />
-        <div className="absolute inset-0 solar-grid" aria-hidden />
-        <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-12 sm:px-6 sm:pb-16 sm:pt-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-elevated px-3 py-1 text-[12.5px] font-medium text-fg-secondary">
-            <BookOpen className="size-3.5 text-[var(--brand-strong)]" aria-hidden /> User Guide
-          </span>
-          <h1 className="mt-5 max-w-3xl text-3xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">
+      <section className="sun-screen relative overflow-hidden border-b border-[var(--brass)]">
+        <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-16 sm:px-6 sm:pb-20 sm:pt-24">
+          <h1 className="max-w-3xl text-[36px] font-semibold leading-[1.04] tracking-[-0.03em] sm:text-[56px]">
             How to use Solink
           </h1>
           <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-fg-secondary">
             Solink takes you from “I am thinking about solar” to looking after panels that are already on your roof.
             This guide walks through that path one step at a time, in everyday language. You do not need any technical
-            background, and you do not need to read it in order — jump to the part you are on. Where something in
+            background, and you do not need to read it in order. Jump to the part you are on. Where something in
             Solink is not finished, this guide says so plainly instead of pretending otherwise.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -262,7 +257,7 @@ export default function GuidePage() {
               <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-fg-secondary">
                 If the question is about a word, use the information icon next to it. If it is about your own home, your
                 own roof or your own readings, ask the AI Solar Agent from inside Solink. And if a number is missing,
-                read the marker next to it — it will name exactly what Solink is waiting for.
+                read the marker next to it. It will name exactly what Solink is waiting for.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <Button href="/profile">

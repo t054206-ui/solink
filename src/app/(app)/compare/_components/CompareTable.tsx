@@ -115,11 +115,11 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex-1 sm:max-w-md">
-          <Field label={`Add a panel (${selected.length}/${COMPARE_MAX})`} help={full ? `Remove one to add another — up to ${COMPARE_MAX} at a time.` : addable.length === 0 ? "Every panel in the catalog is already selected." : undefined}>
+          <Field label={`Add a panel (${selected.length}/${COMPARE_MAX})`} help={full ? `Remove one to add another: up to ${COMPARE_MAX} at a time.` : addable.length === 0 ? "Every panel in the catalog is already selected." : undefined}>
             <div className="flex gap-2">
               <Select aria-label="Choose a panel to add" disabled={full || addable.length === 0} defaultValue="" onChange={(e) => { const v = e.target.value; if (v) { setIds((prev) => (prev.includes(v) || prev.length >= COMPARE_MAX ? prev : [...prev, v])); e.target.value = ""; } }}>
                 <option value="" disabled>Select a panel…</option>
-                {addable.map((p) => <option key={p.id} value={p.id}>{p.manufacturer_name} — {p.model}{p.is_demo ? " (DEMO)" : ""}</option>)}
+                {addable.map((p) => <option key={p.id} value={p.id}>{p.manufacturer_name}. {p.model}{p.is_demo ? " (DEMO)" : ""}</option>)}
               </Select>
               <Button href="/marketplace?category=solar_panel" variant="outline" className="shrink-0"><Plus className="size-4" aria-hidden /> Browse</Button>
             </div>
@@ -168,7 +168,7 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
                         <span className="inline-flex items-center gap-1">{row.label}{row.term && <InfoTip term={row.term} />}</span>
                       </th>
                       {cells.map((c, i) => (
-                        <td key={selected[i].id} className={cn("px-4 py-2.5 align-top", best === i && "bg-brand-soft/60")} title={best === i ? `Highest/lowest in this row for ${row.label} — whether that is “best” depends on your needs` : undefined}>
+                        <td key={selected[i].id} className={cn("px-4 py-2.5 align-top", best === i && "bg-brand-soft/60")} title={best === i ? `Highest/lowest in this row for ${row.label}. Whether that is “best” depends on your needs` : undefined}>
                           <div className="flex flex-col gap-1">
                             <div className="tabular text-fg">{c.node}{best === i && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--brand-strong)]">▲ {row.best === "high" ? "highest" : "lowest"}</span>}</div>
                             {c.cls && <DataBadge cls={c.cls} compact source={c.source} />}
@@ -189,7 +189,7 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Card>
-          <CardHeader title="Assumptions for estimate rows" subtitle="Expected production and total cost of ownership need these. Nothing is assumed for you — enter values or wait for an admin to set platform defaults." action={usesUserInput ? <DataBadge cls="user" compact /> : undefined} />
+          <CardHeader title="Assumptions for estimate rows" subtitle="Expected production and total cost of ownership need these. Nothing is assumed for you: enter values or wait for an admin to set platform defaults." action={usesUserInput ? <DataBadge cls="user" compact /> : undefined} />
           <CardBody className="grid gap-3 sm:grid-cols-3">
             <Field label={<span className="inline-flex items-center gap-1">Peak sun hours / day<InfoTip term="peak_sun_hours" /></span>} help={assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay) === "source" ? `Platform setting: ${platformAssumptions.peakSunHoursPerDay}` : undefined}>
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={ua.peakSunHours} placeholder={platformAssumptions.peakSunHoursPerDay?.toString() ?? "e.g. from a real source"} onChange={(e) => setUa((prev) => ({ ...prev, peakSunHours: e.target.value }))} aria-describedby="a-psh" />
@@ -203,13 +203,13 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
               <Input type="number" inputMode="numeric" min={1} step="1" value={ua.horizonYears} placeholder={platformAssumptions.horizonYears?.toString() ?? "e.g. 25"} onChange={(e) => setUa((prev) => ({ ...prev, horizonYears: e.target.value }))} aria-describedby="a-hz" />
               <div id="a-hz" className="mt-1.5">{assumptionCls(uHz, platformAssumptions.horizonYears) ? <DataBadge cls={assumptionCls(uHz, platformAssumptions.horizonYears)!} compact /> : <Placeholder k="TCO_PERIOD" />}</div>
             </Field>
-            <p className="text-[12px] leading-relaxed text-fg-muted sm:col-span-3">Estimates are labeled <DataBadge cls="estimated" compact /> and are only as good as these inputs. Total cost of ownership also needs real prices for the panel, installation, maintenance, cleaning and repairs — Solink never fills those in.</p>
+            <p className="text-[12px] leading-relaxed text-fg-muted sm:col-span-3">Estimates are labeled <DataBadge cls="estimated" compact /> and are only as good as these inputs. Total cost of ownership also needs real prices for the panel, installation, maintenance, cleaning and repairs: Solink never fills those in.</p>
             {usesUserInput && <div className="sm:col-span-3"><Button variant="ghost" size="sm" onClick={() => setUa(EMPTY_ASSUMPTIONS)}>Clear my assumptions</Button></div>}
           </CardBody>
         </Card>
 
         <Card>
-          <CardHeader title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> Not sure how to weigh these?</>} subtitle="The AI Solar Agent can explain the trade-offs between the panels you selected — using only the catalog data shown here." />
+          <CardHeader title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> Not sure how to weigh these?</>} subtitle="The AI Solar Agent can explain the trade-offs between the panels you selected: using only the catalog data shown here." />
           <CardBody className="flex flex-col gap-3">
             <ul className="list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">
               <li>Power vs. roof area, and what that means for your available space.</li>

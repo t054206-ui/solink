@@ -9,7 +9,7 @@ export function Placeholder({ k, className, inline = true }: { k: PlaceholderKey
   return (
     <span
       title={PLACEHOLDER_NOTES[k]}
-      className={cn("font-mono text-[11.5px] rounded-md border border-dashed border-[var(--cls-estimated)] text-[var(--cls-estimated)] bg-[var(--cls-estimated-soft)] px-1.5 py-0.5 leading-4", inline ? "inline-flex align-middle" : "flex", className)}
+      className={cn("font-mono text-[11px] rounded-[2px] border border-dashed border-[var(--cls-estimated)] text-[var(--cls-estimated)] bg-[var(--cls-estimated-soft)] px-1.5 py-0.5 leading-4 tracking-tight", inline ? "inline-flex align-middle" : "flex", className)}
     >
       {PLACEHOLDERS[k]}
     </span>
@@ -18,7 +18,7 @@ export function Placeholder({ k, className, inline = true }: { k: PlaceholderKey
 
 export function PlaceholderNote({ k, className }: { k: PlaceholderKey; className?: string }) {
   return (
-    <div className={cn("rounded-[10px] border border-dashed border-[var(--cls-estimated)]/60 bg-[var(--cls-estimated-soft)]/60 p-3 text-[13px]", className)}>
+    <div className={cn("rounded-[var(--radius)] border border-dashed border-[var(--cls-estimated)]/60 bg-[var(--cls-estimated-soft)]/60 p-3 text-[13px]", className)}>
       <div className="font-mono text-[11.5px] text-[var(--cls-estimated)]">{PLACEHOLDERS[k]}</div>
       <p className="mt-1 text-fg-secondary">{PLACEHOLDER_NOTES[k]}</p>
     </div>

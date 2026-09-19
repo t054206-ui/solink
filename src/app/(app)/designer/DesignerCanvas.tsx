@@ -288,7 +288,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
     const full: SavedDesign = { ...d, id: newId("dsg"), created_at: new Date().toISOString() };
     setStore((s) => ({ designs: [full, ...(s?.designs ?? [])].slice(0, 30) }));
     setSavedId(full.id);
-    setNotice("Design saved on this device (demo mode — not sent to a server).");
+    setNotice("Design saved on this device (demo mode: not sent to a server).");
   };
   const loadDesign = (d: SavedDesign) => {
     const opt = panels.find((p) => p.id === d.panel_product_id);
@@ -347,7 +347,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
           </Card>
 
           <Card>
-            <CardHeader title="Obstacles" subtitle="Water tanks, AC units, stairwells — panels cannot be placed on them." />
+            <CardHeader title="Obstacles" subtitle="Water tanks, AC units, stairwells: panels cannot be placed on them." />
             <CardBody className="space-y-3">
               {roof.obstacles.length > 0 && (
                 <ul className="space-y-1.5">
@@ -376,7 +376,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
               <Field label="Panel model">
                 <Select value={panelId} onChange={(e) => changePanel(e.target.value)}>
                   {panels.length === 0 && <option value="">No panels in the catalog</option>}
-                  {panels.map((p) => <option key={p.id} value={p.id} disabled={!p.length_m || !p.width_m}>{p.name}{!p.length_m || !p.width_m ? " — dimensions unavailable" : ""}</option>)}
+                  {panels.map((p) => <option key={p.id} value={p.id} disabled={!p.length_m || !p.width_m}>{p.name}{!p.length_m || !p.width_m ? ": dimensions unavailable" : ""}</option>)}
                 </Select>
               </Field>
               {product && geom && (
@@ -465,7 +465,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
 
               {/* Touch / accessibility controls for the selected panel */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[12.5px] text-fg-muted">{selected ? `Panel ${placed.indexOf(selected) + 1} selected — (${selected.x}, ${selected.y}) m, ${selected.rotation}°` : "Tap a panel to select it. Drag to move."}</span>
+                <span className="text-[12.5px] text-fg-muted">{selected ? `Panel ${placed.indexOf(selected) + 1} selected: (${selected.x}, ${selected.y}) m, ${selected.rotation}°` : "Tap a panel to select it. Drag to move."}</span>
                 <div className="ml-auto flex items-center gap-1">
                   <button type="button" aria-label="Nudge left" disabled={!selected} onClick={() => nudge(-0.1, 0)} className={ctl}><ArrowLeft className="size-4" /></button>
                   <button type="button" aria-label="Nudge up" disabled={!selected} onClick={() => nudge(0, -0.1)} className={ctl}><ArrowUp className="size-4" /></button>
@@ -492,7 +492,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
             <CardHeader title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> AI Smart Placement</>} subtitle="Ask the AI Solar Agent for a suggested layout. It sees only the roof, obstacles, panel size and your shading notes."
               action={<Button size="sm" variant="secondary" onClick={requestAi} disabled={!geom || ai.status === "loading"}>{ai.status === "loading" ? "Thinking…" : "Suggest placement"}</Button>} />
             <CardBody>
-              {ai.status === "idle" && <p className="text-[13px] text-fg-muted">No suggestion requested yet. Suggestions are labeled <DataBadge cls="ai" compact /> and can be wrong — check them against the overlap warnings.</p>}
+              {ai.status === "idle" && <p className="text-[13px] text-fg-muted">No suggestion requested yet. Suggestions are labeled <DataBadge cls="ai" compact /> and can be wrong: check them against the overlap warnings.</p>}
               {ai.status === "loading" && <p className="text-[13px] text-fg-muted">Requesting a layout…</p>}
               {ai.status === "not_configured" && (
                 <UnavailableState title="Smart placement is not connected">

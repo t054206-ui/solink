@@ -61,7 +61,7 @@ export function AppointmentsList({ mode, serverAppointments, serverCases, system
   return (
     <div className="space-y-4">
       <Group icon={CalendarClock} title="Upcoming" subtitle={`From ${formatDate(nowIso, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} onwards.`} appointments={upcoming} cases={cases} systems={systems} emptyText="Nothing is booked ahead." />
-      <Group icon={CalendarCheck2} title="Past" subtitle="Visits whose scheduled time has passed. The status is whatever was last recorded — it is not inferred." appointments={past} cases={cases} systems={systems} emptyText="No past appointments on record." />
+      <Group icon={CalendarCheck2} title="Past" subtitle="Visits whose scheduled time has passed. The status is whatever was last recorded. It is not inferred." appointments={past} cases={cases} systems={systems} emptyText="No past appointments on record." />
     </div>
   );
 }

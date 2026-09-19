@@ -53,7 +53,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/analysis", label: "Go to Solar Potential" },
     ],
     note: {
-      text: "Roof direction, tilt and shading are recorded but not yet used in the maths — until a site data source is connected, every roof is treated the same, so treat the result as a rough size guide. Sunlight figures for your exact address need a solar resource source, and the map view needs a Google Maps key. Without the map you can still type your coordinates by hand.",
+      text: "Roof direction, tilt and shading are recorded but not yet used in the maths. Until a site data source is connected, every roof is treated the same, so treat the result as a rough size guide. Sunlight figures for your exact address need a solar resource source, and the map view needs a Google Maps key. Without the map you can still type your coordinates by hand.",
       keys: ["SOLAR_RESOURCE_DATA_SOURCE", "GOOGLE_SOLAR_SITE_DATA_SOURCE", "GOOGLE_MAPS_API_KEY"],
     },
   },
@@ -79,7 +79,7 @@ export const SECTIONS: GuideSection[] = [
     icon: Store,
     lead: "The Marketplace lists panels and other equipment with their technical specifications.",
     body: [
-      "Filter by category, search by name or manufacturer, and sort by rated power or efficiency. Each product shows where its specifications came from and whether they have been checked — verified, pending or unverified. A specification with no source is shown as missing, not filled in with a believable number.",
+      "Filter by category, search by name or manufacturer, and sort by rated power or efficiency. Each product shows where its specifications came from and whether they have been checked: verified, pending or unverified. A specification with no source is shown as missing, not filled in with a believable number.",
       "You can add products to a shortlist as you browse and send that shortlist to the comparison table. If you would rather be pointed in a direction first, the AI Recommendation page reads your profile and explains how the options trade off against each other. It is not allowed to name a single best panel.",
     ],
     links: [
@@ -97,9 +97,9 @@ export const SECTIONS: GuideSection[] = [
     icon: GitCompare,
     lead: "Compare puts up to four panels side by side, one specification per row.",
     body: [
-      "Because every row uses the same unit, differences are easy to see. The highest and lowest value in a row are marked — but marked is not the same as better, and Solink says so on the page. A cheap panel with a poor temperature coefficient can lose more on a hot Kuwaiti afternoon than it saved at purchase.",
+      "Because every row uses the same unit, differences are easy to see. The highest and lowest value in a row are marked. But marked is not the same as better, and Solink says so on the page. A cheap panel with a poor temperature coefficient can lose more on a hot Kuwaiti afternoon than it saved at purchase.",
       "Where a product has no value for a row, the cell says so rather than showing a blank you might read as zero. Use the information icons when a specification name is unfamiliar.",
-      "Some rows — expected yearly production, total cost of ownership — only appear once you type the assumptions they need, at the top of the table.",
+      "Some rows: expected yearly production, total cost of ownership. Only appear once you type the assumptions they need, at the top of the table.",
     ],
     links: [{ href: "/compare", label: "Go to Compare" }],
     note: {
@@ -113,13 +113,13 @@ export const SECTIONS: GuideSection[] = [
     icon: PencilRuler,
     lead: "The Solar Designer lets you lay panels out on a scale drawing of your roof.",
     body: [
-      "Enter the roof size, then mark the things already up there — a water tank, an air-conditioning unit, a stairwell. Pick a panel and place them by dragging, or let Solink fill the free space with a grid. You can nudge, rotate, undo and clear, with the keyboard as well as the mouse.",
+      "Enter the roof size, then mark the things already up there: a water tank, an air-conditioning unit, a stairwell. Pick a panel and place them by dragging, or let Solink fill the free space with a grid. You can nudge, rotate, undo and clear, with the keyboard as well as the mouse.",
       "As you work it counts the panels, the area used and the resulting system size. That is pure geometry from the panel dimensions, so it is reliable. Save a design and you can carry it straight into the purchase step.",
       "You can also ask the AI to suggest a layout. Whatever it proposes is labelled as AI interpretation: a starting point for a conversation with an installer.",
     ],
     links: [{ href: "/designer", label: "Go to the Solar Designer" }],
     note: {
-      text: "A layout made here is not an engineering drawing — structure, wiring, safety distances and permits are the installer’s job. Yearly production and cost figures for a design stay empty until you supply the assumptions and a real panel price exists. Smart placement needs the AI service connected.",
+      text: "A layout made here is not an engineering drawing. Structure, wiring, safety distances and permits are the installer’s job. Yearly production and cost figures for a design stay empty until you supply the assumptions and a real panel price exists. Smart placement needs the AI service connected.",
       keys: ["SOLAR_RESOURCE_DATA_SOURCE", "INSTALLATION_PRICE", "CLAUDE_API_KEY"],
     },
   },
@@ -129,7 +129,7 @@ export const SECTIONS: GuideSection[] = [
     icon: ShoppingCart,
     lead: "This is where a choice becomes a request: the equipment, an installer and a date you would like.",
     body: [
-      "It runs in order — choose the system (from a saved design or a quick pick), review the itemised list, request a quote, select an installer from the registered companies, then propose a date and time window. You cannot skip ahead, and you can go back.",
+      "It runs in order: choose the system (from a saved design or a quick pick), review the itemised list, request a quote, select an installer from the registered companies, then propose a date and time window. You cannot skip ahead, and you can go back.",
       "What you end up with is a saved request you can adjust or show to a company. Once a system is actually installed, it becomes the basis of your Solar Passport.",
     ],
     links: [{ href: "/purchase", label: "Go to Purchase & Install" }],
@@ -146,7 +146,7 @@ export const SECTIONS: GuideSection[] = [
     body: [
       "Open it from its own page, from the Ask Solink button at the top of any Solink page, or from the round button in the bottom corner on a phone. Ask things like why yesterday looked low, or what a warning means.",
       "Before answering it reads what Solink actually holds about you: your profile, your system, your recent production, your maintenance history. When that is not enough, it says it does not have enough information rather than filling the gap. It is also barred from inventing prices, specifications or measurements, and from calling one product the best.",
-      "It can read and explain, but it cannot act. It will not book a visit, place an order or change a setting for you. Everything it writes is labelled AI interpretation, and it can be wrong — check anything that costs money or affects safety with a qualified person.",
+      "It can read and explain, but it cannot act. It will not book a visit, place an order or change a setting for you. Everything it writes is labelled AI interpretation, and it can be wrong: check anything that costs money or affects safety with a qualified person.",
     ],
     links: [{ href: "/agent", label: "Go to the AI Solar Agent" }],
     note: {
@@ -160,7 +160,7 @@ export const SECTIONS: GuideSection[] = [
     icon: Activity,
     lead: "Monitoring is where you watch an installed system: production over time, the weather around it, and the conditions that cut output.",
     body: [
-      "The overview charts daily and monthly production and compares the last seven days with the month before — plain arithmetic, no interpretation. You can then ask the AI for an assessment, which reads production, maintenance and the latest weather and tells you what it used and what it was missing.",
+      "The overview charts daily and monthly production and compares the last seven days with the month before. Plain arithmetic, no interpretation. You can then ask the AI for an assessment, which reads production, maintenance and the latest weather and tells you what it used and what it was missing.",
       "The Weather pages show current conditions, a short forecast and air quality. Dust in the air is a hint that panels may need cleaning soon; it is not a measurement of how dirty your panels are. The Cleaning page pairs that with your production trend and the measured effect of the last cleaning.",
       "You can also upload a photo of a panel and ask the AI to describe what it sees, then turn that into an incident report. That is an opinion from a picture, not an inspection, and it will not claim damage.",
     ],
@@ -181,14 +181,14 @@ export const SECTIONS: GuideSection[] = [
     lead: "Maintenance keeps the record of every cleaning, inspection, repair and replacement your system has had.",
     body: [
       "Booking runs through four short steps: describe the problem and how urgent it feels, pick a provider or leave it open, choose a date and time window, then confirm. That opens a case you can follow.",
-      "Anything that goes wrong can also be logged as an incident. Incidents are never deleted, only closed, so the history survives after the problem does. Each job stays attached to the system rather than to you — which is what makes the record still useful years later, or to whoever owns the house next.",
+      "Anything that goes wrong can also be logged as an incident. Incidents are never deleted, only closed, so the history survives after the problem does. Each job stays attached to the system rather than to you. Which is what makes the record still useful years later, or to whoever owns the house next.",
     ],
     links: [
       { href: "/maintenance", label: "Go to Maintenance" },
       { href: "/incidents", label: "Go to Incidents" },
     ],
     note: {
-      text: "A booking is stored in Solink, but nothing is sent to the provider — no email, no message — so contact them yourself and use the record to keep track. Photos are previews only until file storage is connected. Solink will also not predict a failure: it goes no further than saying an inspection may be worth booking.",
+      text: "A booking is stored in Solink, but nothing is sent to the provider: no email, no message. So contact them yourself and use the record to keep track. Photos are previews only until file storage is connected. Solink will also not predict a failure: it goes no further than saying an inspection may be worth booking.",
       keys: ["EMAIL_NOTIFICATION_PROVIDER", "SUPABASE_PROJECT", "PRODUCTION_ALERT_THRESHOLDS"],
     },
   },
@@ -217,7 +217,7 @@ export const SECTIONS: GuideSection[] = [
     lead: "A report gathers one month into a single page: energy produced, maintenance carried out, and what that meant financially and environmentally.",
     body: [
       "Only finished months can be reported, so the month you are in appears once it has ended. Generate one and it is kept as a card showing the month’s total, the change from the month before, and how many incidents, cleanings and repairs it contained.",
-      "Every figure carries its own label, so a measurement never gets confused with an estimate. A report is a sensible thing to keep for a warranty claim. To save one as a PDF, use your browser’s print dialog — Solink prints a version laid out for paper.",
+      "Every figure carries its own label, so a measurement never gets confused with an estimate. A report is a sensible thing to keep for a warranty claim. To save one as a PDF, use your browser’s print dialog: Solink prints a version laid out for paper.",
     ],
     links: [{ href: "/reports", label: "Go to Reports" }],
     note: {
@@ -232,7 +232,7 @@ export const SECTIONS: GuideSection[] = [
     lead: "The Solar Passport is the permanent identity of an installed system.",
     body: [
       "It holds what went on the roof, who installed it and when, the warranties that came with it and when they run out, and the full history of cleaning, repairs, replacements and incidents.",
-      "It also freezes the specifications of your panel and inverter as they were on the day, and keeps the old version when something changes. That is what lets you show what was true at a given date — which matters for a warranty claim, and matters again when you sell the house and the next owner asks what is up there.",
+      "It also freezes the specifications of your panel and inverter as they were on the day, and keeps the old version when something changes. That is what lets you show what was true at a given date: which matters for a warranty claim, and matters again when you sell the house and the next owner asks what is up there.",
       "A passport appears once a system is recorded as installed. Print it, or save it as a PDF through your browser, to hand to someone else.",
     ],
     links: [{ href: "/passport", label: "Go to Solar Passport" }],

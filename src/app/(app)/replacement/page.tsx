@@ -22,7 +22,7 @@ import { EquipmentTable } from "./_components/EquipmentTable";
 import { buildEquipmentRows, unattributedReplacements } from "./_components/equipment";
 
 export const metadata: Metadata = {
-  title: "Replacement — Solink",
+  title: "Replacement",
   description: "Equipment age, warranty expiry and replacement history for your solar system, with end-of-life criteria shown as undefined.",
 };
 
@@ -87,7 +87,7 @@ export default async function ReplacementPage() {
         <CardHeader title="When should something be replaced?" subtitle="This is a decision Solink refuses to fake." />
         <CardBody className="space-y-3">
           <p className="text-[13.5px] leading-relaxed text-fg-secondary">
-            Solink will not tell you that a component <em>will fail</em> or that it <em>is at end of life</em>. Deciding that requires criteria — a minimum acceptable output, an age limit, a repair-frequency limit or an economic test — and those have not been defined for this platform. What the table above shows is factual: age, warranty cover and the repairs and replacements actually recorded.
+            Solink will not tell you that a component <em>will fail</em> or that it <em>is at end of life</em>. Deciding that requires criteria: a minimum acceptable output, an age limit, a repair-frequency limit or an economic test. And those have not been defined for this platform. What the table above shows is factual: age, warranty cover and the repairs and replacements actually recorded.
           </p>
           <p className="text-[13.5px] leading-relaxed text-fg-secondary">
             Once criteria are defined, each component will be measured against them here, and <strong className="text-fg">inspection or replacement may be worth considering</strong> for any component that meets them. Until then, a warranty that has expired is simply a fact worth knowing, not a recommendation to replace anything.

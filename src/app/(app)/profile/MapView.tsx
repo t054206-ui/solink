@@ -67,7 +67,7 @@ export function MapView({ lat, lng, address, className }: { lat: number | null |
   if (!BROWSER_KEY) {
     return (
       <UnavailableState title="Map not connected" className={className}>
-        <Placeholder k="GOOGLE_MAPS_API_KEY" /> — set <code className="font-mono text-[12px]">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code> (a referrer-restricted browser key) to show the site map. You can still type coordinates manually.
+        <Placeholder k="GOOGLE_MAPS_API_KEY" />: set <code className="font-mono text-[12px]">NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code> (a referrer-restricted browser key) to show the site map. You can still type coordinates manually.
       </UnavailableState>
     );
   }

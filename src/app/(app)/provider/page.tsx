@@ -6,7 +6,7 @@ import { CaseQueue } from "./_components/CaseQueue";
 import { ProviderIdentity } from "./_components/ProviderBits";
 
 export const metadata: Metadata = {
-  title: "Provider — Case queue — Solink",
+  title: "Provider case queue",
   description: "Maintenance cases assigned to your company, grouped by urgency, with the system, coarse location and appointment for each job.",
 };
 
@@ -33,7 +33,7 @@ export default async function ProviderQueuePage() {
       <PageHeader
         eyebrow="Maintenance provider"
         title="Case queue"
-        description="Jobs waiting on your company, grouped by urgency. Each card carries only what the technician needs to plan the visit — no customer contact details, no assumed prices."
+        description="Jobs waiting on your company, grouped by urgency. Each card carries only what the technician needs to plan the visit: no customer contact details, no assumed prices."
       />
       <ProviderIdentity name={access.providerName} mode={mode} isDemoProvider={access.isDemoProvider} className="mb-4" />
       <CaseQueue

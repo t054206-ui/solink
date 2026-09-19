@@ -7,7 +7,7 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { RecommendForm } from "./_components/RecommendForm";
 
 export const metadata: Metadata = {
-  title: "AI recommendation — Solink",
+  title: "AI recommendation",
   description: "Ask the AI Solar Agent to explain the trade-offs between the panels in the catalog for your situation.",
 };
 
@@ -18,7 +18,7 @@ const ALLOWED = [
   "Suggest who each realistic option might suit, given the priorities you selected.",
 ];
 const NOT_ALLOWED = [
-  "Declare one panel objectively “the best” — there is no single winner.",
+  "Declare one panel objectively “the best”. There is no single winner.",
   "Invent or guess prices, installation costs, production figures or savings.",
   "Mention products, manufacturers or specifications that are not in the catalog.",
   "Treat demo records as real products.",

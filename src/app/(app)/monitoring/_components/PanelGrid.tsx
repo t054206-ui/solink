@@ -20,9 +20,9 @@ export function PanelGrid({ count, className }: { count: number; className?: str
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-fg-muted">
         <span className="inline-flex items-center gap-1.5"><span className="inline-block size-3 rounded-[2px] border border-dashed border-border-strong" aria-hidden /> Unknown (no data source)</span>
-        <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-good" aria-hidden /> Normal — not available yet</span>
-        <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-warn" aria-hidden /> Underperforming — not available yet</span>
-        <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-critical" aria-hidden /> Fault — not available yet</span>
+        <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-good" aria-hidden /> Normal: not available yet</span>
+        <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-warn" aria-hidden /> Underperforming: not available yet</span>
+        <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-critical" aria-hidden /> Fault: not available yet</span>
       </div>
     </div>
   );

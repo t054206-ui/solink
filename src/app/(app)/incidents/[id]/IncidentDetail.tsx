@@ -90,7 +90,7 @@ export function IncidentDetail({ id, mode, serverIncident, systems, cases }: { i
       </Card>
 
       <Card>
-        <CardHeader title="Action & outcome" subtitle="Filled in as the incident is handled. Empty fields mean nothing has been recorded — not that nothing happened." />
+        <CardHeader title="Action & outcome" subtitle="Filled in as the incident is handled. Empty fields mean nothing has been recorded: not that nothing happened." />
         <CardBody>
           <dl className="grid gap-3 text-[13.5px] sm:grid-cols-2">
             <Row k="Action taken" v={inc.action_taken ?? <span className="text-fg-muted">Not recorded</span>} />

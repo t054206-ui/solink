@@ -63,7 +63,7 @@ export function AiMonitorPanel({ systemId, location }: { systemId: string; locat
     <Card>
       <CardHeader
         title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> AI Energy Monitoring</>}
-        subtitle="Interprets your production history, maintenance records and the latest weather. It reports what the data shows and what is missing — it does not guess."
+        subtitle="Interprets your production history, maintenance records and the latest weather. It reports what the data shows and what is missing. It does not guess."
         action={<Button size="sm" onClick={run} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />} {state.kind === "done" ? "Run again" : "Run AI assessment"}</Button>}
       />
       <CardBody className="space-y-4">

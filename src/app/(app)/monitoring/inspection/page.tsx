@@ -4,7 +4,7 @@ import { NoSystemState } from "../../_operate/components/NoSystemState";
 import { loadOperateContext } from "../../_operate/loadSystem";
 import { ImageInspector } from "../_components/ImageInspector";
 
-export const metadata = { title: "Panel inspection · Solink" };
+export const metadata = { title: "Panel inspection" };
 
 export default async function InspectionPage() {
   const ctx = await loadOperateContext();

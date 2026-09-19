@@ -118,7 +118,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
         const fd = new FormData(); fd.append("file", photoFile);
         const up = await uploadRoofPhoto(fd);
         if (up.ok) toSave = { ...toSave, roof_photo_path: up.path };
-        else if (up.reason === "demo") photoNote = " Photo kept as a preview only — storage requires Supabase.";
+        else if (up.reason === "demo") photoNote = " Photo kept as a preview only. Storage requires Supabase.";
         else { setSave({ tone: "critical", message: `Photo upload failed: ${up.message}` }); setSaving(false); return; }
       }
       const res = await saveProfile(toSave);
@@ -128,7 +128,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
       } else if (res.reason === "demo") {
         setLocal(toSave);
         setDraft(null);
-        setSave({ tone: "warn", message: `Saved on this device (demo mode — Supabase not connected).${photoNote}` });
+        setSave({ tone: "warn", message: `Saved on this device (demo mode: Supabase not connected).${photoNote}` });
       } else {
         setSave({ tone: "critical", message: res.message });
       }
@@ -261,7 +261,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
             </Field>
           </div>
 
-          <Field label={<>Shading notes <InfoTip term="shading" /></>} hint={<DataBadge cls="user" compact />} help="Water tanks, neighbouring buildings, parapets, trees — and when they cast shade.">
+          <Field label={<>Shading notes <InfoTip term="shading" /></>} hint={<DataBadge cls="user" compact />} help="Water tanks, neighbouring buildings, parapets, trees: and when they cast shade.">
             <Textarea id="shading_notes" aria-label="Shading notes" value={values.shading_notes ?? ""} onChange={(e) => update({ shading_notes: e.target.value || null })} placeholder="e.g. Two water tanks on the north-east corner; neighbour's building shades the west edge after 3 pm." />
           </Field>
         </CardBody>
@@ -269,7 +269,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
 
       {/* Electricity & budget */}
       <Card>
-        <CardHeader title="Electricity and budget" subtitle="Enter your monthly consumption in kWh or your monthly bill — one is required." />
+        <CardHeader title="Electricity and budget" subtitle="Enter your monthly consumption in kWh or your monthly bill. One is required." />
         <CardBody className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label={<>Monthly consumption (kWh) <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />} error={errors.consumption} help="From your electricity bill or meter.">
@@ -293,7 +293,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
 
       {/* Roof photo */}
       <Card>
-        <CardHeader title="Roof photo" subtitle={mode === "supabase" ? "Stored privately in your own folder (roof-photos/<your id>/…)." : "Preview only in demo mode — storing photos requires Supabase."} />
+        <CardHeader title="Roof photo" subtitle={mode === "supabase" ? "Stored privately in your own folder (roof-photos/<your id>/…)." : "Preview only in demo mode. Storing photos requires Supabase."} />
         <CardBody className="grid gap-3">
           <input ref={fileInput} id="roof_photo" type="file" accept="image/*" className="sr-only" onChange={(e) => onPhotoChange(e.target.files?.[0] ?? null)} />
           <div className="flex flex-wrap items-center gap-2">

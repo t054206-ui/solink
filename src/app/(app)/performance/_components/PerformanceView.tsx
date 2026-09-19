@@ -141,7 +141,7 @@ export function PerformanceView({ rows, cls, settings, capacityKwp, systemName, 
               <BarChart data={bars} ariaLabel="Production by calendar year in kWh" formatY={(v) => formatNumber(v)} />
               <YearlyTable rows={rows} cls={cls} />
               <p className="text-[12px] leading-relaxed text-fg-muted">
-                Partial years are labelled and left out of every comparison. Specific yield needs 365 daily records from the same year and the system capacity{capacityKwp === null ? " — capacity is not recorded for this system" : ` (${capacityKwp} kWp)`}.
+                Partial years are labelled and left out of every comparison. Specific yield needs 365 daily records from the same year and the system capacity{capacityKwp === null ? ". Capacity is not recorded for this system" : ` (${capacityKwp} kWp)`}.
               </p>
             </>
           )}
@@ -282,7 +282,7 @@ function Assessment({ lastComparable, degPctValue }: { lastComparable: YearRow |
       </p>
       <p className="mt-1.5">
         {worse
-          ? "The measured decline is larger than the degradation assumption alone would explain. Weather, soiling, shading and outages also differ from year to year, so this is not by itself evidence of a fault — an inspection may be worth considering."
+          ? "The measured decline is larger than the degradation assumption alone would explain. Weather, soiling, shading and outages also differ from year to year, so this is not by itself evidence of a fault. An inspection may be worth considering."
           : "The measured change is in line with, or better than, what the degradation assumption alone would predict."}
       </p>
       <p className="mt-1.5 text-[12px] text-fg-muted">Both figures are annual totals; no weather normalisation is applied.</p>

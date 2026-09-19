@@ -125,7 +125,7 @@ export function SavingsCalculator({ settings, mode }: { settings: PlatformSettin
   const cumulative = chartReady
     ? [
         { name: "Cumulative savings", points: [{ x: 0, y: 0 }, ...series.map((r) => ({ x: r.year, y: r.cumSavings }))], color: "var(--series-3)" },
-        { name: opexKnown ? "Cumulative cost" : "Cumulative cost (upfront only — maintenance/cleaning not provided)", points: [{ x: 0, y: upfront.value! }, ...series.map((r) => ({ x: r.year, y: upfront.value! + opex * r.year }))], color: "var(--series-2)" },
+        { name: opexKnown ? "Cumulative cost" : "Cumulative cost (upfront only: maintenance/cleaning not provided)", points: [{ x: 0, y: upfront.value! }, ...series.map((r) => ({ x: r.year, y: upfront.value! + opex * r.year }))], color: "var(--series-2)" },
       ]
     : null;
 
@@ -138,7 +138,7 @@ export function SavingsCalculator({ settings, mode }: { settings: PlatformSettin
         {mode === "demo" && <DemoBanner text="LOCAL DEMO MODE" detail="Inputs are saved in this browser only." />}
 
         <Card>
-          <CardHeader title="Your electricity" subtitle="Enter consumption in kWh, or your bill — converting a bill needs the tariff below." />
+          <CardHeader title="Your electricity" subtitle="Enter consumption in kWh, or your bill. Converting a bill needs the tariff below." />
           <CardBody className="grid gap-4 sm:grid-cols-2">
             <Field label={<>Monthly consumption <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />}>
               <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.monthlyKwh)} onChange={(e) => set("monthlyKwh", toNum(e.target.value))} aria-label="Monthly consumption in kWh" /><span className="text-[12.5px] text-fg-muted">kWh</span></div>
@@ -182,12 +182,12 @@ export function SavingsCalculator({ settings, mode }: { settings: PlatformSettin
         <Card>
           <CardHeader title={<>Costs <InfoTip term="tco" /></>} subtitle="No cost is ever assumed. Leave a field empty and the metrics that need it stay unavailable." />
           <CardBody className="grid gap-3">
-            <Field label="System (equipment) cost" hint={<DataBadge cls="user" compact />} help="Panels, inverter and mounting — from a quote or the Marketplace.">
+            <Field label="System (equipment) cost" hint={<DataBadge cls="user" compact />} help="Panels, inverter and mounting: from a quote or the Marketplace.">
               <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.systemCost)} onChange={(e) => set("systemCost", toNum(e.target.value))} aria-label="System cost" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
             </Field>
             <AssumptionField label="Installation cost" placeholderKey="INSTALLATION_PRICE" unit={CURRENCY} platform={null} value={inp.installCost} onChange={(v) => set("installCost", v)} help="One-off labour, permits and commissioning." step="1" min={0} />
             <AssumptionField label="Annual maintenance cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.maintenance} onChange={(v) => set("maintenance", v)} help="Yearly inspection and servicing." step="1" min={0} />
-            <AssumptionField label="Annual cleaning cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.cleaning} onChange={(v) => set("cleaning", v)} help="Dust and sand removal — important in Kuwait." step="1" min={0} />
+            <AssumptionField label="Annual cleaning cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.cleaning} onChange={(v) => set("cleaning", v)} help="Dust and sand removal: important in Kuwait." step="1" min={0} />
             <Field label="Repairs / replacements reserve over the period" hint={<DataBadge cls="user" compact />} help="A lump sum you set aside for inverter replacement or repairs. Required for total cost of ownership.">
               <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.repairs)} onChange={(e) => set("repairs", toNum(e.target.value))} aria-label="Repairs and replacements reserve" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
             </Field>

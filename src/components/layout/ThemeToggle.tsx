@@ -30,7 +30,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={() => setMode(NEXT[mode])}
       aria-label={`Theme: ${mode}. Click to change.`}
       title={`Theme: ${mode}`}
-      className={`grid size-9 place-items-center rounded-[10px] text-fg-muted hover:bg-inset hover:text-fg ${className ?? ""}`}
+      className={`grid size-9 place-items-center rounded-[var(--radius)] text-fg-muted hover:bg-inset hover:text-fg ${className ?? ""}`}
     >
       <Icon className="size-4" />
     </button>

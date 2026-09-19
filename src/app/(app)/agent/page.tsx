@@ -11,14 +11,14 @@ import { isClaudeConfigured } from "@/lib/ai/claude";
 import { loadOperateContext } from "../_operate/loadSystem";
 
 export const metadata = {
-  title: "AI Solar Agent · Solink",
+  title: "AI Solar Agent",
   description: "Ask Solink about your own solar system. The agent reads your actual data before answering and never invents figures.",
 };
 
 const LAYERS = [
   { icon: BookOpen, name: "User Guide", answers: "How does the website work?", href: "/guide", detail: "Step-by-step help for every part of Solink." },
   { icon: Info, name: "Info icons", answers: "What does this technical term mean?", href: null, detail: "The small ⓘ beside a term opens a plain-language definition." },
-  { icon: Bot, name: "AI Solar Agent", answers: "What does this mean for MY solar system?", href: null, detail: "Answers about your own data — this page." },
+  { icon: Bot, name: "AI Solar Agent", answers: "What does this mean for MY solar system?", href: null, detail: "Answers about your own data: this page." },
 ];
 
 const RULES = [

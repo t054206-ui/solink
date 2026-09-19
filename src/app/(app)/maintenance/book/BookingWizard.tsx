@@ -47,7 +47,7 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
 
   async function submit() {
     setSaving(true); setError(null);
-    const detected_issue = `${draft.description.trim()}${files.length ? `\n(${files.length} image${files.length > 1 ? "s" : ""} attached at booking — previews only; image storage requires Supabase.)` : ""}`;
+    const detected_issue = `${draft.description.trim()}${files.length ? `\n(${files.length} image${files.length > 1 ? "s" : ""} attached at booking. Previews only; image storage requires Supabase.)` : ""}`;
     const input = { system_id: draft.system_id, provider_id: draft.provider_id, kind: draft.kind, urgency: draft.urgency, detected_issue, appointment_at: appointmentIso, notes: null };
     const res = await createMaintenanceCase(input);
     if (res.ok) { setDone({ caseRecord: res.caseRecord, appointment: res.appointment, local: false }); setSaving(false); return; }
@@ -130,7 +130,7 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
               <Field label="Describe the problem" help="What you noticed, since when, and anything a technician should know." error={draft.description && draft.description.trim().length < 3 ? "Please write a few words." : undefined}>
                 <Textarea value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} placeholder="e.g. Production has dropped since the last sandstorm; panels look dusty." />
               </Field>
-              <Field label="Photos (optional)" help={mode === "demo" ? "Previews only — image storage requires Supabase." : "Previews only at booking; the technician can attach before/after photos to the case."}>
+              <Field label="Photos (optional)" help={mode === "demo" ? "Previews only. Image storage requires Supabase." : "Previews only at booking; the technician can attach before/after photos to the case."}>
                 <label className="flex cursor-pointer items-center gap-2 rounded-[10px] border border-dashed border-border-strong bg-inset px-3 py-3 text-[13px] text-fg-secondary hover:bg-elevated">
                   <ImagePlus className="size-4" aria-hidden /> Add images
                   <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 6))} />

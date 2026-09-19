@@ -6,7 +6,7 @@ import { ProviderIdentity } from "../_components/ProviderBits";
 import { AppointmentsList } from "../_components/AppointmentsList";
 
 export const metadata: Metadata = {
-  title: "Provider — Appointments — Solink",
+  title: "Provider appointments",
   description: "Upcoming and past appointments booked with your company, each linked to its maintenance case.",
 };
 

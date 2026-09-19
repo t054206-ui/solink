@@ -15,7 +15,7 @@ import { MarketplaceGrid } from "./_components/MarketplaceGrid";
 import { CATEGORY_LABEL, isCategory } from "./_components/product-helpers";
 
 export const metadata: Metadata = {
-  title: "Marketplace — Solink",
+  title: "Marketplace",
   description: "Solar panels, inverters, batteries and services with source tracking and verification status on every field.",
 };
 
@@ -34,7 +34,7 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
       <PageHeader
         eyebrow="Choose"
         title="Marketplace"
-        description="Every product carries its data source, verification status and the date it was last updated. Missing fields are shown as missing — never estimated."
+        description="Every product carries its data source, verification status and the date it was last updated. Missing fields are shown as missing: never estimated."
         actions={<Button href="/compare" variant="outline">Compare panels</Button>}
       />
 

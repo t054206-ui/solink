@@ -21,7 +21,7 @@ export function CalculatedHelpers({ product }: { product: Product }) {
             format={(v) => v.toLocaleString("en-US", { maximumFractionDigits: m.digits })} footnote={m.data.notes?.[0]} />
         ))}
       </div>
-      <p className="text-[12px] text-fg-muted">Calculated by Solink from the manufacturer figures above. Module area only — real layouts need spacing and access paths. {product.is_demo && "Inputs are demo values, so these results are illustrative only."}</p>
+      <p className="text-[12px] text-fg-muted">Calculated by Solink from the manufacturer figures above. Module area only. Real layouts need spacing and access paths. {product.is_demo && "Inputs are demo values, so these results are illustrative only."}</p>
     </div>
   );
 }

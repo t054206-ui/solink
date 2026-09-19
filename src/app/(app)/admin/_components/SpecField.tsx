@@ -51,7 +51,7 @@ export function SpecField({ label, value, onChange, unit, kind = "number", requi
             ) : <span aria-hidden className="hidden sm:block" />}
           </>
         ) : (
-          <div className="col-span-2 flex items-center text-[12.5px] text-fg-muted sm:col-span-2">Recorded as “{MODE_LABEL[mode]}” — no value is stored.</div>
+          <div className="col-span-2 flex items-center text-[12.5px] text-fg-muted sm:col-span-2">Recorded as “{MODE_LABEL[mode]}”. No value is stored.</div>
         )}
       </div>
       <p id={`${id}-h`} className="mt-1 text-[11.5px] text-fg-muted">

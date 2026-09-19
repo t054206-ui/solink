@@ -77,7 +77,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
             <KindBadge kind={c.kind} /><MaintStatusPill status={c.status} /><UrgencyBadge urgency={c.urgency} />
             <span className="ml-auto font-mono text-[11.5px] text-fg-muted">{c.id}</span>
           </div>
-          <h2 className="mt-3 text-lg font-semibold text-fg">{MAINT_KIND[c.kind].label}{system ? ` — ${system.name}` : ""}</h2>
+          <h2 className="mt-3 text-lg font-semibold text-fg">{MAINT_KIND[c.kind].label}{system ? `. ${system.name}` : ""}</h2>
           <p className="mt-1 text-[13px] text-fg-muted">Opened {formatDate(c.created_at)} · last updated {formatDate(c.updated_at)}</p>
           <WorkflowStrip current={stageIndexForCase(c)} className="mt-5" />
         </CardBody>
@@ -102,7 +102,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
                 <ul className="space-y-1 text-[13.5px]">
                   {relatedIncidents.map((i) => (
                     <li key={i.id} className="text-fg-secondary">
-                      {formatDate(i.occurred_at)} — {i.reported_problem}
+                      {formatDate(i.occurred_at)}: {i.reported_problem}
                       {i.panel_index !== null && i.panel_index !== undefined && <> · panel {i.panel_index}</>}
                     </li>
                   ))}

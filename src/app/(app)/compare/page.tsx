@@ -7,7 +7,7 @@ import { getPlatformSettings, settingsToAssumptions } from "@/lib/data/settings"
 import { CompareTable } from "./_components/CompareTable";
 
 export const metadata: Metadata = {
-  title: "Compare panels — Solink",
+  title: "Compare panels",
   description: "Side-by-side solar panel comparison with every value labeled by its data class.",
 };
 

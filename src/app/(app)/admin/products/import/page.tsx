@@ -13,7 +13,7 @@ import { Table, Th, Td, ModeNotice } from "../../_components/AdminBits";
 export const metadata: Metadata = { title: "Admin · Product Imports" };
 
 function PendingDecision({ method }: { method: string }) {
-  return <UnavailableState title={`${method} import — pending decision`}>The import method has not been decided ([PLACEHOLDER: SOLAR PANEL DATA IMPORT METHOD]). This tab is reserved so the workflow can be added without changing the product schema; the CSV path already exercises product_imports and product_import_rows.</UnavailableState>;
+  return <UnavailableState title={`${method} import: pending decision`}>The import method has not been decided ([PLACEHOLDER: SOLAR PANEL DATA IMPORT METHOD]). This tab is reserved so the workflow can be added without changing the product schema; the CSV path already exercises product_imports and product_import_rows.</UnavailableState>;
 }
 
 export default async function ImportPage() {

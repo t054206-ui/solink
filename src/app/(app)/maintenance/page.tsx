@@ -12,7 +12,7 @@ import { MaintenanceList } from "./_components/MaintenanceList";
 import { MaintenanceCostsCard } from "./_components/MaintenanceCostsCard";
 import { PredictiveCard, type PredictiveSignals } from "./_components/PredictiveCard";
 
-export const metadata: Metadata = { title: "Maintenance — Solink", description: "Maintenance cases, bookings, costs and predictive signals for your solar system." };
+export const metadata: Metadata = { title: "Maintenance", description: "Maintenance cases, bookings, costs and predictive signals for your solar system." };
 
 export default async function MaintenancePage() {
   const [{ data: cases, mode }, { data: appointments }, { data: providers }, { data: systems }, { data: incidents }] = await Promise.all([

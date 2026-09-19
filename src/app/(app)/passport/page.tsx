@@ -10,7 +10,7 @@ import { DEMO_BANNER } from "@/lib/demo/data";
 import { formatDate } from "@/lib/utils";
 import { NoSystemState } from "../_operate/components/NoSystemState";
 
-export const metadata = { title: "Solar Passport · Solink" };
+export const metadata = { title: "Solar Passport" };
 
 export default async function PassportListPage() {
   const { data: systems, mode } = await listSystems();

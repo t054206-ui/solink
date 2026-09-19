@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { getMaintenanceCase, listAppointments, listIncidents, listProviders, listSystems } from "@/lib/data/repositories";
 import { CaseDetail } from "./CaseDetail";
 
-export const metadata: Metadata = { title: "Maintenance case — Solink", description: "Timeline, appointment, work performed and before/after record for a maintenance case." };
+export const metadata: Metadata = { title: "Maintenance case", description: "Timeline, appointment, work performed and before/after record for a maintenance case." };
 
 export default async function MaintenanceCasePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -17,7 +17,7 @@ export default async function AnalysisPage() {
       <PageHeader
         eyebrow="Plan · Step 2"
         title="Solar Potential"
-        description="What your roof could produce, save and avoid — built only from your profile, the selected panel's specifications and clearly labeled assumptions."
+        description="What your roof could produce, save and avoid: built only from your profile, the selected panel's specifications and clearly labeled assumptions."
       />
       <PotentialAnalysis profile={profile} mode={mode} settings={settings} panels={panels} />
     </div>

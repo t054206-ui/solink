@@ -25,7 +25,7 @@ import { loadWeatherForProfile } from "../_operate/loadWeather";
 import { deriveStatus, inheritCls, lastCleaning, lastDays, monthToDateKwh, monthlyTotals, productionCls, sevenVsThirty, todayKwh, trailingKwh } from "../_operate/production";
 import { JourneyProgress, type JourneyStep } from "./_components/JourneyProgress";
 
-export const metadata = { title: "Dashboard · Solink" };
+export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const [{ data: systems, mode }, { data: profile }, settings] = await Promise.all([listSystems(), getProfile(), getPlatformSettings()]);

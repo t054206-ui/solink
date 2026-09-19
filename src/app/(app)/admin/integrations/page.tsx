@@ -12,7 +12,7 @@ export default function IntegrationsPage() {
   const rows = integrationStatus();
   return (
     <>
-      <PageHeader eyebrow="Admin" title="API Integrations" description="Which external services are connected. This page only ever shows booleans — key values never leave the server." />
+      <PageHeader eyebrow="Admin" title="API Integrations" description="Which external services are connected. This page only ever shows booleans: key values never leave the server." />
       <div className="space-y-4">
         <Table caption="Integration status">
           <thead><tr><Th>Integration</Th><Th>Connected</Th><Th>Environment variables required</Th><Th>When not connected</Th></tr></thead>
@@ -21,7 +21,7 @@ export default function IntegrationsPage() {
               <tr key={r.key}>
                 <Td className="font-medium text-fg">{r.label}</Td>
                 <Td>{r.connected ? <span className="inline-flex items-center gap-1 text-good-fg"><CheckCircle2 className="size-4" aria-hidden /> Yes</span> : <span className="inline-flex items-center gap-1 text-fg-muted"><XCircle className="size-4" aria-hidden /> No</span>}</Td>
-                <Td>{r.envVars.length ? <ul className="space-y-0.5">{r.envVars.map((v) => <li key={v}><code className="font-mono text-[11.5px]">{v}</code></li>)}</ul> : <span className="text-fg-muted">No env var — needs a product/integration decision</span>}</Td>
+                <Td>{r.envVars.length ? <ul className="space-y-0.5">{r.envVars.map((v) => <li key={v}><code className="font-mono text-[11.5px]">{v}</code></li>)}</ul> : <span className="text-fg-muted">No env var. Needs a product/integration decision</span>}</Td>
                 <Td><Placeholder k={r.placeholder as PlaceholderKey} /></Td>
               </tr>
             ))}

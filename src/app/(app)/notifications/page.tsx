@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
 
 export const metadata = {
-  title: "Notifications · Solink",
+  title: "Notifications",
   description: "Alerts, reminders and updates about your solar system.",
 };
 

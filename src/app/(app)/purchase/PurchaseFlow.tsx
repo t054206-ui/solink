@@ -109,7 +109,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
     const when = scheduledAtIso();
     if (!when || !s.installer_id || !choice) { setError("Choose a date and an installer first."); return; }
     setBusy(true); setError(null);
-    const systemName = selectedDesign ? `${selectedDesign.name} — system` : `${panel?.name ?? "Solar"} × ${choice.panel_count}`;
+    const systemName = selectedDesign ? `${selectedDesign.name}. System` : `${panel?.name ?? "Solar"} × ${choice.panel_count}`;
     const sys = { name: systemName, design_id: choice.design_id, capacity_kwp: capacity.value, panel_count: choice.panel_count, panel_product_id: choice.panel_id, inverter_product_id: choice.inverter_id, battery_product_id: choice.battery_id };
     try {
       if (mode === "supabase") {
@@ -169,9 +169,9 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
             </ul>
             <div className="grid gap-3 sm:grid-cols-2">
               <Metric label="System capacity" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
-              <Metric label="Total" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span className="flex flex-wrap items-center gap-1">Total unavailable — <Placeholder k="INSTALLATION_PRICE" /> / prices not provided</span> : undefined} />
+              <Metric label="Total" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span className="flex flex-wrap items-center gap-1">Total unavailable: <Placeholder k="INSTALLATION_PRICE" /> / prices not provided</span> : undefined} />
             </div>
-            {selectedDesign && <p className="text-[12.5px] text-fg-muted flex items-center gap-1.5"><PencilRuler className="size-3.5" /> From design “{selectedDesign.name}” — {selectedDesign.roof.length_m}×{selectedDesign.roof.width_m} m roof, {selectedDesign.summary.used_area_m2} m² of panels{selectedDesign.is_ai_suggested && <DataBadge cls="ai" compact />}</p>}
+            {selectedDesign && <p className="text-[12.5px] text-fg-muted flex items-center gap-1.5"><PencilRuler className="size-3.5" /> From design “{selectedDesign.name}”: {selectedDesign.roof.length_m}×{selectedDesign.roof.width_m} m roof, {selectedDesign.summary.used_area_m2} m² of panels{selectedDesign.is_ai_suggested && <DataBadge cls="ai" compact />}</p>}
           </CardBody>
         </Card>
       )}
@@ -179,7 +179,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
       {s.step === 2 && (
         <div className="grid gap-4 md:grid-cols-2">
           <Card className={cn(s.request_kind === "quote" && "ring-2 ring-[var(--brand)]")}>
-            <CardHeader title={<><FileText className="size-4" aria-hidden /> Request a quote</>} subtitle="Send your itemised system to installers. They reply with real prices — nothing is charged." />
+            <CardHeader title={<><FileText className="size-4" aria-hidden /> Request a quote</>} subtitle="Send your itemised system to installers. They reply with real prices. Nothing is charged." />
             <CardBody className="space-y-3">
               <ul className="list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">
                 <li>Creates an order with status <Badge>requested</Badge>.</li>
@@ -280,7 +280,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
               </ol>
             </div>
             <div className="rounded-md bg-inset p-3 text-[12.5px] text-fg-secondary">
-              Notifications are <strong>in-app only</strong> for now — no email or SMS is sent. <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" />
+              Notifications are <strong>in-app only</strong> for now. No email or SMS is sent. <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" />
             </div>
             <div className="flex flex-wrap gap-2">
               <Button href="/passport" variant="outline">Go to Passport <ArrowRight className="size-4" /></Button>
@@ -346,7 +346,7 @@ function ChooseSystem({ designs, choice, panels, inverters, batteries, packages,
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Panel"><Select value={base.source === "quick" ? base.panel_id : ""} onChange={(e) => set({ source: "quick", design_id: null, panel_id: e.target.value })}>
               {base.source !== "quick" && <option value="">Choose a panel…</option>}
-              {panels.map((p) => <option key={p.id} value={p.id}>{p.name}{p.rated_power_w !== null ? ` — ${p.rated_power_w} W` : " — power unavailable"}</option>)}
+              {panels.map((p) => <option key={p.id} value={p.id}>{p.name}{p.rated_power_w !== null ? `: ${p.rated_power_w} W` : ": power unavailable"}</option>)}
             </Select></Field>
             <Field label="Number of panels"><Input type="number" min={1} max={500} value={base.panel_count} onChange={(e) => set({ source: "quick", design_id: null, panel_count: Math.max(1, Math.min(500, Number(e.target.value) || 1)) })} /></Field>
           </div>

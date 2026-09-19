@@ -50,7 +50,7 @@ export function IncidentForm({ mode, systems, initialSystemId, initialPanel }: {
     if (res.reason !== "demo") { setError(res.message); setSaving(false); return; }
     const incident: Incident = {
       id: newLocalId("inc"), system_id: systemId, panel_index: panelNum, occurred_at: occurredIso,
-      reported_problem: `${problem.trim()}${files.length ? `\n(${files.length} image${files.length > 1 ? "s" : ""} attached — previews only; storage requires Supabase.)` : ""}`,
+      reported_problem: `${problem.trim()}${files.length ? `\n(${files.length} image${files.length > 1 ? "s" : ""} attached. Previews only; storage requires Supabase.)` : ""}`,
       ai_analysis: null, images: [], action_taken: null, technician_name: null, cost: { value: null, status: "unavailable" }, result: null, status: "open", maintenance_case_id: null, is_demo: false,
     };
     setLocal((prev) => upsertRecord(prev, incident));

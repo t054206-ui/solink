@@ -13,7 +13,7 @@ import { PerformanceView } from "./_components/PerformanceView";
 import { buildYearRows, perYearFromRecords, recordedTotal, REPAIR_KINDS, sumRecordedCosts, UPKEEP_KINDS } from "./_components/rows";
 
 export const metadata: Metadata = {
-  title: "Long-term performance — Solink",
+  title: "Long-term performance",
   description: "Year-by-year production, degradation comparison and total cost of ownership for your solar system.",
 };
 

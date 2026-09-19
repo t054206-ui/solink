@@ -7,7 +7,7 @@ import { getPlatformSettings, settingsToAssumptions } from "@/lib/data/settings"
 import { monthsCovered } from "../_ops/production";
 import { ReportsIndex } from "./_components/ReportsIndex";
 
-export const metadata: Metadata = { title: "Monthly reports — Solink", description: "Monthly energy, financial, maintenance and environmental reports for your solar system." };
+export const metadata: Metadata = { title: "Monthly reports", description: "Monthly energy, financial, maintenance and environmental reports for your solar system." };
 
 export default async function ReportsPage() {
   const [{ data: reports, mode }, { data: systems }, { data: cases }, { data: incidents }, settings] = await Promise.all([

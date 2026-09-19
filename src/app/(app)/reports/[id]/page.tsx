@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { data: reports } = await listReports();
   const report = reports.find((r) => r.id === id) ?? null;
   return {
-    title: report ? `${monthLabel(report.month)} report — Solink` : "Monthly report — Solink",
+    title: report ? `${monthLabel(report.month)} report: Solink` : "Monthly report: Solink",
     description: "Energy, financial, maintenance and environmental detail for one month, with every missing input named.",
   };
 }

@@ -45,7 +45,7 @@ export function YearlyTable({ rows, cls }: { rows: YearRow[]; cls: DataClass }) 
                     <DataBadge cls={cls === "demo" ? "demo" : "calculated"} compact />
                   </span>
                 ) : (
-                  <span className="text-fg-muted">{r.changePct === null ? "No earlier year" : "Not compared — partial year"}</span>
+                  <span className="text-fg-muted">{r.changePct === null ? "No earlier year" : "Not compared: partial year"}</span>
                 )}
               </td>
               <td className="py-2.5 pr-3">

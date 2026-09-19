@@ -34,7 +34,7 @@ export function WeatherCard({ lat, lng }: { lat: number | null | undefined; lng:
 
   return (
     <Card>
-      <CardHeader title={<><CloudSun className="size-4 text-fg-muted" aria-hidden /> Weather at your site</>} subtitle="Current conditions from WeatherAPI.com. Context only — it does not change the estimates above." />
+      <CardHeader title={<><CloudSun className="size-4 text-fg-muted" aria-hidden /> Weather at your site</>} subtitle="Current conditions from WeatherAPI.com. Context only. It does not change the estimates above." />
       <CardBody>
         {state.status === "no_coords" && <EmptyState title="No coordinates">Add your address or coordinates in the Solar Profile to see local conditions.</EmptyState>}
         {state.status === "loading" && <div className="grid grid-cols-3 gap-3"><Skeleton className="h-16" /><Skeleton className="h-16" /><Skeleton className="h-16" /></div>}

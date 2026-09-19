@@ -8,7 +8,7 @@ import { NoSystemState } from "../../_operate/components/NoSystemState";
 import { loadOperateContext } from "../../_operate/loadSystem";
 import { PanelGrid } from "../_components/PanelGrid";
 
-export const metadata = { title: "Panel-by-panel · Solink" };
+export const metadata = { title: "Panel-by-panel" };
 
 /** What panel-level hardware would unlock, listed honestly as not-yet-available. */
 const WOULD_SHOW = [
@@ -52,7 +52,7 @@ export default async function PanelsPage() {
       </Card>
 
       <Card>
-        <CardHeader title="What appears once panel-level data is connected" subtitle="Nothing below is estimated or simulated — it simply needs a data source." />
+        <CardHeader title="What appears once panel-level data is connected" subtitle="Nothing below is estimated or simulated. It simply needs a data source." />
         <CardBody>
           <ul className="grid gap-3 sm:grid-cols-2">
             {WOULD_SHOW.map((f) => (

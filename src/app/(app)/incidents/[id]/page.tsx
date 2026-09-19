@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { listIncidents, listMaintenance, listSystems } from "@/lib/data/repositories";
 import { IncidentDetail } from "./IncidentDetail";
 
-export const metadata: Metadata = { title: "Incident — Solink", description: "Full record of a reported incident." };
+export const metadata: Metadata = { title: "Incident", description: "Full record of a reported incident." };
 
 export default async function IncidentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

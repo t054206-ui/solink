@@ -36,7 +36,7 @@ export default async function ProviderLayout({ children }: { children: ReactNode
     <div className="space-y-4">
       {access.mode === "demo" && (
         <DemoBanner
-          text="DEMO MODE — MAINTENANCE PROVIDER"
+          text="DEMO MODE: MAINTENANCE PROVIDER"
           detail={`Supabase is not connected. You are acting as ${access.providerName ?? "the demo maintenance company"}; cases are labeled demo records and anything you record is stored in this browser only.`}
         />
       )}

@@ -72,7 +72,7 @@ export function CsvImport({ mode }: { mode: DataMode }) {
         additions[id] = product; inserted++;
       }
       setStore((prev) => ({ ...prev, ...additions }));
-      setResult({ ok: true, text: `${inserted} row(s) stored in this browser only as Unverified (demo mode — no database). ${counts.duplicate} duplicate(s) and ${counts.rejected} rejected row(s) were skipped. Flags are kept on the records for review.` });
+      setResult({ ok: true, text: `${inserted} row(s) stored in this browser only as Unverified (demo mode, no database). ${counts.duplicate} duplicate(s) and ${counts.rejected} rejected row(s) were skipped. Flags are kept on the records for review.` });
       return;
     }
     start(async () => {
@@ -92,7 +92,7 @@ export function CsvImport({ mode }: { mode: DataMode }) {
         <Button type="button" variant="ghost" onClick={downloadTemplate}><Download className="size-4" aria-hidden /> Download header-only template</Button>
         {fileName && <Button type="button" variant="ghost" onClick={reset}><RotateCcw className="size-4" aria-hidden /> Start over</Button>}
       </div>
-      <p className="text-[12.5px] text-fg-muted">The file is parsed in your browser; nothing is uploaded until you press Apply. The template contains column headers only — no sample values, because Solink never invents product data.</p>
+      <p className="text-[12.5px] text-fg-muted">The file is parsed in your browser; nothing is uploaded until you press Apply. The template contains column headers only: no sample values, because Solink never invents product data.</p>
       {parseError && <p role="alert" className="text-[13px] text-critical-fg">{parseError}</p>}
 
       {headers.length > 0 && (

@@ -39,13 +39,13 @@ export default async function AdminDashboard() {
           <StatCard label="Solar systems" value={systems.data.length} hint={`${systems.data.filter((s) => s.is_demo).length} demo`} href="/admin/systems" />
           <StatCard label="Open maintenance cases" value={openCases} hint={`${cases.data.length} total`} href="/admin/maintenance" />
           <StatCard label="Open incidents" value={openIncidents} hint={`${incidents.data.length} total`} href="/admin/incidents" />
-          <StatCard label="Integrations connected" value={`${connected} / ${integrations.length}`} hint="Booleans only — keys are never shown" href="/admin/integrations" />
+          <StatCard label="Integrations connected" value={`${connected} / ${integrations.length}`} hint="Booleans only. Keys are never shown" href="/admin/integrations" />
           <StatCard label="Data mode" value={mode === "demo" ? "Demo" : "Supabase"} hint={mode === "demo" ? "No database connected" : "RLS applies"} href="/admin/integrations" />
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Card>
-            <CardHeader title="Integration status" subtitle="From integrationStatus() — connected or not, never the values." action={<Link href="/admin/integrations" className="text-[13px] font-medium underline underline-offset-2">Details</Link>} />
+            <CardHeader title="Integration status" subtitle="From integrationStatus(): connected or not, never the values." action={<Link href="/admin/integrations" className="text-[13px] font-medium underline underline-offset-2">Details</Link>} />
             <CardBody>
               <ul className="divide-y divide-border">
                 {integrations.map((i) => (

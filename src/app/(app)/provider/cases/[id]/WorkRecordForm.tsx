@@ -128,7 +128,7 @@ export function WorkRecordForm({ c, mode, appointment, setLocalCases, nowIso }: 
       setLocalAppts((prev) => upsertRecord(prev, appt));
     }
     setBusy(false);
-    setMessage(`Saved on this device${before || after ? ". Photos stayed as previews — image storage requires Supabase" : ""}. The homeowner's maintenance page reads the same record.`);
+    setMessage(`Saved on this device${before || after ? ". Photos stayed as previews. Image storage requires Supabase" : ""}. The homeowner's maintenance page reads the same record.`);
   }
 
   return (
@@ -152,7 +152,7 @@ export function WorkRecordForm({ c, mode, appointment, setLocalCases, nowIso }: 
               <Input value={technician} onChange={(e) => setTechnician(e.target.value)} placeholder="e.g. A. Technician" maxLength={120} />
             </Field>
           </div>
-          {whenInPast && <p className="text-[12.5px] text-fg-muted">That time is in the past — it will be recorded as a visit that has already happened.</p>}
+          {whenInPast && <p className="text-[12.5px] text-fg-muted">That time is in the past. It will be recorded as a visit that has already happened.</p>}
 
           <Field label="Work performed" help="What was actually done. This is what the homeowner reads.">
             <Textarea value={work} onChange={(e) => setWork(e.target.value)} placeholder="e.g. Cleaned all panels, checked string voltages, re-torqued the DC connectors." maxLength={4000} />
@@ -181,7 +181,7 @@ export function WorkRecordForm({ c, mode, appointment, setLocalCases, nowIso }: 
                 </Field>
               ) : (
                 <p className="flex flex-wrap items-center gap-2 text-[13px] text-fg-secondary">
-                  Recorded as unavailable — the homeowner sees <Placeholder k="MAINTENANCE_PRICE" /> rather than a number.
+                  Recorded as unavailable: the homeowner sees <Placeholder k="MAINTENANCE_PRICE" /> rather than a number.
                 </p>
               )}
             </div>
@@ -192,7 +192,7 @@ export function WorkRecordForm({ c, mode, appointment, setLocalCases, nowIso }: 
             <p className="mb-3 text-[12.5px] text-fg-muted">
               {mode === "demo"
                 ? "Demo mode shows a preview only; uploading needs Supabase, so nothing is stored and no path is written to the case."
-                : "Uploaded to maintenance-images/<your user id>/ — only you and the homeowner's case can reference them."}
+                : "Uploaded to maintenance-images/<your user id>/. Only you and the homeowner's case can reference them."}
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               <ImagePicker id="before-image" label="Before photo" pick={before} onPick={(f) => pickImage("before", f)} />
@@ -203,14 +203,14 @@ export function WorkRecordForm({ c, mode, appointment, setLocalCases, nowIso }: 
           <Field
             label="Case status"
             error={statusBlocked ?? undefined}
-            help="A case moves forward through the workflow. It can skip ahead, but it cannot go back — except to Reviewing, when it needs re-assessment."
+            help="A case moves forward through the workflow. It can skip ahead, but it cannot go back. Except to Reviewing, when it needs re-assessment."
           >
             <Select value={status} onChange={(e) => setStatus(e.target.value as MaintenanceStatus)} aria-describedby="status-rule">
               {MAINT_STATUS_ORDER.map((s) => {
                 const allowed = canMoveTo(c.status, s);
                 return (
                   <option key={s} value={s} disabled={!allowed}>
-                    {MAINT_STATUS[s].label}{s === c.status ? " (current)" : allowed ? "" : " — backward step not allowed"}
+                    {MAINT_STATUS[s].label}{s === c.status ? " (current)" : allowed ? "" : ": backward step not allowed"}
                   </option>
                 );
               })}

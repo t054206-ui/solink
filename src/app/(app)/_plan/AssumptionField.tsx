@@ -50,7 +50,7 @@ export function AssumptionField({ label, term, placeholderKey, unit, platform, v
         )}
       </div>
       <div id={`${id}-help`} className="mt-1.5 text-[11.5px] text-fg-muted">
-        {resolved.cls === "unavailable" && <>Not set by the platform: <Placeholder k={placeholderKey} /> — any value you enter is labeled user-provided.</>}
+        {resolved.cls === "unavailable" && <>Not set by the platform: <Placeholder k={placeholderKey} />. Any value you enter is labeled user-provided.</>}
         {resolved.cls === "source" && <>From platform setting: {resolved.source}. Edit to override with your own value.</>}
         {resolved.cls === "user" && (platform ? <>Your override replaces the platform value {platform.value}{unit ? ` ${unit}` : ""}.</> : <>Your value. Solink has not verified it.</>)}
       </div>

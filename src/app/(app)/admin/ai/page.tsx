@@ -33,7 +33,7 @@ export default function AiConfigPage() {
         </div>
 
         <Card>
-          <CardHeader title="Reliability rules (system prompt)" subtitle="SOLINK_AI_RULES from src/lib/ai/claude.ts — cached and sent with every request." />
+          <CardHeader title="Reliability rules (system prompt)" subtitle="SOLINK_AI_RULES from src/lib/ai/claude.ts: cached and sent with every request." />
           <CardBody><pre className="whitespace-pre-wrap rounded-[10px] border border-border bg-inset p-3 font-mono text-[12px] leading-relaxed text-fg-secondary">{SOLINK_AI_RULES}</pre></CardBody>
         </Card>
 

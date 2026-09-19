@@ -13,13 +13,13 @@ export function Metric({ label, term, data, format, unit, className, size = "md"
 }) {
   const has = data.value !== null && data.value !== undefined;
   return (
-    <div className={cn("rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm flex flex-col gap-2 min-w-0", className)}>
+    <div className={cn("rounded-[var(--radius-lg)] border border-[var(--brass)] bg-elevated p-4 shadow-sm flex flex-col gap-2 min-w-0", className)}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 text-[12.5px] font-medium text-fg-secondary truncate">{label}{term && <InfoTip term={term} />}</div>
         <DataBadge cls={data.cls} compact />
       </div>
       {has ? (
-        <div className={cn("tabular font-semibold leading-none text-fg", size === "lg" ? "text-3xl" : "text-2xl")}>
+        <div className={cn("tabular font-semibold leading-none tracking-[-0.02em] text-fg", size === "lg" ? "text-[34px]" : "text-[26px]")}>
           {format ? format(data.value as number) : (data.value as number).toLocaleString("en-US", { maximumFractionDigits: 1 })}
           {unit && <span className="ml-1 text-sm font-medium text-fg-muted">{unit}</span>}
         </div>

@@ -7,7 +7,7 @@ import { ProviderIdentity } from "../_components/ProviderBits";
 import { ServicesEditor } from "../_components/ServicesEditor";
 
 export const metadata: Metadata = {
-  title: "Provider — Services & prices — Solink",
+  title: "Provider services and prices",
   description: "The six maintenance services your company can offer, with your price and the days and hours you are available.",
 };
 
@@ -20,7 +20,7 @@ export default async function ProviderServicesPage() {
       <PageHeader
         eyebrow="Maintenance provider"
         title="Services & prices"
-        description="What you offer, what it costs and when you are available. Until you enter a real price, Solink shows the placeholder to homeowners — it never estimates a maintenance cost on your behalf."
+        description="What you offer, what it costs and when you are available. Until you enter a real price, Solink shows the placeholder to homeowners: it never estimates a maintenance cost on your behalf."
       />
       <ProviderIdentity name={access.providerName} mode={access.mode} isDemoProvider={access.isDemoProvider} className="mb-4" />
       <ServicesEditor mode={access.mode} serverServices={serverServices} />

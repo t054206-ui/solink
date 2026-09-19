@@ -68,7 +68,7 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
   };
   const clear = () => {
     if (mode === "demo") { setMsg({ ok: false, text: "Demo mode: nothing to clear on a server." }); return; }
-    start(async () => { const r = await clearSettingAction({ key: def.key }); setMsg({ ok: r.ok, text: r.ok ? "Cleared — the placeholder is shown again." : r.error }); if (r.ok) router.refresh(); });
+    start(async () => { const r = await clearSettingAction({ key: def.key }); setMsg({ ok: r.ok, text: r.ok ? "Cleared. The placeholder is shown again." : r.error }); if (r.ok) router.refresh(); });
   };
 
   return (
@@ -98,7 +98,7 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
         <div>
           <Label>Source <span className="text-critical-fg" aria-hidden>*</span></Label>
           <Input value={source} onChange={(e) => setSource(e.target.value)} placeholder="Document, URL or organisation and date" required aria-required />
-          <p className="mt-1 text-[11.5px] text-fg-muted">Required — a value cannot be saved without saying where it came from.</p>
+          <p className="mt-1 text-[11.5px] text-fg-muted">Required: a value cannot be saved without saying where it came from.</p>
         </div>
       </div>
       {msg && <p role="status" className={`mt-2 text-[12.5px] ${msg.ok ? "text-good-fg" : "text-critical-fg"}`}>{msg.text}</p>}

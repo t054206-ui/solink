@@ -135,7 +135,7 @@ export function CaseQueue({ mode, providerId, serverCases, serverAppointments, p
               <Badge tone="good" icon={<HeartPulse className="size-3" aria-hidden />}>No open case</Badge>
               <span className="tabular text-[12.5px] text-fg-muted">{healthySystems.length}</span>
             </div>
-            <p className="mb-3 text-[12.5px] text-fg-muted">Systems with no case in New, Reviewing, Scheduled or In progress. Nothing is being claimed about their condition — only that no case is open.</p>
+            <p className="mb-3 text-[12.5px] text-fg-muted">Systems with no case in New, Reviewing, Scheduled or In progress. Nothing is being claimed about their condition. Only that no case is open.</p>
             {healthySystems.length === 0 ? (
               <p className="rounded-[10px] border border-dashed border-border-strong bg-inset px-3 py-3 text-[13px] text-fg-muted">Every system you can see has an open case.</p>
             ) : (
@@ -203,7 +203,7 @@ function CaseCard({ c, mode, providerId, system, providerName, appointment, hist
           {c.ai_analysis && (
             <p className="mt-1.5 flex items-center gap-1.5 text-[12px] text-fg-muted">
               <DataBadge cls={c.ai_analysis_cls ?? "ai"} compact />
-              <span className="truncate">AI analysis attached — check it against what you find.</span>
+              <span className="truncate">AI analysis attached: check it against what you find.</span>
             </p>
           )}
 

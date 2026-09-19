@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode, LabelHTMLAttributes } from "react";
 
-const field = "w-full rounded-[10px] border border-border-strong bg-elevated px-3 text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
+const field = "w-full rounded-[var(--radius)] border border-[var(--brass)] bg-elevated px-3 text-sm text-fg placeholder:text-fg-muted focus:border-brand focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
 
 export function Label({ className, children, hint, ...rest }: LabelHTMLAttributes<HTMLLabelElement> & { hint?: ReactNode }) {
   return (

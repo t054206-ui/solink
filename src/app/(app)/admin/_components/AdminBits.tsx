@@ -12,7 +12,7 @@ import { VERIFICATION_LABEL, flagTone } from "./admin-helpers";
 export function AdminRoleNotice({ className }: { className?: string }) {
   return (
     <p className={cn("text-[12px] text-fg-muted", className)}>
-      Admin access is gated by <code className="font-mono">user_profiles.role = &apos;admin&apos;</code> only — the permission model is not final: <Placeholder k="ADMIN_AUTHENTICATION_PERMISSIONS" />
+      Admin access is gated by <code className="font-mono">user_profiles.role = &apos;admin&apos;</code> only. The permission model is not final: <Placeholder k="ADMIN_AUTHENTICATION_PERMISSIONS" />
     </p>
   );
 }

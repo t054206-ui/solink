@@ -13,7 +13,7 @@ import { loadWeatherForProfile } from "../../_operate/loadWeather";
 import { lastDays, productionCls } from "../../_operate/production";
 import { WEATHER_SOURCE, fmtNum } from "../../_operate/weather";
 
-export const metadata = { title: "Weather · Monitoring · Solink" };
+export const metadata = { title: "Weather · Monitoring" };
 
 export default async function WeatherPage() {
   const ctx = await loadOperateContext();
@@ -25,7 +25,7 @@ export default async function WeatherPage() {
     <div className="space-y-6">
       <section className="grid gap-4 lg:grid-cols-5" aria-label="Current weather">
         <Card className="lg:col-span-2">
-          <CardHeader title="Current conditions" subtitle={`Source: ${WEATHER_SOURCE} — the only weather provider Solink uses.`} />
+          <CardHeader title="Current conditions" subtitle={`Source: ${WEATHER_SOURCE}. The only weather provider Solink uses.`} />
           <CardBody><CurrentConditions state={weather} /></CardBody>
         </Card>
         <Card className="lg:col-span-3">

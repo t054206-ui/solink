@@ -89,7 +89,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
     const price = panel.is_demo ? null : specNum(panel.price);
     const install = specNum(panel.installation_cost);
     const missing: string[] = [];
-    if (price === null) missing.push(panel.is_demo ? "panel price (demo product — no real price)" : "panel price");
+    if (price === null) missing.push(panel.is_demo ? "panel price (demo product: no real price)" : "panel price");
     if (install === null) missing.push(`installation (${PLACEHOLDERS.INSTALLATION_PRICE})`);
     if (proposedCount.value === null) missing.push("panel count");
     if (missing.length) return unavailable(`Missing: ${missing.join(", ")}. Enter your own costs in the Savings Calculator.`);
@@ -116,7 +116,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
         <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-start justify-between gap-3 px-5 pt-5 pb-3 text-left">
           <div>
             <h3 className="flex items-center gap-1.5 text-[15px] font-semibold text-fg"><SlidersHorizontal className="size-4 text-fg-muted" aria-hidden /> Assumptions</h3>
-            <p className="mt-1 text-[13px] text-fg-muted">{missingAssumptions === 0 ? "All four assumptions are set." : `${missingAssumptions} of 4 assumptions are not set by the platform — supply your own to unlock estimates.`}</p>
+            <p className="mt-1 text-[13px] text-fg-muted">{missingAssumptions === 0 ? "All four assumptions are set." : `${missingAssumptions} of 4 assumptions are not set by the platform: supply your own to unlock estimates.`}</p>
           </div>
           <ChevronDown className={cn("mt-1 size-4 shrink-0 text-fg-muted transition-transform", open && "rotate-180")} aria-hidden />
         </button>
@@ -142,7 +142,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
               <span>Tilt <InfoTip term="tilt" />: <strong className="text-fg">{typeof profile?.roof_tilt_deg === "number" ? `${profile.roof_tilt_deg}°` : "—"}</strong></span>
               <span>Shading <InfoTip term="shading" />: <strong className="text-fg">{profile?.shading_notes ? "noted" : "—"}</strong></span>
             </div>
-            <p className="text-[11.5px] text-fg-muted">Orientation, tilt and shading are recorded but not yet modelled — the estimates below treat every roof the same until a site data source is connected.</p>
+            <p className="text-[11.5px] text-fg-muted">Orientation, tilt and shading are recorded but not yet modelled. The estimates below treat every roof the same until a site data source is connected.</p>
           </CardBody>
         </Card>
 
@@ -155,7 +155,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
               <>
                 <Field label="Solar panel">
                   <Select id="panel" value={panel?.id ?? ""} onChange={(e) => setPanelId(e.target.value || null)}>
-                    {panels.map((p) => <option key={p.id} value={p.id}>{p.manufacturer_name} — {p.model}{p.is_demo ? " (DEMO)" : ""}</option>)}
+                    {panels.map((p) => <option key={p.id} value={p.id}>{p.manufacturer_name}. {p.model}{p.is_demo ? " (DEMO)" : ""}</option>)}
                   </Select>
                 </Field>
                 {panel && (
@@ -169,7 +169,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
                       <div><dt className="text-[11.5px] text-fg-muted">Size</dt><dd className="tabular text-fg">{lenMm !== null && widMm !== null ? `${lenMm} × ${widMm} mm` : "Unavailable"}</dd></div>
                       <div><dt className="text-[11.5px] text-fg-muted">Efficiency <InfoTip term="efficiency" /></dt><dd className="tabular text-fg">{specText(panel.specs.module_efficiency_pct)}</dd></div>
                     </dl>
-                    {panel.is_demo && <p className="mt-2 text-[11.5px] text-critical-fg">Demo product — specifications are illustrative and the price is not real.</p>}
+                    {panel.is_demo && <p className="mt-2 text-[11.5px] text-critical-fg">Demo product. Specifications are illustrative and the price is not real.</p>}
                   </div>
                 )}
               </>

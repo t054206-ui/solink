@@ -3,7 +3,7 @@ import { listProducts, getProfile } from "@/lib/data/repositories";
 import { specNum } from "@/lib/utils";
 import { DesignerCanvas, type PanelOption } from "./DesignerCanvas";
 
-export const metadata = { title: "Solar Designer — Solink" };
+export const metadata = { title: "Solar Designer" };
 
 /**
  * Feature 8 + 9: Build-It-Yourself Solar Designer with AI Smart Placement.

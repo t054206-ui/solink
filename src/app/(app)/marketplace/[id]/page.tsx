@@ -23,7 +23,7 @@ import { SpecTable } from "./_components/SpecTable";
 export async function generateMetadata({ params }: PageProps<"/marketplace/[id]">): Promise<Metadata> {
   const { id } = await params;
   const { data } = await getProduct(id);
-  return { title: data ? `${data.name} — Solink Marketplace` : "Product not found — Solink" };
+  return { title: data ? `${data.name}: Solink Marketplace` : "Product not found: Solink" };
 }
 
 export default async function ProductDetailPage({ params }: PageProps<"/marketplace/[id]">) {
@@ -78,7 +78,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
 
           {isPanel && (
             <Card>
-              <CardHeader title={<><Calculator className="size-4 text-[var(--brand-strong)]" aria-hidden /> Derived figures</>} subtitle="Deterministic calculations from the specs above — no assumptions involved." action={<DataBadge cls="calculated" compact />} />
+              <CardHeader title={<><Calculator className="size-4 text-[var(--brand-strong)]" aria-hidden /> Derived figures</>} subtitle="Deterministic calculations from the specs above: no assumptions involved." action={<DataBadge cls="calculated" compact />} />
               <CardBody><CalculatedHelpers product={p} /></CardBody>
             </Card>
           )}

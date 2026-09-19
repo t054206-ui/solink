@@ -195,7 +195,7 @@ export function cleaningEffectiveness(m: MaintenanceCase | null): Classified {
   if (b == null || a == null) return unavailable("Before/after production values were not recorded for the last cleaning.");
   const c = productionDeviation(a, b);
   const out: Classified = { ...c, notes: [...(c.notes ?? []), "before = daily kWh before cleaning, after = daily kWh after cleaning", "Weather and season also changed between the two readings; the difference is not attributable to cleaning alone."] };
-  return m.is_demo ? { ...out, cls: "demo", notes: [...(out.notes ?? []), "Demo maintenance record — NOT REAL."] } : out;
+  return m.is_demo ? { ...out, cls: "demo", notes: [...(out.notes ?? []), "Demo maintenance record: NOT REAL."] } : out;
 }
 
 /* ---------------- formatting ---------------- */

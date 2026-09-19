@@ -20,7 +20,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   }
   return (
     <>
-      <PageHeader eyebrow="Admin · Solar Products" title={product ? `${product.manufacturer_name} — ${product.model}` : "Locally created product"} description={product?.name} />
+      <PageHeader eyebrow="Admin · Solar Products" title={product ? `${product.manufacturer_name}. ${product.model}` : "Locally created product"} description={product?.name} />
       {mode === "demo" ? (
         <ProductEditLoader id={id} server={product} manufacturers={m.data} providers={p.data} />
       ) : (

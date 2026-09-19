@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/States";
 import { listSystems } from "@/lib/data/repositories";
 import { IncidentForm } from "./IncidentForm";
 
-export const metadata: Metadata = { title: "Report incident — Solink", description: "Record a problem with your solar system." };
+export const metadata: Metadata = { title: "Report incident", description: "Record a problem with your solar system." };
 
 export default async function NewIncidentPage({ searchParams }: { searchParams: Promise<{ system?: string; panel?: string }> }) {
   const sp = await searchParams;

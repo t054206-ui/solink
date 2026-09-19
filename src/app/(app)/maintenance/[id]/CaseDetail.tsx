@@ -82,7 +82,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
             <KindBadge kind={c.kind} /><MaintStatusPill status={c.status} /><UrgencyBadge urgency={c.urgency} />
             <span className="ml-auto font-mono text-[11.5px] text-fg-muted">{c.id}</span>
           </div>
-          <h2 className="mt-3 text-lg font-semibold text-fg">{MAINT_KIND[c.kind].label}{system ? ` — ${system.name}` : ""}</h2>
+          <h2 className="mt-3 text-lg font-semibold text-fg">{MAINT_KIND[c.kind].label}{system ? `. ${system.name}` : ""}</h2>
           <p className="mt-1 text-[13px] text-fg-muted">Opened {formatDate(c.created_at)} · last updated {formatDate(c.updated_at)}</p>
           <WorkflowStrip current={stageIndexForCase(c)} className="mt-5" />
         </CardBody>
@@ -100,7 +100,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
             {relatedIncidents.length > 0 && (
               <div>
                 <div className="mb-1.5 text-[12.5px] font-medium text-fg-secondary">Related incidents</div>
-                <ul className="space-y-1 text-[13.5px]">{relatedIncidents.map((i) => <li key={i.id}><Link href={`/incidents/${i.id}`} className="text-[var(--brand-strong)] hover:underline">{formatDate(i.occurred_at)} — {i.reported_problem}</Link></li>)}</ul>
+                <ul className="space-y-1 text-[13.5px]">{relatedIncidents.map((i) => <li key={i.id}><Link href={`/incidents/${i.id}`} className="text-[var(--brand-strong)] hover:underline">{formatDate(i.occurred_at)}: {i.reported_problem}</Link></li>)}</ul>
               </div>
             )}
           </CardBody>
@@ -117,7 +117,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
                   <li key={s} className="relative pb-4 last:pb-0">
                     <span className={cn("absolute -left-[21px] top-1 size-2.5 rounded-full border-2 border-elevated", reached ? "bg-brand" : "bg-border")} aria-hidden />
                     <div className={cn("text-[13.5px]", reached ? "font-medium text-fg" : "text-fg-muted")}>{MAINT_STATUS[s].label}</div>
-                    <div className="text-[12px] text-fg-muted">{reached ? (when ? formatDate(when, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Reached — time not recorded") : "Not reached"}</div>
+                    <div className="text-[12px] text-fg-muted">{reached ? (when ? formatDate(when, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Reached: time not recorded") : "Not reached"}</div>
                   </li>
                 );
               })}

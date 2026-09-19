@@ -10,11 +10,11 @@ import { NoSystemState } from "../../_operate/components/NoSystemState";
 import { loadOperateContext } from "../../_operate/loadSystem";
 import { productionCls, specificYield } from "../../_operate/production";
 
-export const metadata = { title: "Nearby comparison · Solink" };
+export const metadata = { title: "Nearby comparison" };
 
 /** The three explanations a neighbourhood comparison can distinguish between. */
 const ANSWERS = [
-  { label: "Area-wide", text: "Nearby systems dropped too, so something affected the whole area — dust, cloud, or a grid event." },
+  { label: "Area-wide", text: "Nearby systems dropped too, so something affected the whole area: dust, cloud, or a grid event." },
   { label: "Weather-related", text: "The drop matches the weather over the period and nearby systems moved the same way." },
   { label: "System-specific", text: "Nearby systems held steady while yours fell. That points at your own installation and is worth inspecting." },
 ];

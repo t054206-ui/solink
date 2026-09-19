@@ -11,9 +11,9 @@ export function DataBadge({ cls, className, compact = false, source }: { cls: Da
   const label = compact ? SHORT[cls] : DATA_CLASS_LABEL[cls];
   return (
     <span
-      title={`${DATA_CLASS_LABEL[cls]}${source ? ` — ${source}` : ""}. ${DATA_CLASS_DESCRIPTION[cls]}`}
+      title={`${DATA_CLASS_LABEL[cls]}${source ? `: ${source}` : ""}. ${DATA_CLASS_DESCRIPTION[cls]}`}
       style={style}
-      className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide leading-4 whitespace-nowrap", cls === "demo" && "demo-stripe ring-1 ring-[var(--cls-demo)]/40", className)}
+      className={cn("inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] leading-4 whitespace-nowrap", cls === "demo" && "demo-stripe ring-1 ring-[var(--cls-demo)]/40", className)}
     >
       <span aria-hidden className="inline-block size-1.5 rounded-full" style={{ background: "currentColor" }} />
       {label}{source && !compact ? <span className="font-normal normal-case tracking-normal opacity-80">· {source}</span> : null}

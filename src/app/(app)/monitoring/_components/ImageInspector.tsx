@@ -110,7 +110,7 @@ export function ImageInspector() {
           <div className="rounded-[var(--radius-lg)] border border-dashed border-border-strong bg-inset p-5 text-[13px] leading-relaxed text-fg-secondary">
             <p className="font-medium text-fg">What you will get</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>An image-quality check (good / fair / poor) — a blurry or distant photo limits what can be seen.</li>
+              <li>An image-quality check (good / fair / poor). A blurry or distant photo limits what can be seen.</li>
               <li>Visible observations with a possible cause and a confidence level.</li>
               <li>A statement of what cannot be determined from the photo.</li>
               <li>A recommended next step. Anything concerning points to a qualified inspection.</li>

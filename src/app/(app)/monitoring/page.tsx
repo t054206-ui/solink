@@ -11,7 +11,7 @@ import { buildProductionChartData } from "../_operate/chartData";
 import { loadOperateContext, profileLocation } from "../_operate/loadSystem";
 import { AiMonitorPanel } from "./_components/AiMonitorPanel";
 
-export const metadata = { title: "Monitoring · Solink" };
+export const metadata = { title: "Monitoring" };
 
 export default async function MonitoringOverviewPage() {
   const ctx = await loadOperateContext();

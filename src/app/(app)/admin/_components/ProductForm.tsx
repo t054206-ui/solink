@@ -69,7 +69,7 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
   if (!name.trim()) errors.push("Name is required.");
   if (!isService && !manufacturerName.trim()) errors.push("Manufacturer is required for equipment.");
   if (needsNote && !wasVerified) errors.push("Verified requires a “verified against source” note.");
-  if (verification === "verified" && flags.length > 0) errors.push("Cannot mark Verified while validation flags exist — resolve them against the source first (values are never auto-corrected).");
+  if (verification === "verified" && flags.length > 0) errors.push("Cannot mark Verified while validation flags exist. Resolve them against the source first (values are never auto-corrected).");
 
   const buildInput = (): ProductInput => ({
     id: initial?.id ?? null, category, manufacturer_name: manufacturerName, model, name, description: description.trim() || null,
@@ -156,7 +156,7 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
       )}
 
       <Card>
-        <CardHeader title="Prices & costs" subtitle="Only real quoted amounts. Missing prices show a placeholder in the marketplace — never zero." />
+        <CardHeader title="Prices & costs" subtitle="Only real quoted amounts. Missing prices show a placeholder in the marketplace: never zero." />
         <CardBody className="grid gap-3 md:grid-cols-2">
           {COST_FIELDS.map((c) => <SpecField key={c.key} label={c.label} unit={c.unit} kind="number" help={c.help} value={costs[c.key]} onChange={(v) => setCosts((s) => ({ ...s, [c.key]: v }))} />)}
         </CardBody>
@@ -179,7 +179,7 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
           <Field label="Verification status">
             <Select value={verification} onChange={(e) => setVerification(e.target.value as VerificationStatus)}>{VERIFICATION_STATUSES.map((s) => <option key={s} value={s}>{VERIFICATION_LABEL[s]}</option>)}</Select>
           </Field>
-          <Field label="Verified against source — note" help={verification === "verified" ? "Required: which document/page you checked and the date." : "Optional context for reviewers."} error={needsNote && !wasVerified ? "Required when setting Verified." : undefined}>
+          <Field label="Verified-against-source note" help={verification === "verified" ? "Required: which document/page you checked and the date." : "Optional context for reviewers."} error={needsNote && !wasVerified ? "Required when setting Verified." : undefined}>
             <Textarea value={verificationNote} onChange={(e) => setVerificationNote(e.target.value)} placeholder="e.g. Checked against manufacturer datasheet rev. 2026-03, page 2." />
           </Field>
           <label className="flex items-center gap-2 text-[13.5px]"><input type="checkbox" checked={isOutdated} onChange={(e) => setIsOutdated(e.target.checked)} className="size-4 accent-[var(--brand)]" /> Mark as outdated (a newer datasheet/version exists)</label>

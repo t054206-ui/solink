@@ -7,7 +7,7 @@ import { getProviderAccess } from "../../_lib/access";
 import { ProviderCaseDetail } from "./ProviderCaseDetail";
 
 export const metadata: Metadata = {
-  title: "Provider — Case & work record — Solink",
+  title: "Provider case and work record",
   description: "The case as the provider sees it, with the work record form: technician, work performed, parts, cost, before/after photos and status.",
 };
 
@@ -33,7 +33,7 @@ export default async function ProviderCasePage({ params }: { params: Promise<{ i
       <PageHeader
         eyebrow="Maintenance provider"
         title="Case & work record"
-        description="What was detected, what you did, and what it cost. Costs stay unavailable until you enter one — Solink never assumes a figure."
+        description="What was detected, what you did, and what it cost. Costs stay unavailable until you enter one: Solink never assumes a figure."
         actions={<Button href="/provider" variant="ghost">Back to queue</Button>}
       />
       <ProviderCaseDetail

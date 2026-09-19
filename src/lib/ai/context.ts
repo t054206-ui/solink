@@ -14,7 +14,7 @@ export async function buildUserContext(opts: { systemId?: string; includeProduct
   const mode = getDataMode();
   const blocks: AgentContextBlock[] = [];
   const used: string[] = [];
-  const tag = mode === "demo" ? "DEMO — NOT REAL" : "source";
+  const tag = mode === "demo" ? "DEMO: NOT REAL" : "source";
 
   blocks.push({ title: "platform status", cls: "source", content: [
     `Data mode: ${mode}${mode === "demo" ? " (Supabase not connected; all user data below is labeled demo)" : ""}.`,
@@ -74,7 +74,7 @@ export async function buildUserContext(opts: { systemId?: string; includeProduct
 
     const { data: maint } = await repo.listMaintenance(system.id);
     used.push("Maintenance history");
-    blocks.push({ title: "maintenance history", cls: tag, content: maint.length ? maint.map((m) => `${m.created_at.slice(0, 10)} ${m.kind} [${m.status}/${m.urgency}] — ${m.detected_issue}${m.work_performed ? ` | work: ${m.work_performed}` : ""}${m.production_before_kwh != null && m.production_after_kwh != null ? ` | production before ${m.production_before_kwh} → after ${m.production_after_kwh} kWh/day` : ""} | cost: ${specText(m.cost)}`).join("\n") : "No maintenance records." });
+    blocks.push({ title: "maintenance history", cls: tag, content: maint.length ? maint.map((m) => `${m.created_at.slice(0, 10)} ${m.kind} [${m.status}/${m.urgency}]. ${m.detected_issue}${m.work_performed ? ` | work: ${m.work_performed}` : ""}${m.production_before_kwh != null && m.production_after_kwh != null ? ` | production before ${m.production_before_kwh} → after ${m.production_after_kwh} kWh/day` : ""} | cost: ${specText(m.cost)}`).join("\n") : "No maintenance records." });
 
     const { data: incidents } = await repo.listIncidents(system.id);
     blocks.push({ title: "incidents", cls: tag, content: incidents.length ? incidents.map((i) => `${i.occurred_at.slice(0, 10)} [${i.status}] ${i.reported_problem}${i.result ? ` → ${i.result}` : ""}`).join("\n") : "No incidents." });

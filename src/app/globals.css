@@ -1,111 +1,150 @@
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────
-   Solink design tokens
-   Identity: graphite/navy engineering surfaces + solar amber accent
-   + sky-blue data ink. Light + dark selected independently.
-   ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   SOLINK — "Gulf light"
+
+   Day is warm sand paper, night is deep indigo. Solar amber is the single
+   signal colour, terracotta the accent, brass the hairline.
+
+   The ornament is the panel: every lattice in this interface is generated
+   from photovoltaic cell geometry. A square cell, overlaid with the same
+   square turned 45 degrees, produces the eight-point star of Gulf
+   screenwork. Busbars run through it. See components/brand/Lattice.tsx.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 :root {
   color-scheme: light;
-  --bg: #f4f6f9;
-  --bg-elevated: #ffffff;
-  --bg-sunken: #eceff4;
-  --bg-inset: #f9fafc;
-  --fg: #0d1526;
-  --fg-secondary: #4a5568;
-  --fg-muted: #7b8494;
-  --border: rgba(13, 21, 38, 0.10);
-  --border-strong: rgba(13, 21, 38, 0.20);
-  --ring: rgba(245, 165, 36, 0.45);
 
-  --brand: #f5a524;        /* solar amber */
-  --brand-strong: #d98b0e;
-  --brand-soft: #fff4dc;
-  --brand-fg: #1a1200;
-  --navy: #0b1f3a;
-  --navy-soft: #e6ebf3;
+  /* surfaces — warm sand */
+  --bg: #f6f1e8;
+  --bg-elevated: #fffcf6;
+  --bg-sunken: #ebe2d3;
+  --bg-inset: #f1eadd;
 
-  --data: #2a78d6;         /* dataviz slot 1 */
-  --data-soft: #e4effc;
+  /* ink — deep indigo */
+  --fg: #191428;
+  --fg-secondary: #554e66;
+  --fg-muted: #7d7490;
 
-  --good: #0ca30c;  --good-soft: #e6f6e6;  --good-fg: #006300;
-  --warn: #fab219;  --warn-soft: #fff5d6;  --warn-fg: #6b4a00;
-  --serious: #ec835a; --serious-soft: #fdebe3; --serious-fg: #7a2f0f;
-  --critical: #d03b3b; --critical-soft: #fbe5e5; --critical-fg: #8f1d1d;
+  /* hairlines — brass */
+  --border: rgba(25, 20, 40, 0.12);
+  --border-strong: rgba(25, 20, 40, 0.24);
+  --brass: rgba(163, 128, 74, 0.42);
+  --ring: rgba(224, 138, 30, 0.42);
+
+  /* solar amber — the one signal colour */
+  --brand: #e08a1e;
+  --brand-strong: #a55f0c;
+  --brand-soft: #fbeed8;
+  --brand-fg: #1a1000;
+
+  /* accents */
+  --terracotta: #b8542f;
+  --terracotta-soft: #f8e7df;
+  --indigo: #221c3d;
+  --indigo-soft: #e7e3ef;
+
+  --data: #2f5fa8;
+  --data-soft: #e4ecf8;
+
+  /* status */
+  --good: #2f7d32; --good-soft: #e5f1e5; --good-fg: #1f5c22;
+  --warn: #c98a00; --warn-soft: #fcf0d5; --warn-fg: #6d4a00;
+  --serious: #c0663a; --serious-soft: #fae9e0; --serious-fg: #7d3417;
+  --critical: #b3352f; --critical-soft: #f9e4e3; --critical-fg: #8a211c;
 
   /* data classification */
-  --cls-source: #2a78d6;      --cls-source-soft: #e4effc;
-  --cls-calculated: #4a3aa7;  --cls-calculated-soft: #ebe8fa;
-  --cls-estimated: #d98b0e;   --cls-estimated-soft: #fff4dc;
-  --cls-ai: #b8397a;          --cls-ai-soft: #fbe7f1;
-  --cls-demo: #d03b3b;        --cls-demo-soft: #fbe5e5;
-  --cls-unavailable: #7b8494; --cls-unavailable-soft: #eef0f3;
+  --cls-source: #2f5fa8;      --cls-source-soft: #e4ecf8;
+  --cls-calculated: #4b3f8f;  --cls-calculated-soft: #e9e6f5;
+  --cls-estimated: #a55f0c;   --cls-estimated-soft: #fbeed8;
+  --cls-ai: #9c3f76;          --cls-ai-soft: #f7e6f0;
+  --cls-demo: #b3352f;        --cls-demo-soft: #f9e4e3;
+  --cls-unavailable: #7d7490; --cls-unavailable-soft: #eeebf2;
 
-  /* charts */
+  /* charts — validated categorical order, stepped for this surface */
   --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
   --series-5: #e87ba4; --series-6: #008300; --series-7: #4a3aa7; --series-8: #e34948;
-  --grid: #e1e0d9; --axis: #c3c2b7;
+  --grid: rgba(25, 20, 40, 0.09);
+  --axis: rgba(25, 20, 40, 0.28);
 
-  --radius: 12px;
-  --radius-lg: 18px;
-  --shadow-sm: 0 1px 2px rgba(13,21,38,.06), 0 1px 1px rgba(13,21,38,.04);
-  --shadow: 0 4px 14px rgba(13,21,38,.07), 0 1px 3px rgba(13,21,38,.05);
+  /* geometry — one scale, used everywhere */
+  --radius: 4px;
+  --radius-lg: 6px;
+  --shadow-sm: 0 1px 0 rgba(25, 20, 40, .06);
+  --shadow: 0 1px 2px rgba(25, 20, 40, .06), 0 8px 24px -12px rgba(25, 20, 40, .18);
+
+  --lattice-ink: rgba(25, 20, 40, 0.10);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #0a1120;
-    --bg-elevated: #111b2e;
-    --bg-sunken: #070d19;
-    --bg-inset: #0e1727;
-    --fg: #f2f5fa;
-    --fg-secondary: #b6c0d1;
-    --fg-muted: #7f8ba0;
-    --border: rgba(255,255,255,.09);
-    --border-strong: rgba(255,255,255,.18);
-    --brand: #ffb84d; --brand-strong: #f5a524; --brand-soft: rgba(245,165,36,.14); --brand-fg: #1a1200;
-    --navy: #16294a; --navy-soft: rgba(255,255,255,.06);
-    --data: #3987e5; --data-soft: rgba(57,135,229,.16);
-    --good: #0ca30c; --good-soft: rgba(12,163,12,.16); --good-fg: #5fd35f;
-    --warn: #fab219; --warn-soft: rgba(250,178,25,.16); --warn-fg: #ffd070;
-    --serious: #ec835a; --serious-soft: rgba(236,131,90,.16); --serious-fg: #ffb08e;
-    --critical: #e66767; --critical-soft: rgba(230,103,103,.16); --critical-fg: #ff9a9a;
-    --cls-source: #3987e5; --cls-source-soft: rgba(57,135,229,.16);
-    --cls-calculated: #9085e9; --cls-calculated-soft: rgba(144,133,233,.16);
-    --cls-estimated: #ffb84d; --cls-estimated-soft: rgba(255,184,77,.16);
-    --cls-ai: #e07ab0; --cls-ai-soft: rgba(224,122,176,.16);
-    --cls-demo: #e66767; --cls-demo-soft: rgba(230,103,103,.16);
-    --cls-unavailable: #8a95a8; --cls-unavailable-soft: rgba(138,149,168,.16);
+    --bg: #12102a;
+    --bg-elevated: #1b1838;
+    --bg-sunken: #0b0919;
+    --bg-inset: #17142f;
+    --fg: #f6f1e8;
+    --fg-secondary: #c6bed6;
+    --fg-muted: #968da9;
+    --border: rgba(246, 241, 232, 0.13);
+    --border-strong: rgba(246, 241, 232, 0.26);
+    --brass: rgba(199, 164, 105, 0.40);
+    --ring: rgba(242, 163, 44, 0.50);
+    --brand: #f2a32c;
+    --brand-strong: #ffbb55;
+    --brand-soft: rgba(242, 163, 44, 0.15);
+    --brand-fg: #1a1000;
+    --terracotta: #d9795a;
+    --terracotta-soft: rgba(217, 121, 90, 0.16);
+    --indigo: #2b2450;
+    --indigo-soft: rgba(246, 241, 232, 0.07);
+    --data: #6fa2e8; --data-soft: rgba(111, 162, 232, 0.16);
+    --good: #5fc463; --good-soft: rgba(95, 196, 99, .16); --good-fg: #8bd98e;
+    --warn: #f0b429; --warn-soft: rgba(240, 180, 41, .16); --warn-fg: #ffd371;
+    --serious: #e08b62; --serious-soft: rgba(224, 139, 98, .16); --serious-fg: #f2ab89;
+    --critical: #e8615a; --critical-soft: rgba(232, 97, 90, .16); --critical-fg: #ff958e;
+    --cls-source: #6fa2e8;      --cls-source-soft: rgba(111, 162, 232, .16);
+    --cls-calculated: #a396ee;  --cls-calculated-soft: rgba(163, 150, 238, .16);
+    --cls-estimated: #f2a32c;   --cls-estimated-soft: rgba(242, 163, 44, .16);
+    --cls-ai: #e084b9;          --cls-ai-soft: rgba(224, 132, 185, .16);
+    --cls-demo: #e8615a;        --cls-demo-soft: rgba(232, 97, 90, .16);
+    --cls-unavailable: #968da9; --cls-unavailable-soft: rgba(150, 141, 169, .16);
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
     --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
-    --grid: #22304a; --axis: #354561;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
-    --shadow: 0 6px 18px rgba(0,0,0,.45);
+    --grid: rgba(246, 241, 232, 0.08);
+    --axis: rgba(246, 241, 232, 0.24);
+    --shadow-sm: 0 1px 0 rgba(0, 0, 0, .3);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 32px -16px rgba(0, 0, 0, .7);
+    --lattice-ink: rgba(246, 241, 232, 0.09);
   }
 }
+
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0a1120; --bg-elevated: #111b2e; --bg-sunken: #070d19; --bg-inset: #0e1727;
-  --fg: #f2f5fa; --fg-secondary: #b6c0d1; --fg-muted: #7f8ba0;
-  --border: rgba(255,255,255,.09); --border-strong: rgba(255,255,255,.18);
-  --brand: #ffb84d; --brand-strong: #f5a524; --brand-soft: rgba(245,165,36,.14); --brand-fg: #1a1200;
-  --navy: #16294a; --navy-soft: rgba(255,255,255,.06);
-  --data: #3987e5; --data-soft: rgba(57,135,229,.16);
-  --good: #0ca30c; --good-soft: rgba(12,163,12,.16); --good-fg: #5fd35f;
-  --warn: #fab219; --warn-soft: rgba(250,178,25,.16); --warn-fg: #ffd070;
-  --serious: #ec835a; --serious-soft: rgba(236,131,90,.16); --serious-fg: #ffb08e;
-  --critical: #e66767; --critical-soft: rgba(230,103,103,.16); --critical-fg: #ff9a9a;
-  --cls-source: #3987e5; --cls-source-soft: rgba(57,135,229,.16);
-  --cls-calculated: #9085e9; --cls-calculated-soft: rgba(144,133,233,.16);
-  --cls-estimated: #ffb84d; --cls-estimated-soft: rgba(255,184,77,.16);
-  --cls-ai: #e07ab0; --cls-ai-soft: rgba(224,122,176,.16);
-  --cls-demo: #e66767; --cls-demo-soft: rgba(230,103,103,.16);
-  --cls-unavailable: #8a95a8; --cls-unavailable-soft: rgba(138,149,168,.16);
+  --bg: #12102a; --bg-elevated: #1b1838; --bg-sunken: #0b0919; --bg-inset: #17142f;
+  --fg: #f6f1e8; --fg-secondary: #c6bed6; --fg-muted: #968da9;
+  --border: rgba(246, 241, 232, 0.13); --border-strong: rgba(246, 241, 232, 0.26);
+  --brass: rgba(199, 164, 105, 0.40); --ring: rgba(242, 163, 44, 0.50);
+  --brand: #f2a32c; --brand-strong: #ffbb55; --brand-soft: rgba(242, 163, 44, 0.15); --brand-fg: #1a1000;
+  --terracotta: #d9795a; --terracotta-soft: rgba(217, 121, 90, 0.16);
+  --indigo: #2b2450; --indigo-soft: rgba(246, 241, 232, 0.07);
+  --data: #6fa2e8; --data-soft: rgba(111, 162, 232, 0.16);
+  --good: #5fc463; --good-soft: rgba(95, 196, 99, .16); --good-fg: #8bd98e;
+  --warn: #f0b429; --warn-soft: rgba(240, 180, 41, .16); --warn-fg: #ffd371;
+  --serious: #e08b62; --serious-soft: rgba(224, 139, 98, .16); --serious-fg: #f2ab89;
+  --critical: #e8615a; --critical-soft: rgba(232, 97, 90, .16); --critical-fg: #ff958e;
+  --cls-source: #6fa2e8;      --cls-source-soft: rgba(111, 162, 232, .16);
+  --cls-calculated: #a396ee;  --cls-calculated-soft: rgba(163, 150, 238, .16);
+  --cls-estimated: #f2a32c;   --cls-estimated-soft: rgba(242, 163, 44, .16);
+  --cls-ai: #e084b9;          --cls-ai-soft: rgba(224, 132, 185, .16);
+  --cls-demo: #e8615a;        --cls-demo-soft: rgba(232, 97, 90, .16);
+  --cls-unavailable: #968da9; --cls-unavailable-soft: rgba(150, 141, 169, .16);
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
   --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
-  --grid: #22304a; --axis: #354561;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.4); --shadow: 0 6px 18px rgba(0,0,0,.45);
+  --grid: rgba(246, 241, 232, 0.08); --axis: rgba(246, 241, 232, 0.24);
+  --shadow-sm: 0 1px 0 rgba(0, 0, 0, .3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 32px -16px rgba(0, 0, 0, .7);
+  --lattice-ink: rgba(246, 241, 232, 0.09);
 }
 
 @theme inline {
@@ -118,20 +157,25 @@
   --color-fg-muted: var(--fg-muted);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-brass: var(--brass);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
   --color-brand-soft: var(--brand-soft);
   --color-brand-fg: var(--brand-fg);
-  --color-navy: var(--navy);
-  --color-navy-soft: var(--navy-soft);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-soft: var(--terracotta-soft);
+  --color-indigo: var(--indigo);
+  --color-indigo-soft: var(--indigo-soft);
+  --color-navy: var(--indigo);
+  --color-navy-soft: var(--indigo-soft);
   --color-data: var(--data);
   --color-data-soft: var(--data-soft);
   --color-good: var(--good); --color-good-soft: var(--good-soft); --color-good-fg: var(--good-fg);
   --color-warn: var(--warn); --color-warn-soft: var(--warn-soft); --color-warn-fg: var(--warn-fg);
   --color-serious: var(--serious); --color-serious-soft: var(--serious-soft); --color-serious-fg: var(--serious-fg);
   --color-critical: var(--critical); --color-critical-soft: var(--critical-soft); --color-critical-fg: var(--critical-fg);
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
   --radius-md: var(--radius);
   --radius-lg: var(--radius-lg);
   --shadow-card: var(--shadow);
@@ -139,44 +183,95 @@
 }
 
 html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: var(--font-sans);
+  font-family: var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  font-synthesis-weight: none;
 }
+
 ::selection { background: var(--brand); color: var(--brand-fg); }
 
-:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
 
-.tabular { font-variant-numeric: tabular-nums; }
+/* Headings: large, confident, generously spaced. One family, weight does the work. */
+h1, h2, h3 { letter-spacing: -0.022em; font-weight: 600; text-wrap: balance; }
+h1 { line-height: 1.04; }
+h2 { line-height: 1.12; }
+p { text-wrap: pretty; }
 
-/* subtle solar grid background used on hero / shells */
-.solar-grid {
+.tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* ── The lattice ────────────────────────────────────────────────────────
+   A photovoltaic cell grid whose diagonals resolve into an eight-point
+   star. Used as texture, as divider, and as the mask for light.
+   ──────────────────────────────────────────────────────────────────── */
+.lattice {
   background-image:
-    linear-gradient(to right, var(--border) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
-}
-.sun-glow {
-  background: radial-gradient(60% 55% at 50% 0%, rgba(245,165,36,.28), transparent 70%);
+    /* the eight-point star: square + square rotated 45 degrees */
+    linear-gradient(45deg,  transparent 46.4%, var(--lattice-ink) 46.4%, var(--lattice-ink) 48%, transparent 48%),
+    linear-gradient(-45deg, transparent 46.4%, var(--lattice-ink) 46.4%, var(--lattice-ink) 48%, transparent 48%),
+    /* busbars */
+    linear-gradient(to right,  transparent 32.4%, var(--lattice-ink) 32.4%, var(--lattice-ink) 33.4%, transparent 33.4%,
+                               transparent 66.4%, var(--lattice-ink) 66.4%, var(--lattice-ink) 67.4%, transparent 67.4%),
+    /* the cell grid itself */
+    linear-gradient(to right,  var(--lattice-ink) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lattice-ink) 0 1px, transparent 1px);
+  background-size: 72px 72px;
 }
 
-/* stripe used on demo labels */
+/* Sun through a screen: warm light spilling through the lattice. */
+.sun-screen { position: relative; isolation: isolate; }
+.sun-screen::before,
+.sun-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1; }
+.sun-screen::before {
+  background:
+    radial-gradient(70% 62% at 18% -8%, color-mix(in oklab, var(--brand) 40%, transparent), transparent 62%),
+    radial-gradient(48% 48% at 88% 4%, color-mix(in oklab, var(--terracotta) 26%, transparent), transparent 66%);
+}
+.sun-screen::after {
+  background-image:
+    linear-gradient(45deg,  transparent 46.4%, var(--lattice-ink) 46.4%, var(--lattice-ink) 48%, transparent 48%),
+    linear-gradient(-45deg, transparent 46.4%, var(--lattice-ink) 46.4%, var(--lattice-ink) 48%, transparent 48%),
+    linear-gradient(to right,  var(--lattice-ink) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lattice-ink) 0 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(75% 70% at 22% 0%, #000 12%, transparent 74%);
+  mask-image: radial-gradient(75% 70% at 22% 0%, #000 12%, transparent 74%);
+}
+
+/* Sections painted indigo carry light ink, whatever the page theme is. */
+.ink-light { --lattice-ink: rgba(246, 241, 232, 0.11); }
+
+/* A brass rule, for section breaks. */
+.rule-brass {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--brass) 14%, var(--brass) 86%, transparent);
+}
+
+/* Demo marking: warning tape, not a soft pastel banner. */
 .demo-stripe {
-  background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(208,59,59,.10) 6px 12px);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 7px,
+    color-mix(in oklab, var(--cls-demo) 14%, transparent) 7px 14px
+  );
 }
 
-@keyframes shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+@keyframes shimmer { from { background-position: -420px 0 } to { background-position: 420px 0 } }
 .skeleton {
   background: linear-gradient(90deg, var(--bg-sunken) 25%, var(--bg-inset) 50%, var(--bg-sunken) 75%);
-  background-size: 800px 100%;
-  animation: shimmer 1.4s infinite linear;
+  background-size: 840px 100%;
+  animation: shimmer 1.5s infinite linear;
 }
 
-/* Scrollbars */
 * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
 
 @media (prefers-reduced-motion: reduce) {

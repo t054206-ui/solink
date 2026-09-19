@@ -214,7 +214,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
             </div>
           ) : (
             <UnavailableState title="AI observations unavailable">
-              No AI interpretation is stored for this report. Ask for one below — the AI reads this month&apos;s figures, including the ones that are missing, and says so rather than inventing them.
+              No AI interpretation is stored for this report. Ask for one below. The AI reads this month&apos;s figures, including the ones that are missing, and says so rather than inventing them.
             </UnavailableState>
           )}
           <AiExplainButton
