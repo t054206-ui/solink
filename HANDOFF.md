@@ -1,7 +1,8 @@
 # HANDOFF — Solink
 
-_Last updated: 2026-09-19 (Session 1 — the build session). Folder: `~/Desktop/solink`
-(Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
+_Session 1 below built the platform. **Session 2 at the end of this file supersedes it on
+anything visual, and records a decision to rebuild from zero. Read Session 2 first.**
+Folder: `~/Desktop/solink` (Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
 
 Solink is a solar-energy platform for Kuwait and the GCC. It connects homeowners,
 solar products, solar companies, installers, maintenance providers, system data and
@@ -321,3 +322,188 @@ plausible numbers. The placeholders are the feature.
   ```bash
   npx tsc --noEmit && npx eslint src && npm run build
   ```
+
+
+---
+---
+
+# SESSION 2 — 2026-09-19 (design, rejected three times, then a decision to rebuild)
+
+## Read this before anything else
+
+**The owner has asked for a ground-up rebuild and will send reference websites.
+Do not start designing until those arrive.** Three designs have already been
+rejected. A fourth guess is the one thing guaranteed not to work.
+
+When the examples arrive, the agreed method is:
+
+1. Pull the actual decisions out of the examples: type, colour, density, layout,
+   how the homepage opens. Name them explicitly.
+2. Build **two screens only**: the landing page and the dashboard.
+3. Show those two and get a yes **before touching the other fifty-six**.
+
+Session 1's mistake was building everything before checking. Do not repeat it.
+
+## Goal of this session
+
+Give Solink a visual identity the owner is happy with. Not achieved. The session
+ended with a decision to start the interface again from zero.
+
+## Current state
+
+| | |
+| --- | --- |
+| Live site | https://solink-nu.vercel.app — **still up, still v1** |
+| Repository | https://github.com/t054206-ui/solink (private) |
+| Latest commit | `c603d13` |
+| Recovery point | tag **`v1-superseded`** — `git checkout v1-superseded` |
+| Rebuild | **not started**, blocked on reference examples from the owner |
+| Checks | tsc, eslint, next build all clean across 68 routes |
+
+Nothing is broken. v1 is complete, deployed and accessible. It is being replaced
+because the owner does not like how it looks, not because it fails.
+
+## Decision taken at the end of the session
+
+The owner chose **"Everything, from zero"** over rebuilding the look only, and
+chose to give direction by **sending example websites**.
+
+I flagged, and they went ahead anyway, that the thing they disliked was the
+interface, while the schema, the solar calculations, the data-labelling rules and
+the Claude / WeatherAPI / Maps integrations were never the subject of any
+complaint. If a future session can persuade them to reuse those, the rebuild gets
+much faster. Otherwise, follow their call.
+
+Everything in `docs/` carries over. The seventeen open decisions in
+`docs/DECISIONS-NEEDED.md` are unaffected by a redesign: a new interface does not
+supply an electricity tariff or a Supabase project.
+
+## Things tried that failed — all three designs, in order
+
+### Attempt 1 — the original build (Session 1)
+Navy and amber, dark-first, spacious SaaS layout.
+**Verdict: "didn't like the interface at all, I want it to show the website
+identity."** It was anonymous. Swap the word Solink for anything else and nothing
+about it would change.
+
+### Attempt 2 — "Gulf light" (commit `0c5a9f2`)
+Warm sand by day, deep indigo by night. Solar amber with terracotta and brass
+hairlines. The motif was a photovoltaic cell overlaid with the same square turned
+45°, producing the eight-point star of Gulf screenwork, used as logo, texture and
+divider. IBM Plex Sans Arabic throughout, Arabic-ready.
+**Verdict: rejected.**
+
+### Attempt 3 — ui-ux-pro-max, first pass (commit `13dac3f`)
+Data-Dense Dashboard style, "Industrial grey + safety orange" palette, Fira Sans
+with Fira Code. 8px gaps, 12px card padding, 36px table rows, 240px sidebar.
+**Verdict: rejected.**
+
+### The pattern
+All three were **my** taste, applied to all 58 pages before anyone looked. The
+owner has never been shown a direction before it was fully built. That is the
+failure, not any individual palette.
+
+## The owner's banned list — binding, do not reintroduce
+
+Purple-to-blue gradients · gradient hero text · emojis in headings · Inter as the
+everywhere font · coloured border cards · glassmorphism · low-contrast dark mode ·
+three icon boxes in a row · a badge above the headline · untouched shadcn
+defaults · fade-in on scroll · cursor-following beams · buttons that fade on
+hover · inconsistent spacing · em dashes throughout the copy · generic buzzword
+copy · serif italic accents · Space Grotesk with Instrument Serif.
+
+Also recorded at the end of `design-system/solink/MASTER.md`.
+
+## The ui-ux-pro-max skill — how to actually use it
+
+**The `Skill` tool returns `Unknown skill: ui-ux-pro-max`.** It was installed
+after this session's registry was built. It is real and enabled; `SearchSkills`
+finds it. Use it from disk instead:
+
+```bash
+python3 ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>
+python3 ~/.claude/skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --variance N --motion N --density N
+```
+
+Two things learned the hard way:
+
+- **Do not take its first answer.** For Solink it proposed glassmorphism, a GSAP
+  scroll-reveal preset and a `#22C55E` green accent. The first two are on the
+  owner's banned list and the green is ruled out by the product brief. The skill
+  itself says to verify fit and retry; do that.
+- **Read its two reference files, not just run its searches.**
+  `references/quick-reference.md` (119 UX rules) and `references/pro-rules.md`
+  (the canonical pre-delivery checklist). Skipping them hid four real defects for
+  a whole iteration.
+
+`design-system/solink/MASTER.md` holds the persisted system, corrected to the
+verified choices with the rejections documented. Regenerating it needs `--force`,
+which needs the owner's authorisation.
+
+## Accessibility defects found and fixed (commit `c603d13`)
+
+These came from the rulebook, not from my own checklist, and all four were real:
+
+- **No skip link anywhere.** A keyboard user tabbed the whole 240px sidebar on
+  every page. Now in the app, marketing and auth shells, targeting `#main`.
+- **40 decorative icons sat in the accessibility tree** beside their own visible
+  text, so screen readers announced each label twice. All 212 icon elements now
+  carry `aria-hidden`.
+- **No label in the product was associated with its control.** `Field` rendered
+  `<label>` as a sibling with no `htmlFor` and no nesting. Every form was
+  affected. `Field` now wires `htmlFor` to the control id, links help and error
+  text via `aria-describedby`, and sets `aria-invalid` on error. Verified: 13 of
+  13 controls on `/profile` resolve to a label.
+- **No `touch-action`**, so taps carried the 300ms delay.
+
+**Keep all four in the rebuild.** They are not tied to any visual direction.
+
+Checked and already correct: icon-only buttons all carry `aria-label` (an early
+audit flagged four, all false positives in my own regex), every page has an `h1`
+or takes one from its layout, colour is never the only signal, reduced motion is
+respected, controls reach 44px under 768px.
+
+## Copy changes that are not visual and should carry over
+
+- **188 em dashes rewritten** to periods, commas or colons depending on whether
+  the following clause could stand alone.
+- **The demo markers keep their em dash.** `DEMO DATA — NOT REAL`,
+  `DEMO PRODUCT — NOT REAL`, `SIMULATED PRODUCTION — NOT REAL` and the rest are
+  fixed strings from the brief. An automated pass mangled 23 of them; they were
+  restored. Do not "fix" them again.
+- **80 standalone `"—"` table placeholders were left alone.** That is correct
+  typography for an empty cell.
+- **28 page titles were appending the brand twice** on top of the metadata
+  template in the root layout. The template owns the suffix now; a page title
+  must not include "Solink".
+
+## Files this session touched
+
+```
+src/app/globals.css                    rewritten twice (token system)
+src/app/layout.tsx                     fonts, theme colours, metadata template
+src/components/brand/Logo.tsx          rewritten twice
+src/components/brand/Lattice.tsx       created, then repurposed as a grid texture
+src/components/ui/*                    Button, Card, Badge, DataBadge, Metric,
+                                       States, Placeholder, DemoBanner, Form
+src/components/layout/*                AppShell, MarketingNav, Footer, PageHeader
+src/app/(marketing)/page.tsx           rewritten twice
+src/app/(marketing)/guide/page.tsx     hero, badge removed
+src/app/(auth)/layout.tsx              hero panel
+design-system/solink/MASTER.md         created by the skill, then corrected
+~75 files                              em dash copy pass
+```
+
+## What to do next
+
+1. **Wait for the owner's reference websites.** Do not design before they arrive.
+2. Ask, for each example, what they like about it. One word per site is enough to
+   separate "the typography" from "the density" from "the colour".
+3. Ask whether any example is a **dashboard or web app**, not just a landing
+   page. Solink is mostly 50+ application screens, so marketing references only
+   cover half the problem.
+4. Extract explicit decisions from the examples. Write them down before coding.
+5. Build **the landing page and the dashboard only**. Show them. Wait for a yes.
+6. Only then apply the direction to the remaining screens.
+7. Keep: the four accessibility fixes, the copy rules above, the data
+   classification and placeholder discipline, and everything in `docs/`.
