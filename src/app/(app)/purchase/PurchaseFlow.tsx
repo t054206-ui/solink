@@ -171,7 +171,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
               <Metric label="System capacity" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
               <Metric label="Total" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span className="flex flex-wrap items-center gap-1">Total unavailable: <Placeholder k="INSTALLATION_PRICE" /> / prices not provided</span> : undefined} />
             </div>
-            {selectedDesign && <p className="text-[12.5px] text-fg-muted flex items-center gap-1.5"><PencilRuler className="size-3.5" /> From design “{selectedDesign.name}”: {selectedDesign.roof.length_m}×{selectedDesign.roof.width_m} m roof, {selectedDesign.summary.used_area_m2} m² of panels{selectedDesign.is_ai_suggested && <DataBadge cls="ai" compact />}</p>}
+            {selectedDesign && <p className="text-[12.5px] text-fg-muted flex items-center gap-1.5"><PencilRuler className="size-3.5"  aria-hidden /> From design “{selectedDesign.name}”: {selectedDesign.roof.length_m}×{selectedDesign.roof.width_m} m roof, {selectedDesign.summary.used_area_m2} m² of panels{selectedDesign.is_ai_suggested && <DataBadge cls="ai" compact />}</p>}
           </CardBody>
         </Card>
       )}
@@ -187,7 +187,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
                 <li>Prices arrive as a quote; you decide afterwards.</li>
               </ul>
               {s.request_kind === "quote" ? (
-                <div className="flex items-center gap-2 rounded-md bg-good-soft px-3 py-2 text-[13px] text-good-fg"><Check className="size-4" /> Quote requested (order {s.order_id}). Continue to select an installer.</div>
+                <div className="flex items-center gap-2 rounded-md bg-good-soft px-3 py-2 text-[13px] text-good-fg"><Check className="size-4"  aria-hidden /> Quote requested (order {s.order_id}). Continue to select an installer.</div>
               ) : (
                 <Button onClick={requestQuote} disabled={busy || !items.length} className="w-full">{busy ? "Creating request…" : "Request a quote"}</Button>
               )}
@@ -222,8 +222,8 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
                     <li key={p.id}>
                       <button type="button" onClick={() => patch({ installer_id: p.id })} aria-pressed={sel} className={cn("w-full rounded-[var(--radius)] border p-4 text-left transition-colors hover:bg-inset", sel ? "border-[var(--brand)] ring-2 ring-[var(--ring)]" : "border-border")}>
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0"><Building2 className="size-4 shrink-0 text-fg-muted" /><span className="truncate font-medium text-fg">{p.name}</span></div>
-                          {sel && <Check className="size-4 shrink-0 text-[var(--brand-strong)]" />}
+                          <div className="flex items-center gap-2 min-w-0"><Building2 className="size-4 shrink-0 text-fg-muted"  aria-hidden /><span className="truncate font-medium text-fg">{p.name}</span></div>
+                          {sel && <Check className="size-4 shrink-0 text-[var(--brand-strong)]"  aria-hidden />}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-fg-muted">
                           <Badge tone={p.verification_status === "verified" ? "good" : "neutral"}>{p.verification_status.replace("_", " ")}</Badge>
@@ -283,8 +283,8 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
               Notifications are <strong>in-app only</strong> for now. No email or SMS is sent. <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button href="/passport" variant="outline">Go to Passport <ArrowRight className="size-4" /></Button>
-              <Button variant="ghost" onClick={reset}><RotateCcw className="size-4" /> Start another request</Button>
+              <Button href="/passport" variant="outline">Go to Passport <ArrowRight className="size-4"  aria-hidden /></Button>
+              <Button variant="ghost" onClick={reset}><RotateCcw className="size-4"  aria-hidden /> Start another request</Button>
             </div>
           </CardBody>
         </Card>
@@ -294,8 +294,8 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
 
       {s.step < 5 && (
         <div className="flex items-center justify-between gap-2 pt-1">
-          <Button variant="ghost" onClick={() => goto(Math.max(0, s.step - 1) as PurchaseStep)} disabled={s.step === 0}><ArrowLeft className="size-4" /> Back</Button>
-          {s.step < 4 && <Button onClick={() => goto((s.step + 1) as PurchaseStep)} disabled={!canNext[s.step]}>Next: {STEP_LABELS[s.step + 1]} <ArrowRight className="size-4" /></Button>}
+          <Button variant="ghost" onClick={() => goto(Math.max(0, s.step - 1) as PurchaseStep)} disabled={s.step === 0}><ArrowLeft className="size-4"  aria-hidden /> Back</Button>
+          {s.step < 4 && <Button onClick={() => goto((s.step + 1) as PurchaseStep)} disabled={!canNext[s.step]}>Next: {STEP_LABELS[s.step + 1]} <ArrowRight className="size-4"  aria-hidden /></Button>}
         </div>
       )}
     </div>
@@ -324,7 +324,7 @@ function ChooseSystem({ designs, choice, panels, inverters, batteries, packages,
         </div>
 
         {tab === "design" && (designs.length === 0 ? (
-          <EmptyState title="No saved designs yet"><p>Design your roof layout first, then come back here.</p><Button href="/designer" variant="outline" size="sm" className="mt-3"><PencilRuler className="size-4" /> Open the Solar Designer</Button></EmptyState>
+          <EmptyState title="No saved designs yet"><p>Design your roof layout first, then come back here.</p><Button href="/designer" variant="outline" size="sm" className="mt-3"><PencilRuler className="size-4"  aria-hidden /> Open the Solar Designer</Button></EmptyState>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {designs.map((d) => {
@@ -332,7 +332,7 @@ function ChooseSystem({ designs, choice, panels, inverters, batteries, packages,
               return (
                 <li key={d.id}>
                   <button type="button" aria-pressed={sel} onClick={() => set({ source: "design", design_id: d.id, panel_id: d.panel_product_id, panel_count: d.summary.panel_count })} className={cn("w-full rounded-[var(--radius)] border p-4 text-left hover:bg-inset", sel ? "border-[var(--brand)] ring-2 ring-[var(--ring)]" : "border-border")}>
-                    <div className="flex items-center justify-between gap-2"><span className="truncate font-medium text-fg">{d.name}</span>{sel && <Check className="size-4 text-[var(--brand-strong)]" />}</div>
+                    <div className="flex items-center justify-between gap-2"><span className="truncate font-medium text-fg">{d.name}</span>{sel && <Check className="size-4 text-[var(--brand-strong)]"  aria-hidden />}</div>
                     <div className="mt-1 text-[12.5px] text-fg-muted tabular">{d.summary.panel_count} × {d.panel_name} · {d.summary.capacity_kwp !== null ? `${formatNumber(d.summary.capacity_kwp, 2)} kWp` : "capacity n/a"} · {formatDate(d.created_at)}</div>
                     <div className="mt-1.5 flex gap-1"><DataBadge cls="calculated" compact />{d.is_ai_suggested && <DataBadge cls="ai" compact />}{d.is_demo_product && <DataBadge cls="demo" compact />}</div>
                   </button>
@@ -375,7 +375,7 @@ function Stepper({ step, onJump }: { step: number; onJump: (i: number) => void }
           <li key={label} className="flex items-center gap-1 shrink-0">
             <button type="button" onClick={() => onJump(i)} disabled={!done} aria-current={active ? "step" : undefined}
               className={cn("flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12.5px] font-medium transition-colors", active ? "border-[var(--brand)] bg-brand-soft text-fg" : done ? "border-border bg-elevated text-fg-secondary hover:bg-inset" : "border-border bg-inset text-fg-muted")}>
-              <span className={cn("grid size-5 place-items-center rounded-full text-[11px]", active ? "bg-brand text-brand-fg" : done ? "bg-good text-white" : "bg-elevated border border-border")}>{done ? <Check className="size-3" /> : i + 1}</span>
+              <span className={cn("grid size-5 place-items-center rounded-full text-[11px]", active ? "bg-brand text-brand-fg" : done ? "bg-good text-white" : "bg-elevated border border-border")}>{done ? <Check className="size-3"  aria-hidden /> : i + 1}</span>
               <span className="hidden sm:inline">{label}</span>
             </button>
             {i < STEP_LABELS.length - 1 && <span className="h-px w-4 bg-border-strong" aria-hidden />}

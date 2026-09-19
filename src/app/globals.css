@@ -214,9 +214,19 @@ p { text-wrap: pretty; }
 .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 th, td { font-variant-numeric: tabular-nums; }
 
-/* Every interactive thing says so. */
+/* Every interactive thing says so, and taps register without the 300ms wait. */
 a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]),
-summary, label[for], select:not(:disabled) { cursor: pointer; }
+summary, label[for], select:not(:disabled) { cursor: pointer; touch-action: manipulation; }
+
+/* Skip link: first thing a keyboard user reaches, invisible until focused. */
+.skip-link {
+  position: absolute; left: 8px; top: -100px; z-index: 100;
+  padding: 8px 12px; border-radius: var(--radius);
+  background: var(--brand); color: var(--brand-fg);
+  font-size: 13px; font-weight: 600;
+  transition: top 120ms;
+}
+.skip-link:focus-visible { top: 8px; }
 
 /* Dense table primitives, per the Data-Dense Dashboard spec. */
 .table-dense { width: 100%; border-collapse: collapse; font-size: 13px; }

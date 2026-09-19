@@ -53,6 +53,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
 
   return (
     <div className="min-h-dvh bg-bg">
+      <a href="#main" className="skip-link">Skip to main content</a>
       {/* Page-level demo notice. Deliberately not sticky: its height varies with
           wrapping, and a fixed offset for the sticky header would overlap it.
           The DEMO chip in the header keeps the warning visible while scrolling. */}
@@ -73,7 +74,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
           {/* Top bar */}
           <header className="sticky top-0 z-30 flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-border bg-bg px-3 sm:px-4">
             <div className="flex items-center gap-2 lg:hidden">
-              <button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="grid size-9 place-items-center rounded-[var(--radius)] text-fg hover:bg-inset"><Menu className="size-5" /></button>
+              <button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="grid size-9 place-items-center rounded-[var(--radius)] text-fg hover:bg-inset"><Menu className="size-5"  aria-hidden /></button>
               <Logo href="/dashboard" compact />
             </div>
             <div className="hidden lg:block font-mono text-[11.5px] uppercase tracking-[0.08em] text-fg-muted">{breadcrumb(pathname)}</div>
@@ -87,14 +88,14 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
                   DEMO
                 </Link>
               )}
-              <button onClick={() => setAgentOpen(true)} className="hidden sm:inline-flex h-8 items-center gap-1.5 rounded-[var(--radius)] border border-border-strong bg-elevated px-2.5 text-[12.5px] font-medium text-fg hover:bg-inset"><Bot className="size-4 text-[var(--brand-strong)]" /> Ask Solink</button>
+              <button onClick={() => setAgentOpen(true)} className="hidden sm:inline-flex h-8 items-center gap-1.5 rounded-[var(--radius)] border border-border-strong bg-elevated px-2.5 text-[12.5px] font-medium text-fg hover:bg-inset"><Bot className="size-4 text-[var(--brand-strong)]"  aria-hidden /> Ask Solink</button>
               <Link href="/notifications" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`} className="relative grid size-9 place-items-center rounded-[var(--radius)] text-fg-muted hover:bg-inset hover:text-fg">
-                <Bell className="size-4" />{unreadCount > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-[var(--bg)]" />}
+                <Bell className="size-4"  aria-hidden />{unreadCount > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-[var(--bg)]" />}
               </Link>
               <ThemeToggle />
             </div>
           </header>
-          <main className="flex-1 px-3 py-4 sm:px-4 lg:px-5 pb-24 lg:pb-8">
+          <main id="main" className="flex-1 px-3 py-4 sm:px-4 lg:px-5 pb-24 lg:pb-8">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>
@@ -112,7 +113,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
       )}
 
       {/* Floating agent button (mobile) */}
-      <button onClick={() => setAgentOpen(true)} aria-label="Ask the AI Solar Agent" className="fixed bottom-4 right-4 z-40 grid size-12 place-items-center rounded-[var(--radius-lg)] bg-[var(--brand)] text-[var(--brand-fg)] shadow-card sm:hidden"><Bot className="size-6" /></button>
+      <button onClick={() => setAgentOpen(true)} aria-label="Ask the AI Solar Agent" className="fixed bottom-4 right-4 z-40 grid size-12 place-items-center rounded-[var(--radius-lg)] bg-[var(--brand)] text-[var(--brand-fg)] shadow-card sm:hidden"><Bot className="size-6"  aria-hidden /></button>
       <AgentDrawer open={agentOpen} onClose={() => setAgentOpen(false)} />
     </div>
   );

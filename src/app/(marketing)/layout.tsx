@@ -5,8 +5,9 @@ import { Footer } from "@/components/layout/Footer";
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
+      <a href="#main" className="skip-link">Skip to main content</a>
       <MarketingNav />
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">{children}</main>
       <Footer />
     </div>
   );

@@ -32,7 +32,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       title={`Theme: ${mode}`}
       className={`grid size-9 place-items-center rounded-[var(--radius)] text-fg-muted hover:bg-inset hover:text-fg ${className ?? ""}`}
     >
-      <Icon className="size-4" />
+      <Icon className="size-4"  aria-hidden />
     </button>
   );
 }

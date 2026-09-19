@@ -354,7 +354,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                   {roof.obstacles.map((o) => (
                     <li key={o.id} className="flex items-center justify-between gap-2 rounded-md bg-inset px-2.5 py-1.5 text-[12.5px]">
                       <span className="truncate"><span className="font-medium text-fg">{o.label}</span> <span className="tabular text-fg-muted">{o.w}×{o.h} m at ({o.x}, {o.y})</span></span>
-                      <button type="button" onClick={() => removeObstacle(o.id)} aria-label={`Remove ${o.label}`} className="grid size-7 shrink-0 place-items-center rounded-md text-fg-muted hover:bg-elevated hover:text-critical-fg"><Trash2 className="size-3.5" /></button>
+                      <button type="button" onClick={() => removeObstacle(o.id)} aria-label={`Remove ${o.label}`} className="grid size-7 shrink-0 place-items-center rounded-md text-fg-muted hover:bg-elevated hover:text-critical-fg"><Trash2 className="size-3.5"  aria-hidden /></button>
                     </li>
                   ))}
                 </ul>
@@ -366,7 +366,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                 <Field label="Width (m)"><Input type="number" step={0.1} min={0.1} value={obstacleDraft.w} onChange={(e) => setObstacleDraft({ ...obstacleDraft, w: e.target.value })} /></Field>
                 <Field label="Depth (m)"><Input type="number" step={0.1} min={0.1} value={obstacleDraft.h} onChange={(e) => setObstacleDraft({ ...obstacleDraft, h: e.target.value })} /></Field>
               </div>
-              <Button variant="outline" size="sm" onClick={addObstacle} className="w-full"><Plus className="size-4" /> Add obstacle</Button>
+              <Button variant="outline" size="sm" onClick={addObstacle} className="w-full"><Plus className="size-4"  aria-hidden /> Add obstacle</Button>
             </CardBody>
           </Card>
 
@@ -396,10 +396,10 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
           <Card>
             <CardBody className="pt-4 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Button size="sm" onClick={() => addPanel(0)} disabled={!geom}><Plus className="size-4" /> Add panel</Button>
-                <Button size="sm" variant="outline" onClick={autoFill} disabled={!geom}><Grid3x3 className="size-4" /> Auto-fill grid</Button>
-                <Button size="sm" variant="outline" onClick={undo} disabled={!history.length} aria-label="Undo"><Undo2 className="size-4" /> Undo</Button>
-                <Button size="sm" variant="ghost" onClick={clearAll} disabled={!placed.length}><Eraser className="size-4" /> Clear all</Button>
+                <Button size="sm" onClick={() => addPanel(0)} disabled={!geom}><Plus className="size-4"  aria-hidden /> Add panel</Button>
+                <Button size="sm" variant="outline" onClick={autoFill} disabled={!geom}><Grid3x3 className="size-4"  aria-hidden /> Auto-fill grid</Button>
+                <Button size="sm" variant="outline" onClick={undo} disabled={!history.length} aria-label="Undo"><Undo2 className="size-4"  aria-hidden /> Undo</Button>
+                <Button size="sm" variant="ghost" onClick={clearAll} disabled={!placed.length}><Eraser className="size-4"  aria-hidden /> Clear all</Button>
                 <label className="ml-auto flex items-center gap-2 text-[12.5px] text-fg-secondary select-none">
                   <input type="checkbox" checked={snapNeighboursOn} onChange={(e) => setSnapNeighboursOn(e.target.checked)} className="accent-[var(--brand)]" /> Snap to neighbours
                 </label>
@@ -467,12 +467,12 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[12.5px] text-fg-muted">{selected ? `Panel ${placed.indexOf(selected) + 1} selected: (${selected.x}, ${selected.y}) m, ${selected.rotation}°` : "Tap a panel to select it. Drag to move."}</span>
                 <div className="ml-auto flex items-center gap-1">
-                  <button type="button" aria-label="Nudge left" disabled={!selected} onClick={() => nudge(-0.1, 0)} className={ctl}><ArrowLeft className="size-4" /></button>
-                  <button type="button" aria-label="Nudge up" disabled={!selected} onClick={() => nudge(0, -0.1)} className={ctl}><ArrowUp className="size-4" /></button>
-                  <button type="button" aria-label="Nudge down" disabled={!selected} onClick={() => nudge(0, 0.1)} className={ctl}><ArrowDown className="size-4" /></button>
-                  <button type="button" aria-label="Nudge right" disabled={!selected} onClick={() => nudge(0.1, 0)} className={ctl}><ArrowRight className="size-4" /></button>
-                  <button type="button" aria-label="Rotate selected panel (R)" disabled={!selected} onClick={rotateSelected} className={ctl}><RotateCw className="size-4" /></button>
-                  <button type="button" aria-label="Remove selected panel (Delete)" disabled={!selected} onClick={removeSelected} className={cn(ctl, "hover:text-critical-fg")}><Trash2 className="size-4" /></button>
+                  <button type="button" aria-label="Nudge left" disabled={!selected} onClick={() => nudge(-0.1, 0)} className={ctl}><ArrowLeft className="size-4"  aria-hidden /></button>
+                  <button type="button" aria-label="Nudge up" disabled={!selected} onClick={() => nudge(0, -0.1)} className={ctl}><ArrowUp className="size-4"  aria-hidden /></button>
+                  <button type="button" aria-label="Nudge down" disabled={!selected} onClick={() => nudge(0, 0.1)} className={ctl}><ArrowDown className="size-4"  aria-hidden /></button>
+                  <button type="button" aria-label="Nudge right" disabled={!selected} onClick={() => nudge(0.1, 0)} className={ctl}><ArrowRight className="size-4"  aria-hidden /></button>
+                  <button type="button" aria-label="Rotate selected panel (R)" disabled={!selected} onClick={rotateSelected} className={ctl}><RotateCw className="size-4"  aria-hidden /></button>
+                  <button type="button" aria-label="Remove selected panel (Delete)" disabled={!selected} onClick={removeSelected} className={cn(ctl, "hover:text-critical-fg")}><Trash2 className="size-4"  aria-hidden /></button>
                 </div>
               </div>
               <p className="text-[11.5px] text-fg-muted">Keyboard: focus the drawing, then use arrow keys (Shift = 0.5 m), <kbd className="rounded border border-border px-1">R</kbd> rotate, <kbd className="rounded border border-border px-1">Delete</kbd> remove, <kbd className="rounded border border-border px-1">Esc</kbd> deselect. Positions snap to 0.1 m.</p>
@@ -548,8 +548,8 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
             <CardBody className="space-y-3">
               <Field label="Design name"><Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></Field>
               <div className="flex flex-col gap-2">
-                <Button onClick={save} disabled={saving || !placed.length || !geom}><Save className="size-4" /> {saving ? "Saving…" : "Save design"}</Button>
-                <Button variant="outline" disabled={!savedId} onClick={() => savedId && router.push(`/purchase?design=${encodeURIComponent(savedId)}`)}>Continue to purchase <ArrowRight className="size-4" /></Button>
+                <Button onClick={save} disabled={saving || !placed.length || !geom}><Save className="size-4"  aria-hidden /> {saving ? "Saving…" : "Save design"}</Button>
+                <Button variant="outline" disabled={!savedId} onClick={() => savedId && router.push(`/purchase?design=${encodeURIComponent(savedId)}`)}>Continue to purchase <ArrowRight className="size-4"  aria-hidden /></Button>
               </div>
               {mode === "demo" && <p className="text-[11.5px] text-fg-muted">Demo mode: designs are stored in this browser only. <Placeholder k="SUPABASE_PROJECT" /></p>}
             </CardBody>
@@ -566,8 +566,8 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                         <span className="truncate font-medium text-fg">{d.name}</span>
                         <div className="flex shrink-0 items-center gap-1">
                           {d.is_ai_suggested && <Badge tone="neutral"><DataBadge cls="ai" compact /></Badge>}
-                          <button type="button" onClick={() => loadDesign(d)} aria-label={`Load ${d.name}`} className={ctl}><FolderOpen className="size-3.5" /></button>
-                          <button type="button" onClick={() => deleteDesign(d.id)} aria-label={`Delete ${d.name}`} className={cn(ctl, "hover:text-critical-fg")}><Trash2 className="size-3.5" /></button>
+                          <button type="button" onClick={() => loadDesign(d)} aria-label={`Load ${d.name}`} className={ctl}><FolderOpen className="size-3.5"  aria-hidden /></button>
+                          <button type="button" onClick={() => deleteDesign(d.id)} aria-label={`Delete ${d.name}`} className={cn(ctl, "hover:text-critical-fg")}><Trash2 className="size-3.5"  aria-hidden /></button>
                         </div>
                       </div>
                       <div className="tabular text-fg-muted">{d.summary.panel_count} panels · {d.summary.capacity_kwp !== null ? `${formatNumber(d.summary.capacity_kwp, 2)} kWp` : "capacity n/a"} · {d.roof.length_m}×{d.roof.width_m} m</div>

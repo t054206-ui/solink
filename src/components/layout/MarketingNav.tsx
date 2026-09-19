@@ -19,7 +19,7 @@ export function MarketingNav() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Button href="/dashboard" size="sm" className="hidden sm:inline-flex">Open Solink</Button>
-          <button className="md:hidden grid size-9 place-items-center rounded-[var(--radius)] text-fg" aria-label="Menu" onClick={() => setOpen((o) => !o)}>{open ? <X className="size-5" /> : <Menu className="size-5" />}</button>
+          <button className="md:hidden grid size-9 place-items-center rounded-[var(--radius)] text-fg" aria-label="Menu" onClick={() => setOpen((o) => !o)}>{open ? <X className="size-5" /> : <Menu className="size-5"  aria-hidden />}</button>
         </div>
       </div>
       {open && (

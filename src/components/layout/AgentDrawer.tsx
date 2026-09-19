@@ -11,9 +11,9 @@ export function AgentDrawer({ open, onClose }: { open: boolean; onClose: () => v
       <button aria-label="Close" className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-elevated shadow-card">
         <div className="flex h-14 items-center justify-between border-b border-border px-4">
-          <div className="flex items-center gap-2 font-semibold"><Bot className="size-5 text-[var(--brand-strong)]" /> AI Solar Agent</div>
+          <div className="flex items-center gap-2 font-semibold"><Bot className="size-5 text-[var(--brand-strong)]"  aria-hidden /> AI Solar Agent</div>
           <div className="flex items-center gap-1">
-            <Link href="/agent" onClick={onClose} aria-label="Open full page" className="grid size-8 place-items-center rounded-md text-fg-muted hover:bg-inset hover:text-fg"><Maximize2 className="size-4" /></Link>
+            <Link href="/agent" onClick={onClose} aria-label="Open full page" className="grid size-8 place-items-center rounded-md text-fg-muted hover:bg-inset hover:text-fg"><Maximize2 className="size-4"  aria-hidden /></Link>
             <button onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-md text-fg-muted hover:bg-inset hover:text-fg"><X className="size-4" /></button>
           </div>
         </div>

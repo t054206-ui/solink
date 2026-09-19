@@ -46,7 +46,7 @@ export function AgentChat({ compact = false, systemId }: { compact?: boolean; sy
       <div className={cn("flex-1 overflow-y-auto px-4 py-4 space-y-4", !compact && "min-h-[420px] max-h-[65dvh]")}>
         {messages.length === 0 && (
           <div className="text-center py-6">
-            <div className="mx-auto grid size-12 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Bot className="size-6" /></div>
+            <div className="mx-auto grid size-12 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Bot className="size-6"  aria-hidden /></div>
             <h3 className="mt-3 text-[15px] font-semibold">Ask about <em>your</em> solar system</h3>
             <p className="mx-auto mt-1 max-w-sm text-[13px] text-fg-secondary">The agent reads your profile, system, production, maintenance and reports before answering. It never invents data. If something is missing, it says so.</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -56,7 +56,7 @@ export function AgentChat({ compact = false, systemId }: { compact?: boolean; sy
         )}
         {messages.map((m, i) => (
           <div key={i} className={cn("flex gap-2.5", m.role === "user" ? "justify-end" : "justify-start")}>
-            {m.role === "assistant" && <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Bot className="size-4" /></div>}
+            {m.role === "assistant" && <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Bot className="size-4"  aria-hidden /></div>}
             <div className={cn("max-w-[85%] rounded-[14px] px-3.5 py-2.5 text-[13.5px] leading-relaxed whitespace-pre-wrap", m.role === "user" ? "bg-navy text-white dark:bg-white/10" : m.error ? "border border-warn/50 bg-warn-soft text-fg" : "bg-inset text-fg")}>
               {m.content}
               {m.role === "assistant" && !m.error && (
@@ -65,20 +65,20 @@ export function AgentChat({ compact = false, systemId }: { compact?: boolean; sy
                 </div>
               )}
             </div>
-            {m.role === "user" && <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-inset text-fg-muted"><User className="size-4" /></div>}
+            {m.role === "user" && <div className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-inset text-fg-muted"><User className="size-4"  aria-hidden /></div>}
           </div>
         ))}
-        {busy && <div className="flex items-center gap-2 text-[13px] text-fg-muted"><Loader2 className="size-4 animate-spin" /> Reading your data and thinking…</div>}
+        {busy && <div className="flex items-center gap-2 text-[13px] text-fg-muted"><Loader2 className="size-4 animate-spin"  aria-hidden /> Reading your data and thinking…</div>}
         <div ref={endRef} />
       </div>
       {unavailable && (
-        <div className="mx-4 mb-2 flex items-start gap-2 rounded-[10px] border border-dashed border-warn bg-warn-soft px-3 py-2 text-[12.5px] text-fg-secondary"><PlugZap className="mt-0.5 size-4 shrink-0 text-warn-fg" />{unavailable}</div>
+        <div className="mx-4 mb-2 flex items-start gap-2 rounded-[10px] border border-dashed border-warn bg-warn-soft px-3 py-2 text-[12.5px] text-fg-secondary"><PlugZap className="mt-0.5 size-4 shrink-0 text-warn-fg"  aria-hidden />{unavailable}</div>
       )}
       <form className="flex items-end gap-2 border-t border-border p-3" onSubmit={(e) => { e.preventDefault(); send(input); }}>
         <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={1} placeholder="Ask the AI Solar Agent…" aria-label="Your question"
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
           className="max-h-32 min-h-10 flex-1 resize-none rounded-[10px] border border-border-strong bg-elevated px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-[var(--ring)]" />
-        <button type="submit" disabled={busy || !input.trim()} aria-label="Send" className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-brand text-brand-fg disabled:opacity-50"><Send className="size-4" /></button>
+        <button type="submit" disabled={busy || !input.trim()} aria-label="Send" className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-brand text-brand-fg disabled:opacity-50"><Send className="size-4"  aria-hidden /></button>
       </form>
     </div>
   );
