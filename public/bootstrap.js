@@ -12,5 +12,20 @@
       d.setAttribute("lang", "ar");
       d.setAttribute("dir", "rtl");
     }
+    /* The opening plays once per browser. The attribute goes on before paint so
+       a first-time visitor never sees the landing page flash behind it; the
+       overlay takes it off again when the sequence starts to leave. A plain
+       string rather than JSON, because this one is not a useLocalStore key.
+       The timeout is a dead man's switch: without it, a browser that never gets
+       as far as running React would hold the curtain up for ever. */
+    if (
+      localStorage.getItem("solink:intro-seen") !== "1" &&
+      !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    ) {
+      d.setAttribute("data-intro", "pending");
+      setTimeout(function () {
+        d.removeAttribute("data-intro");
+      }, 16000);
+    }
   } catch (e) {}
 })();
