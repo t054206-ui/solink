@@ -624,8 +624,14 @@ supplied by the owner · no founding story.
 - **Two lines of copy still claimed the site was a demo** after it stopped being
   one (About CTA; the hero chip read as a status line). Fixed. The hero chip is
   kept because the panel's specs genuinely are the demo catalogue's.
-- Still owner-side: Supabase **Auth → URL Configuration → Site URL** to
-  `https://solink-nu.vercel.app` (no API for it here), and the service-role key.
+- **Supabase Auth URL configuration is set** (done through the owner's Chrome,
+  2026-09-20): Site URL `https://solink-nu.vercel.app`; redirect allow-list
+  `https://solink-nu.vercel.app/**` and `http://localhost:3412/**`. There is no
+  MCP or SQL route to these settings; the dashboard is the only way. Gotcha:
+  the dashboard's "one URL per line" box flattens a programmatic newline into
+  one string — add rows with the dialog's own "+ Add URL" button instead.
+- Still owner-side: the service-role key, and a real SMTP sender for auth
+  emails before anyone but the team signs up.
 
 ## Not done, in priority order
 
