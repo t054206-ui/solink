@@ -78,6 +78,7 @@ export default function LandingPage() {
               <span className="demo-stripe micro rounded-full border border-[color:var(--cls-demo)] px-3 py-1 text-[color:var(--cls-demo)]">
                 {DEMO_PRODUCT_BANNER}
               </span>
+              <p className="max-w-xs text-center text-[12.5px] leading-snug text-fg-muted">{t("label.illustrative")}</p>
               <p className="max-w-xs text-center text-[13px] leading-snug text-fg-muted">
                 <span className="micro text-[color:var(--cls-unavailable)]">{t("label.annualOutput")}</span>
                 <br />

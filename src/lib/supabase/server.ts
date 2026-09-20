@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { publicEnv, isSupabaseConfigured } from "@/lib/config/env";
+import { DEFAULT_ROLE, isRole, type Role } from "@/lib/roles";
 
 /**
  * Supabase client for server components and route handlers (user-scoped, RLS applies).
@@ -29,4 +30,21 @@ export async function getCurrentUser() {
   if (!supabase) return null;
   const { data } = await supabase.auth.getUser();
   return data.user ?? null;
+}
+
+/**
+ * The signed-in user's role from user_profiles, or null when there is no
+ * session or Supabase is not configured. Callers in demo mode fall back to the
+ * browser-chosen role; in Supabase mode this is the only source of truth, and a
+ * ?as= query string must never override it.
+ */
+export async function getCurrentRole(): Promise<Role | null> {
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) return null;
+  const { data } = await supabase.from("user_profiles").select("role").eq("user_id", user.id).maybeSingle();
+  const role: unknown = data?.role;
+  return isRole(role) ? role : DEFAULT_ROLE;
 }

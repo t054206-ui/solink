@@ -57,6 +57,7 @@ const en = {
   "label.warranty": "Performance warranty",
   "label.annualOutput": "Annual output",
   "label.needsData": "Needs your roof",
+  "label.illustrative": "An illustrative panel. Real panels appear as manufacturers publish them.",
 
   "audience.title": "Not a homeowner?",
   "audience.sub": "Solink is the same platform for the companies on the other side of the job.",
@@ -239,7 +240,7 @@ const en = {
   "about.future.beyond": "Future markets",
 
   "about.cta.title": "Start your solar journey",
-  "about.cta.sub": "Solink runs in demo mode today, and every figure tells you what it is.",
+  "about.cta.sub": "Every figure Solink shows tells you what it is and where it came from.",
   "about.cta.primary": "Analyze your home",
   "about.cta.secondary": "Explore panels",
   "nav.about": "About",
@@ -291,6 +292,7 @@ const ar: Dict = {
   "label.warranty": "ضمان الأداء",
   "label.annualOutput": "الإنتاج السنوي",
   "label.needsData": "يحتاج بيانات سطحك",
+  "label.illustrative": "لوح توضيحي. الألواح الحقيقية تظهر لما المصنّعين ينشرونها.",
 
   "audience.title": "مو صاحب بيت؟",
   "audience.sub": "نفس المنصة للشركات على الطرف الثاني من الشغل.",
@@ -473,7 +475,7 @@ const ar: Dict = {
   "about.future.beyond": "أسواق مستقبلية",
 
   "about.cta.title": "ابدأ رحلتك الشمسية",
-  "about.cta.sub": "سولينك يشتغل بالوضع التجريبي الحين، وكل رقم يقول لك شنو هو.",
+  "about.cta.sub": "كل رقم يعرضه سولينك يقول لك شنو هو ومنين جاي.",
   "about.cta.primary": "حلّل بيتك",
   "about.cta.secondary": "استكشف الألواح",
   "nav.about": "عن سولينك",
