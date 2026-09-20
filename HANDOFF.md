@@ -598,6 +598,35 @@ supplied by the owner · no founding story.
 - **MEW's investor portal (tariff calculator) 404s.** The yearbook PDF on
   mew.gov.kw is the working primary source.
 
+## Addendum, later on 2026-09-20 — sign-up went live
+
+- **Vercel env set from the CLI**, not the dashboard: `npx vercel env add … --scope
+  t054206-3843` using the auth already on this Mac. The Vercel MCP connector
+  cannot see this team's projects at all (zero projects, zero deployments); do
+  not waste time on it. `vercel link --yes --project solink` appends a harmless
+  `VERCEL_OIDC_TOKEN` line to `.env.local`.
+- **Production is in Supabase mode.** Sign-up and sign-in are server-rendered
+  forms (the pages read `?next=` on the server; no `useSearchParams`, no
+  Suspense skeleton). Confirmation emails redirect to the site's own origin.
+- **Role comes from the account in Supabase mode.** `getCurrentRole()` in
+  `src/lib/supabase/server.ts` reads `user_profiles.role`; `/dashboard` ignores
+  `?as=` and hides the switcher unless the app is in demo mode. Before this, a
+  signed-in user could pick any dashboard from the URL.
+- **First account exists**: `t0…@coded.edu.kw`, confirmed, role `homeowner`,
+  profile auto-created — which also proves `handle_new_user` fires correctly
+  from the `private` schema. Promoting it to admin is one SQL statement, run
+  only on the owner's explicit say-so.
+- **Session 4 (another machine, no toolchain) left two `react-hooks/immutability`
+  errors** in `PanelScene.tsx`; fixed here with no visual change (parts list in
+  a ref; environment attached via `<primitive attach="environment">`). Its
+  `next build` passed because that rule is lint-only — always run `eslint`, not
+  just `build`, after merging work from a session without a toolchain.
+- **Two lines of copy still claimed the site was a demo** after it stopped being
+  one (About CTA; the hero chip read as a status line). Fixed. The hero chip is
+  kept because the panel's specs genuinely are the demo catalogue's.
+- Still owner-side: Supabase **Auth → URL Configuration → Site URL** to
+  `https://solink-nu.vercel.app` (no API for it here), and the service-role key.
+
 ## Not done, in priority order
 
 1. **Demo-mode settings path.** `getPlatformSettings()` returns empty without
