@@ -614,8 +614,8 @@ supplied by the owner · no founding story.
   signed-in user could pick any dashboard from the URL.
 - **First account exists**: `t0…@coded.edu.kw`, confirmed, role `homeowner`,
   profile auto-created — which also proves `handle_new_user` fires correctly
-  from the `private` schema. Promoting it to admin is one SQL statement, run
-  only on the owner's explicit say-so.
+  from the `private` schema. Promoted to `admin` on the owner's "yes" (2026-09-20 14:59 UTC) with an
+  UPDATE scoped to the single confirmed user.
 - **Session 4 (another machine, no toolchain) left two `react-hooks/immutability`
   errors** in `PanelScene.tsx`; fixed here with no visual change (parts list in
   a ref; environment attached via `<primitive attach="environment">`). Its
