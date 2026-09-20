@@ -76,13 +76,31 @@ export async function getProfile(): Promise<Result<SolarProfile | null>> {
   return { data: (data as SolarProfile | null) ?? null, mode };
 }
 
-export async function listSystems(): Promise<Result<SolarSystem[]>> {
+/**
+ * Monitoring source that marks an external reference system: an operating
+ * plant from a published dataset, imported for its historical production.
+ * Those rows are real measurements (cls 'source', is_demo false) but they are
+ * not the signed-in user's installation, so personal screens leave them out.
+ */
+export const REFERENCE_MONITORING_SOURCE = "kaggle:solar-power-generation";
+
+export async function listSystems(
+  opts: { includeReference?: boolean } = {},
+): Promise<Result<SolarSystem[]>> {
   const mode = getDataMode();
   if (mode === "demo") return { data: [demo.DEMO_SYSTEM], mode };
   const c = (await supa())!;
   const { data, error } = await c.from("solar_systems").select("*").order("created_at", { ascending: false });
   if (error) throw error;
-  return { data: (data ?? []) as SolarSystem[], mode };
+  const rows = (data ?? []) as SolarSystem[];
+  // Filtered here rather than in the query on purpose. In SQL
+  // `monitoring_source <> '…'` evaluates to NULL for the NULL that every
+  // system without connected hardware carries, so a PostgREST `not.eq` would
+  // silently drop exactly the personal systems this has to keep.
+  return {
+    data: opts.includeReference ? rows : rows.filter((s) => s.monitoring_source !== REFERENCE_MONITORING_SOURCE),
+    mode,
+  };
 }
 
 export async function getSystem(id: string): Promise<Result<SolarSystem | null>> {

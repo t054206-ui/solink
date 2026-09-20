@@ -12,7 +12,11 @@ import { SYSTEM_STATUS_LABEL } from "../_components/admin-helpers";
 export const metadata: Metadata = { title: "Admin · Solar Systems" };
 
 export default async function AdminSystemsPage() {
-  const [systems, products, providers] = await Promise.all([safe(listSystems, []), listAllProducts(), safe(listProviders, [])]);
+  const [systems, products, providers] = await Promise.all([
+    safe(() => listSystems({ includeReference: true }), []),
+    listAllProducts(),
+    safe(listProviders, []),
+  ]);
   const prod = new Map(products.data.map((p) => [p.id, p]));
   const prov = new Map(providers.data.map((p) => [p.id, p.name]));
   return (
