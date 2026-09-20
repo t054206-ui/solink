@@ -8,18 +8,25 @@
 It has two parts, and **Session 2 at the end supersedes Session 1 on anything
 visual.**
 
-The current position, as of 2026-09-19:
+The current position, as of 2026-09-20:
 
-- The site is live at https://solink-nu.vercel.app and works. It is v1.
-- **Three visual designs have been rejected by the owner.** They are each
-  described in Session 2 so you do not rebuild one by accident.
-- The owner has asked for a **ground-up rebuild of the interface** and is sending
-  reference websites.
-- **Do not design anything until those references arrive.** When they do, build
-  the landing page and the dashboard only, show them, and get a yes before
-  touching the other fifty-six pages. Building everything before checking is the
-  mistake that wasted three iterations.
-- `git checkout v1-superseded` recovers the current version at any time.
+- The rebuild is on `main` and deployed to https://solink-nu.vercel.app
+  (owner's instruction "push and deploy", 2026-09-20). v1 is recoverable with
+  `git checkout v1-superseded`.
+- **The visual rebuild happened.** Direction "Studio" was chosen from the
+  owner's reference sites and is recorded in `design-system/solink/DIRECTION.md`
+  — read that file before touching anything visual. HANDOFF.md Session 3 has
+  the full account.
+- Built and approved by the owner: landing page with a draggable 3D panel,
+  role-aware dashboard (`/dashboard?as=…`), English/Kuwaiti Arabic toggle with
+  RTL, roof photo/video reader, and `/about`.
+- Light theme is the default. Roles are homeowner (includes landlord),
+  manufacturer, company, admin.
+- Still placeholders: team roles/bios/photos, team description, and the
+  platform settings (tariff, CO₂ factor, performance ratio) — sourced values
+  exist in Session 3 but cannot take effect until the demo-mode settings path is
+  built.
+- `git checkout v1-superseded` still recovers v1.
 
 ## Working conventions
 

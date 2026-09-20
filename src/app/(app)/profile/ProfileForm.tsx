@@ -14,6 +14,7 @@ import type { DataMode } from "@/lib/data/mode";
 import type { HouseType, RoofOrientation, SolarProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { MapView } from "./MapView";
+import { RoofCapture } from "./RoofCapture";
 import { saveProfile, uploadRoofPhoto } from "./actions";
 import { PROFILE_STORE_KEY, mergeProfile, profileCompleteness, resolveRoofArea, type ProfileDraft } from "../_plan/profileStore";
 
@@ -215,9 +216,14 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
         </CardBody>
       </Card>
 
+      {/* Two ways to describe the roof: type it, or photograph it and confirm
+          what Solink reads. The photo route fills what a picture can honestly
+          support and says plainly what it cannot — area is never guessed. */}
+      <RoofCapture roofAreaM2={roofArea} onApply={(patch) => update(patch)} />
+
       {/* Roof */}
       <Card>
-        <CardHeader title="Roof" subtitle="Size, orientation and anything that casts shade. Roof area is required." />
+        <CardHeader title="Roof" subtitle="Size, orientation and anything that casts shade. Roof area is required. Fill this in yourself, or use the photo reader above and confirm each suggestion." />
         <CardBody className="grid gap-4">
           <div role="radiogroup" aria-label="How to enter roof area" className="inline-flex w-fit rounded-[10px] border border-border bg-inset p-0.5 text-[13px]">
             {(["dimensions", "direct"] as const).map((m) => (

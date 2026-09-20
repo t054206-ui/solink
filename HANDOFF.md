@@ -507,3 +507,96 @@ design-system/solink/MASTER.md         created by the skill, then corrected
 6. Only then apply the direction to the remaining screens.
 7. Keep: the four accessibility fixes, the copy rules above, the data
    classification and placeholder discipline, and everything in `docs/`.
+
+---
+---
+
+# SESSION 3 — 2026-09-19 → 2026-09-20 (the rebuild, done)
+
+## Read this before anything else
+
+The rebuild Session 2 was waiting for **happened**. The owner sent three
+reference sites (screen recordings from motionsites.com), chose direction
+**"Studio"**, approved the landing page and dashboards, and then kept going:
+bilingual, roles, a roof photo reader, an About page. Everything visual is
+governed by `design-system/solink/DIRECTION.md`, which is the contract for this
+direction and records every decision the owner made and why.
+
+Deployed to production on 2026-09-20 on the owner's instruction "push and
+deploy". v1 remains at tag `v1-superseded`.
+
+## What was built
+
+| Area | Where | Notes |
+| --- | --- | --- |
+| Token system "Studio" | `src/app/globals.css` | Bone `#F4F3EF`, ink `#0E1116`, panel blue `#1A3A63`, amber `#F0A02A` for energy figures only (`--sun-ink` for amber text on light). Light is the default theme; dark is opt-in and high-contrast. |
+| Fonts | `src/app/layout.tsx` | Archivo (display/UI), JetBrains Mono (figures, micro-labels), IBM Plex Sans Arabic. |
+| Bilingual | `src/lib/i18n/` | EN + light Kuwaiti Arabic, one dictionary, `Dict` type forces identical keys. Locale in `solink:locale`; `public/bootstrap.js` sets `lang`/`dir` before paint. **Arabic is Claude's draft, unreviewed by a Kuwaiti speaker.** |
+| 3D panel | `src/components/three/` | Real 1722×1134 mm geometry, procedural cell texture, drag to tilt/rotate, angles clamped (tilt 0–60°, azimuth ±95°), camera distance derived from the bounding sphere so nothing clips. Static SVG on phones and under reduced motion. Reports angle only — see "not done". |
+| Landing | `src/app/(marketing)/page.tsx` | Object-in-empty-room hero, two doors (installer/manufacturer), journey, honesty takeover, CTA. |
+| Roles | `src/lib/roles.ts`, `src/app/(app)/dashboard/` | homeowner (= landlord), manufacturer, company, admin. Role in `?as=` so dashboards stay server components. Company view follows `ProviderCompany.kind` (install / maintenance / cleaning). Switcher is demo-only. |
+| Roof reader | `src/app/api/ai/inspect-roof/route.ts`, `src/app/(app)/profile/RoofCapture.tsx` | Photos or video (frames extracted in-browser). Suggests, never measures; user confirms each field. Nothing stored. Needs `CLAUDE_API_KEY`. |
+| About | `src/app/(marketing)/about/` | Eleven sections per the owner's brief. Vision and mission are the owner's words; team is four named people (`src/lib/content/team.ts`) with roles/bios/photos still placeholders; Kuwait Vision 2035 wording sourced from MOFA + UN ESCWA. |
+| Env | `.env.local` (gitignored) | Created from `.env.example`, `NEXT_PUBLIC_APP_URL` set to the local port. Keys to be pasted by the owner, never by Claude. |
+
+Checks were clean at every step: `tsc`, `eslint`, `next build` (65 routes).
+
+## Decisions the owner made (all recorded in DIRECTION.md)
+
+Studio palette · drag-to-rotate panel · cinematic motion (no fade-in-on-scroll,
+which is banned) · landlord = homeowner · company services drive the install
+area · light Kuwaiti Arabic, drafted by Claude · fake panel data allowed **only**
+as labelled demo data · no push, no deploy until told — then, at the end of the
+session, "push and deploy" to `main` · About page vision/mission/team sentence
+supplied by the owner · no founding story.
+
+## Sources found for the platform settings (not yet wired — see below)
+
+| Setting | Value | Source |
+| --- | --- | --- |
+| Electricity tariff, residential | **2 fils/kWh = 0.002 KWD/kWh** | MEW *Electrical Energy Statistical Yearbook 2020*, ch. 4, p. 113, "Tariff Of Electricity In All Sectors Of Consumption". Investment & commercial 5, government 25, industrial & agriculture 5, others 12. MEW categorises by property type, not nationality — a private house is Residential, a rented apartment building is Investmental. |
+| Grid CO₂ factor | **0.635 kgCO₂e/kWh, lifecycle** | Ember via Our World in Data, shown for 2025; the actual data year must be read from the chart's Table view before citing. |
+| Performance ratio | proposed 0.86 (NREL PVWatts default 14% losses) | Owner has not yet said yes. KISR soiling studies for the Kuwait adjustment later. |
+| Peak sun hours | — | WeatherAPI `short_rad` (paid tier) or Google Solar (Kuwait coverage unverified) or NREL PVWatts (free). |
+
+## Things tried that failed — read before repeating
+
+- **`preview_start` with launch.json** resolves against the original scratch
+  workspace, not the project. Run `npm run dev -- -p <port>` in Bash and open
+  the URL with `preview_start url=`. Port 3000 is often held by a stale server.
+- **A raw `<script>` in the root layout** makes React 19 log "Encountered a
+  script tag" and can break hydration. Use `next/script` with
+  `strategy="beforeInteractive"` and an external `src`.
+- **"Script is not defined" persisted after the import was fixed** — a stale
+  Turbopack cache. `rm -rf .next` and restart.
+- **`react-hooks/immutability`** rejects writing to a ref passed as a prop and
+  to `gl.domElement.style`. Keep mutable refs local to the component that
+  mutates them; style the canvas cursor in CSS.
+- **Lucide 1.x has no `Github`/`Linkedin` icons.** Use text pills.
+- **A frame as solid box in front of the glass hid every cell** — z-order.
+- **The 3D camera was too close** and clipped the panel at high tilt; distance
+  is now derived from the bounding sphere (`CAMERA_POS` comment in
+  `PanelScene.tsx`). Do not move it closer without redoing that maths.
+- **Sticky sections bleed through anything after them that lacks its own
+  background and z-index.** On `/about` everything after the Problem section is
+  wrapped in one `relative z-10 bg-bg` layer.
+- **Browser-pane screenshots come back blank right after an instant scroll** —
+  compositor timing, not a bug. Wait and shoot again; trust the DOM check.
+- **MEW's investor portal (tariff calculator) 404s.** The yearbook PDF on
+  mew.gov.kw is the working primary source.
+
+## Not done, in priority order
+
+1. **Demo-mode settings path.** `getPlatformSettings()` returns empty without
+   Supabase, so the sourced tariff and CO₂ figures cannot take effect. Add a
+   local config read (e.g. `src/lib/config/settings.local.ts` or env) with
+   `{value, source}` per setting. This is the single biggest unlock.
+2. Wire `getBuildingInsights` (Google Solar) — it has zero callers. Test one
+   Kuwaiti address first; coverage is unverified.
+3. Tilt → output. `calculations.ts` has no tilt/azimuth. Needs DNI/DHI/GHI from
+   WeatherAPI plus a cited transposition model. The hero panel reports angle only
+   until then.
+4. Tariff category on the profile: private house (2) vs apartment building (5).
+5. Team roles/bios/photos; team description.
+6. Supabase (org is at the free-project limit).
+7. The other 56 pages carry the new tokens but were not redesigned.

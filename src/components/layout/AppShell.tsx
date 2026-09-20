@@ -8,6 +8,7 @@ import { APP_NAV } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { AgentDrawer } from "./AgentDrawer";
+import { SkipLink } from "./SkipLink";
 
 export interface ShellUser { email: string | null; isDemo: boolean; role: "homeowner" | "provider" | "admin" }
 
@@ -53,7 +54,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
 
   return (
     <div className="min-h-dvh bg-bg">
-      <a href="#main" className="skip-link">Skip to main content</a>
+      <SkipLink />
       {/* Page-level demo notice. Deliberately not sticky: its height varies with
           wrapping, and a fixed offset for the sticky header would overlap it.
           The DEMO chip in the header keeps the warning visible while scrolling. */}

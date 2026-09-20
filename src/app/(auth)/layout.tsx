@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Lattice } from "@/components/brand/Lattice";
+import { SkipLink } from "@/components/layout/SkipLink";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh grid lg:grid-cols-2">
-      <a href="#main" className="skip-link">Skip to main content</a>
+      <SkipLink />
       <div className="ink-light relative hidden lg:flex flex-col justify-between overflow-hidden bg-[var(--indigo)] p-10 text-[#f6f1e8]">
         <Lattice size={88} />
         <Logo className="relative text-white" />
