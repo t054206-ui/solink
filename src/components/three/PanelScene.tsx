@@ -127,7 +127,10 @@ function PanelRig({ onTick, onStep, autoSpin, onInteract, initialTilt, draggable
   const frame = useRef<THREE.Group>(null);
   const junction = useRef<THREE.Mesh>(null);
   // Same order as PANEL_LAYERS, which is the order they separate in.
-  const parts: React.RefObject<THREE.Object3D | null>[] = [glass, cells, backsheet, frame, junction];
+  // Held in a ref: the frame loop reaches through this list every frame, and
+  // react-hooks/immutability treats a render-local array as something the loop
+  // could reassign. A ref is what that rule exempts.
+  const parts = useRef<React.RefObject<THREE.Object3D | null>[]>([glass, cells, backsheet, frame, junction]);
 
   useEffect(() => () => texture.dispose(), [texture]);
 
@@ -213,7 +216,7 @@ function PanelRig({ onTick, onStep, autoSpin, onInteract, initialTilt, draggable
     // Parts. Damped toward the timeline rather than set from it, so a cancel
     // mid-flight glides home instead of snapping.
     for (let i = 0; i < PANEL_LAYERS.length; i++) {
-      const part = parts[i]?.current;
+      const part = parts.current[i]?.current;
       if (!part) continue;
       const layer = PANEL_LAYERS[i];
       const want = layer.base + layer.explode * openAt(t, i) * spread;
@@ -353,14 +356,17 @@ function PanelRig({ onTick, onStep, autoSpin, onInteract, initialTilt, draggable
  * the glass has nothing to reflect and reads as flat plastic.
  */
 function StudioEnv() {
-  const { gl, scene } = useThree();
+  const gl = useThree((s) => s.gl);
 
-  useEffect(() => {
+  // Built once per renderer. Assigning scene.environment ourselves trips
+  // react-hooks/immutability (the scene is a hook's return value); attaching
+  // through the reconciler is the r3f idiom for the same thing.
+  const env = useMemo(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 64;
     canvas.height = 32;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
 
     const sky = ctx.createLinearGradient(0, 0, 0, 32);
     sky.addColorStop(0, "#ffffff");
@@ -380,17 +386,14 @@ function StudioEnv() {
 
     const pmrem = new THREE.PMREMGenerator(gl);
     const target = pmrem.fromEquirectangular(equirect);
-    scene.environment = target.texture;
-
     equirect.dispose();
     pmrem.dispose();
-    return () => {
-      scene.environment = null;
-      target.dispose();
-    };
-  }, [gl, scene]);
+    return target;
+  }, [gl]);
 
-  return null;
+  useEffect(() => () => env?.dispose(), [env]);
+
+  return env ? <primitive object={env.texture} attach="environment" /> : null;
 }
 
 export default function PanelScene({
