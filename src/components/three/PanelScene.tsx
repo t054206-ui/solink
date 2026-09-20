@@ -6,6 +6,7 @@ import { ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
 import { LAYER_COUNT, PANEL_LAYERS } from "./panelLayers";
+import { HERO_TIMING, schedule, type TourSchedule, type TourTiming } from "./tourTiming";
 
 /** Live angles, written every frame and read by the HTML readout, not by React. */
 export interface AngleRef {
@@ -60,43 +61,34 @@ const GLASS_CLOSED = 0.06;
 const GLASS_OPEN = 0.44;
 
 /**
- * The opening sequence, in seconds from the moment the tour starts.
+ * The take-apart sequence, in seconds from the moment the tour starts.
  *
- * Enter, hold, then one part every STEP seconds — STEP is set by how long a
- * seven-word sentence takes to read, not by how long the movement takes, which
- * is TRAVEL. Then a beat, then everything closes at once. Total 10.6s. Dragging
- * the panel cancels it at any point.
+ * Enter, hold, then one part every `step` seconds, a reading speed rather
+ * than a movement speed, which is `travel`. Then a beat, then everything
+ * closes at once. The numbers live in tourTiming.ts so the opening can read
+ * the same schedule without importing three.js. Dragging the panel cancels
+ * the tour at any point.
  */
-const ENTER = 0.8;
-const HOLD = 0.6;
-const STEP = 1.45;
-const TRAVEL = 1.05;
-const READ = 1.0;
-const CLOSE = 1.3;
-
-const OPEN_AT = ENTER + HOLD;
-const LAST_AT = OPEN_AT + (LAYER_COUNT - 1) * STEP + TRAVEL;
-const CLOSE_AT = LAST_AT + READ;
-const END_AT = CLOSE_AT + CLOSE;
 
 /** Which part is being explained at time t, or -1 for none. */
-function captionAt(t: number): number {
-  if (t < OPEN_AT || t >= CLOSE_AT) return -1;
-  return Math.min(LAYER_COUNT - 1, Math.floor((t - OPEN_AT) / STEP));
+function captionAt(t: number, s: TourSchedule): number {
+  if (t < s.openAt || t >= s.closeAt) return -1;
+  return Math.min(LAYER_COUNT - 1, Math.floor((t - s.openAt) / s.step));
 }
 
 /** How far part i has travelled, 0 to 1. */
-const openAt = (t: number, i: number) =>
-  THREE.MathUtils.smootherstep(t, OPEN_AT + i * STEP, OPEN_AT + i * STEP + TRAVEL);
+const openAt = (t: number, i: number, s: TourSchedule) =>
+  THREE.MathUtils.smootherstep(t, s.openAt + i * s.step, s.openAt + i * s.step + s.travel);
 
 /** Everything closes together, which is what makes the reassembly read as one move. */
-const closeAt = (t: number) => 1 - THREE.MathUtils.smootherstep(t, CLOSE_AT, END_AT);
+const closeAt = (t: number, s: TourSchedule) => 1 - THREE.MathUtils.smootherstep(t, s.closeAt, s.endAt);
 
 interface RigProps {
   onTick: (a: AngleRef) => void;
   onStep: (i: number) => void;
   autoSpin: boolean;
   autoplay: boolean;
+  timing: TourTiming;
   onInteract: () => void;
   initialTilt: number;
   draggable: boolean;
@@ -113,8 +105,9 @@ interface RigProps {
  * mutable state local to the component that mutates it is both legal and
  * simpler to follow.
  */
-function PanelRig({ onTick, onStep, autoSpin, autoplay, onInteract, initialTilt, draggable, tourKey }: RigProps) {
+function PanelRig({ onTick, onStep, autoSpin, autoplay, timing, onInteract, initialTilt, draggable, tourKey }: RigProps) {
   const group = useRef<THREE.Group>(null);
+  const s = useMemo(() => schedule(timing), [timing]);
   const angles = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
   const target = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
   const clock = useRef({ key: -1, t: 0, life: 0, cancelled: false });
@@ -219,8 +212,11 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, onInteract, initialTilt,
     if (!autoplay && c.key === 1) c.cancelled = true;
 
     const t = c.t;
-    const running = !c.cancelled && t < END_AT;
-    const spread = running ? closeAt(t) : 0;
+    const running = !c.cancelled && t < s.endAt;
+    const spread = running ? closeAt(t, s) : 0;
+    // Silence before the entrance is spent by the opening on the sun. Nothing
+    // of the module shows until its cue.
+    g.visible = !running || t >= s.start;
 
     // Parts. Damped toward the timeline rather than set from it, so a cancel
     // mid-flight glides home instead of snapping.
@@ -228,14 +224,14 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, onInteract, initialTilt,
       const part = parts.current[i]?.current;
       if (!part) continue;
       const layer = PANEL_LAYERS[i];
-      const want = layer.base + layer.explode * openAt(t, i) * spread;
+      const want = layer.base + layer.explode * openAt(t, i, s) * spread;
       part.position.z = THREE.MathUtils.damp(part.position.z, running ? want : layer.base, 7, delta);
     }
 
     // The object arrives: up from below, and a little short of full size, so
     // the first thing it does on screen is settle rather than appear.
-    const entered = running ? THREE.MathUtils.smootherstep(t, 0, ENTER) : 1;
-    const open = running ? openAt(t, 0) * spread : 0;
+    const entered = running ? THREE.MathUtils.smootherstep(t, s.start, s.enterAt) : 1;
+    const open = running ? openAt(t, 0, s) * spread : 0;
     g.position.y = PANEL_Y - (1 - entered) * 0.3;
     const scale = (0.9 + 0.1 * entered) * (1 - (1 - OPEN_SCALE) * open);
     g.scale.setScalar(THREE.MathUtils.damp(g.scale.x, scale, 7, delta));
@@ -254,8 +250,8 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, onInteract, initialTilt,
     if (running) {
       // Turning toward the viewer as it opens: at 52° the separation between
       // the parts is visible, at 20° they overlap into one line.
-      tg.tilt = 20 + 32 * THREE.MathUtils.smootherstep(t, ENTER * 0.5, OPEN_AT);
-      tg.azimuth = -34 + 28 * THREE.MathUtils.smootherstep(t, OPEN_AT, CLOSE_AT);
+      tg.tilt = 20 + 32 * THREE.MathUtils.smootherstep(t, s.start + s.enter * 0.5, s.openAt);
+      tg.azimuth = -34 + 28 * THREE.MathUtils.smootherstep(t, s.openAt, s.closeAt);
     } else if (autoSpin) {
       // Idle motion is a slow sway rather than a spin. A full rotation would
       // keep turning the panel away from the viewer, and the owner asked for
@@ -274,7 +270,7 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, onInteract, initialTilt,
 
     // React hears about the caption only when it changes, which is five times
     // in ten seconds rather than sixty times a second.
-    const caption = running ? captionAt(t) : -1;
+    const caption = running ? captionAt(t, s) : -1;
     if (caption !== shown.current) {
       shown.current = caption;
       onStep(caption);
@@ -417,6 +413,7 @@ export default function PanelScene({
   tourKey = 1,
   autoplay = true,
   stage = "light",
+  timing = HERO_TIMING,
 }: {
   onTick: (a: AngleRef) => void;
   onStep: (i: number) => void;
@@ -431,6 +428,8 @@ export default function PanelScene({
       to catch it), a cooler rim so the frame separates from the black, and
       a little less ambient so the glass keeps its contrast. */
   stage?: "light" | "dark";
+  /** The tour's clock. The hero uses the default; the opening runs a faster one with a delay for the sun. */
+  timing?: TourTiming;
   /** Phones: half the shadow map, half the pixels, same sequence. */
   economy?: boolean;
   /** Scrolled past. A hero that keeps drawing sixty frames a second into a
@@ -469,6 +468,7 @@ export default function PanelScene({
         onStep={onStep}
         autoSpin={autoSpin}
         autoplay={autoplay}
+        timing={timing}
         onInteract={onInteract}
         initialTilt={initialTilt}
         draggable={draggable}

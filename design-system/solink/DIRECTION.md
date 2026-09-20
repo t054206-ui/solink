@@ -75,30 +75,37 @@ serif italic accents.
 - The exploded stack is 820 mm deep. A real laminate is 10 mm. It is a diagram,
   and the line under the object says so.
 
-## The opening — /, first visit (2026-09-20, owner's third brief for the panel)
+## The opening — /, first visit (2026-09-20, owner's third and fourth briefs for the panel)
 
-The take-apart sequence plays **full bleed, before the site**, once per
-browser. Ink stage, a pool of the panel's own glass blue behind the object, a
-faint plotted grid fading out toward the edges. A title card while the module
-arrives ("This is a solar panel. Here is what is inside it."), the five parts
-with their one-line captions and a five-tick progress row in sun amber, the
-site's own headline on the closed module, then the overlay wipes upward.
-Nothing is clicked. Escape or Skip cuts it short.
+**From sunlight to your home, in twelve seconds, before the site.** Light
+stage, the page's own bone, so the module stays the only dark mass. Five beats,
+one clock, shared with the 3D scene through `tourTiming.ts` so caption and
+geometry cannot drift:
+
+| Beat | Seconds | What happens |
+| --- | --- | --- |
+| Sun | 0 – 2.0 | The sun rises top-right, a wash of its light reaches the middle of the stage. "It starts with the sun over your roof." |
+| Panel | 2.0 – 3.5 | The module arrives from below and catches the light. "A solar panel turns that light into electricity." |
+| Inside | 3.5 – 8.15 | The five parts separate one at a time, 0.85 s apart, one line each; a rail in the dock lights the part being explained. |
+| Home | 8.15 – 10.6 | The module closes and settles up and back; a line-drawn house appears beneath it with the current flowing down into it. The site headline. |
+| Journey | 10.6 – 12.3 | The ten steps light up in a cascade. Then the overlay wipes upward. |
+
+A progress hairline in panel blue runs along the top. The sun is the only
+thing in sun amber, because it is the sun. Nothing is clicked; Escape or Skip
+cuts it short.
 
 **Where the wipe lands is the point.** A first-time visitor without an account
 is on the sign-up page when the overlay lifts: the route is pushed while the
 curtain is still up. A signed-in visitor, a replay, or someone already on a
 sign-in page is returned to where they were. The hero declines its own copy of
-the sequence for the rest of that page load, so nobody watches the same ten
-seconds twice.
+the take-apart for the rest of that page load, so nobody watches it twice.
+
+The owner supplied this story as an HTML mock (ivory stage, sun, beam, house,
+journey pills, layer rail) and asked for it shorter; the mock's palette was
+translated to the Studio tokens and its six scenes compressed to five beats.
 
 "Replay the intro" lives in the footer's bottom bar and on the sign-in aside.
-Not shown, and not offered, under `prefers-reduced-motion`; the still panel and
-the five sentences as text remain.
-
-The same `PanelScene` renders it, with `stage="dark"`: no contact shadow, a
-stronger cool rim, less ambient. One object, one set of five sentences, two
-rooms.
+Not shown, and not offered, under `prefers-reduced-motion`.
 
 ## Sign in and sign up — /login, /signup
 

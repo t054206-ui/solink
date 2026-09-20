@@ -345,19 +345,20 @@ summary, label[for], select:not(:disabled) { cursor: pointer; touch-action: mani
 .panel-canvas:active { cursor: grabbing; }
 
 /* ── The opening ──────────────────────────────────────────────────────────
-   Full bleed on ink, before the site. The curtain is a server-rendered div
-   that only shows while <html data-intro="pending">, which bootstrap.js sets
-   before first paint for a browser that has not seen the opening, so the
-   landing page never flashes behind it. The overlay itself mounts after
-   hydration and wipes upward when it is done. */
-.intro-curtain { display: none; position: fixed; inset: 0; z-index: 90; background: #0e1116; }
+   From sunlight to your home, in twelve seconds, before the site. Light
+   stage, the same bone as the page, so the module is the only dark mass.
+   The curtain is a server-rendered div that only shows while
+   <html data-intro="pending">, which bootstrap.js sets before first paint for
+   a browser that has not seen the opening, so the landing page never flashes
+   behind it. The overlay mounts after hydration and wipes upward when done. */
+.intro-curtain { display: none; position: fixed; inset: 0; z-index: 90; background: var(--bg); }
 html[data-intro="pending"] .intro-curtain { display: block; }
 html[data-intro="pending"] body { overflow: hidden; }
 
 .intro-root {
   position: fixed; inset: 0; z-index: 100;
   display: grid; grid-template-rows: auto 1fr auto;
-  background: #0e1116; color: #f2f1ed;
+  background: var(--bg); color: var(--fg);
   overflow: hidden;
   animation: intro-in 600ms var(--ease-out) both;
 }
@@ -365,54 +366,100 @@ html[data-intro="pending"] body { overflow: hidden; }
 @keyframes intro-in { from { opacity: 0 } to { opacity: 1 } }
 @keyframes intro-out { from { clip-path: inset(0 0 0 0) } to { clip-path: inset(0 0 100% 0) } }
 
+/* Daylight. The one wash on the page is the sun's, top-right, where the sun is. */
+.intro-root::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(58% 44% at 80% 4%, rgba(240, 160, 42, .20), rgba(240, 160, 42, 0) 70%),
+    radial-gradient(70% 55% at 16% 100%, var(--brand-soft), transparent 70%);
+}
+.intro-root > * { position: relative; }
+
+.intro-progress { position: absolute; top: 0; inset-inline-start: 0; height: 2px; width: 0%; background: var(--brand); z-index: 2; }
+
 .intro-head {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 20px 20px 0;
 }
-@media (min-width: 768px) { .intro-head { padding: 28px 36px 0; } }
-.intro-brand { display: inline-flex; align-items: center; gap: 8px; color: #f2f1ed; font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
-.intro-eyebrow { color: rgba(242, 241, 237, .55); }
+@media (min-width: 768px) { .intro-head { padding: 26px 36px 0; } }
+.intro-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--fg); font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
 .intro-skip {
-  color: rgba(242, 241, 237, .7);
-  border: 1px solid rgba(242, 241, 237, .22); border-radius: 999px;
-  padding: 8px 14px; background: transparent;
-  transition: border-color var(--dur-fast) linear, color var(--dur-fast) linear;
+  color: var(--fg-secondary);
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 8px 14px; background: var(--bg-elevated);
 }
-.intro-skip:hover { color: #f2f1ed; border-color: rgba(242, 241, 237, .5); }
+.intro-skip:hover { color: var(--fg); border-color: var(--fg-muted); }
 
-/* The stage. The only light in the room is behind the object: a pool of the
-   panel's own glass blue, so the module reads as lit rather than pasted. */
+/* The stage: the module in the middle, the sun above it, the house below. */
 .intro-stage { position: relative; min-height: 0; }
-.intro-stage::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 52% 46% at 50% 54%, rgba(26, 58, 99, .62), rgba(26, 58, 99, 0) 100%);
-}
-.intro-stage::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
-  background-image:
-    linear-gradient(to right, rgba(242, 241, 237, .12) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(242, 241, 237, .12) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 100%);
-}
-.intro-stage > * { position: relative; z-index: 1; }
+.intro-canvas { position: absolute; inset: 0; transition: transform 1.1s var(--ease-snap); }
+.intro-stage.is-home .intro-canvas { transform: translateY(-10%) scale(.8); }
 
-.intro-copy { padding: 0 20px 28px; text-align: center; }
-@media (min-width: 768px) { .intro-copy { padding: 0 36px 44px; } }
-.intro-ticks { display: flex; justify-content: center; gap: 6px; margin-bottom: 18px; }
-.intro-ticks span { width: 28px; height: 2px; border-radius: 1px; background: rgba(242, 241, 237, .18); transition: background-color 400ms var(--ease-out); }
-.intro-ticks span.on { background: var(--sun); }
-.intro-caption { min-height: 96px; }
-@media (min-width: 768px) { .intro-caption { min-height: 104px; } }
-.intro-name { color: #f5b556; display: block; }
+.intro-sun {
+  position: absolute; top: 4%; inset-inline-end: 10%; width: clamp(56px, 7vw, 96px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 34% 32%, #ffe7a6, var(--sun));
+  box-shadow: 0 0 0 10px rgba(240, 160, 42, .14), 0 0 60px 18px rgba(240, 160, 42, .22);
+  opacity: 0; transform: translateY(28px) scale(.9);
+  transition: opacity .9s var(--ease-out), transform 1.2s var(--ease-out);
+}
+.intro-sun.on { opacity: 1; transform: none; }
+.intro-beam { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.1s var(--ease-out); }
+.intro-beam.on { opacity: 1; }
+
+.intro-house {
+  position: absolute; bottom: 2%; left: 50%; transform: translate(-50%, 24px);
+  width: clamp(150px, 22vw, 240px); opacity: 0;
+  transition: opacity .8s var(--ease-out), transform 1s var(--ease-out);
+}
+.intro-house.on { opacity: 1; transform: translate(-50%, 0); }
+.intro-house .wall { fill: var(--bg-elevated); stroke: var(--fg); stroke-width: 1.6; }
+.intro-house .line { fill: none; stroke: var(--fg); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.intro-house .flow { fill: none; stroke: var(--sun-ink); stroke-width: 1.6; stroke-dasharray: 4 5; }
+.intro-house.on .flow { animation: intro-flow 1.6s linear infinite; }
+@keyframes intro-flow { to { stroke-dashoffset: -18; } }
+
+.intro-copy { padding: 0 20px 22px; text-align: center; }
+@media (min-width: 768px) { .intro-copy { padding: 0 36px 30px; } }
+.intro-caption { min-height: 88px; }
+@media (min-width: 768px) { .intro-caption { min-height: 100px; } }
+.intro-name { color: var(--sun-ink); display: block; }
 .intro-line {
   margin: 8px auto 0; max-width: 30ch;
-  font-size: 19px; line-height: 1.35; letter-spacing: -0.01em; color: #f2f1ed; text-wrap: balance;
+  font-size: 19px; line-height: 1.35; letter-spacing: -0.01em; color: var(--fg); text-wrap: balance;
 }
-@media (min-width: 768px) { .intro-line { font-size: 24px; max-width: 34ch; } }
-.intro-line.is-title { font-size: 24px; letter-spacing: -0.025em; font-weight: 600; }
+@media (min-width: 768px) { .intro-line { font-size: 23px; max-width: 34ch; } }
+.intro-line.is-title { margin-top: 0; font-size: 24px; letter-spacing: -0.025em; font-weight: 600; }
 @media (min-width: 768px) { .intro-line.is-title { font-size: 34px; } }
-.intro-note { margin: 18px auto 0; max-width: 46ch; font-size: 11px; line-height: 1.45; color: rgba(242, 241, 237, .45); }
+
+/* The ten steps, lit in a cascade at the end. */
+.intro-journey { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 14px auto 0; max-width: 720px; min-height: 30px; }
+.intro-step {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--bg-elevated); color: var(--fg-muted); font-size: 12.5px; font-weight: 500;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .45s var(--ease-out), transform .45s var(--ease-out), color .45s linear, border-color .45s linear;
+}
+.intro-step::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--border-strong); transition: background-color .45s linear; }
+.intro-step.on { opacity: 1; transform: none; color: var(--fg); border-color: var(--border-strong); }
+.intro-step.on::before { background: var(--brand); }
+@media (max-width: 640px) { .intro-step { padding: 5px 10px; font-size: 11.5px; } }
+
+/* The dock: the five layers as a rail, and the disclaimer. */
+.intro-dock {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 0 20px 16px;
+}
+@media (min-width: 768px) { .intro-dock { padding: 0 36px 22px; } }
+.intro-rail { display: flex; align-items: center; gap: 12px; }
+.intro-rail > span { display: inline-flex; align-items: center; gap: 7px; color: var(--fg-muted); transition: color .3s linear; }
+.intro-rail > span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; transition: transform .3s var(--ease-snap), background-color .3s linear; }
+.intro-rail > span.on { color: var(--fg); }
+.intro-rail > span.on::before { background: var(--brand); transform: scale(1.8); }
+.intro-rail .name { display: none; }
+@media (min-width: 880px) { .intro-rail .name { display: inline; } .intro-rail { gap: 16px; } }
+.intro-note { max-width: 44ch; font-size: 11px; line-height: 1.45; color: var(--fg-muted); text-align: end; }
+@media (max-width: 640px) { .intro-note { text-align: start; } }
 
 /* ── Sign in / sign up ──────────────────────────────────────────────────── */
 .auth-aside { background: var(--bg-sunken); }

@@ -923,9 +923,38 @@ plays, unmounts, path stays `/`, hero at rest with labels and its own replay.
 - The opening is the same sequence as the hero, on purpose: one object, one
   set of sentences, two rooms.
 
+## Addendum, later the same evening — the opening became "From sunlight to your home"
+
+The owner sent an HTML mock of a different opening (ivory stage, a sun, a light
+beam, the panel, a house, an "energy path", the journey as pills, a rail of the
+panel's layers, a progress bar) and asked for it "added, but shorter". The mock's
+700-line script was not in the message, so the story was rebuilt inside the
+existing opening rather than pasted: same curtain, store, hand-off and replay.
+
+- **`src/components/three/tourTiming.ts` (new)**: the take-apart's clock as
+  data (`TourTiming`, `schedule()`), free of three.js. `HERO_TIMING` is Session
+  4's 10.6 s; `INTRO_TIMING` is 9.25 s with a 1.2 s delay for the sun.
+  `PanelScene` takes `timing` and hides the module until its cue.
+- **`IntroSequence.tsx`** owns the story clock (frame deltas capped at 50 ms,
+  like the scene's, started on the scene's first frame) and draws the sun, the
+  light wash, the house with its flowing current, the layer rail, the ten
+  journey pills and the progress hairline around the scene. Five beats, 12.3 s,
+  then the wipe. Light stage now (`stage="light"`), so the contact shadow is
+  back and the module is the only dark mass.
+- **Copy**: `intro.open` rewritten, `intro.panel` and `intro.layers` added,
+  both languages. The journey pills reuse `journey.1` to `journey.10`.
+- **Palette discipline**: sun amber only on the sun itself; progress, rail and
+  pill dots are panel blue.
+
+**Testing note.** The Browser pane was hidden for the whole of this pass, and a
+hidden pane runs requestAnimationFrame at one or two frames a second. Both
+clocks cap their step, so the twelve-second story took about seven minutes and
+was verified beat by beat through the DOM and screenshots. It is not a defect
+in the opening; the earlier ink version measured the same when hidden.
+
 ## What to do next
 
-1. Kuwaiti review of the 29 new Arabic strings.
+1. Kuwaiti review of the 31 new Arabic strings.
 2. If the other session resumes on the intro, reconcile against this file.
 3. Session 5's list still stands: PVWatts manual read, Google Solar, tilt
    model, privacy policy and terms (now more pressing: accounts are the front

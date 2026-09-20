@@ -54,8 +54,10 @@ const en = {
   // The opening: the same five parts, full bleed, before the site. Nothing has
   // to be clicked; it ends on its own and the site is already behind it.
   "intro.label": "Introduction: how a solar panel is built",
-  "intro.eyebrow": "Solink · Solar energy, explained",
-  "intro.open": "This is a solar panel. Here is what is inside it.",
+  "intro.eyebrow": "Solink · From sunlight to your home",
+  "intro.open": "It starts with the sun over your roof.",
+  "intro.panel": "A solar panel turns that light into electricity.",
+  "intro.layers": "Panel layers",
   "intro.skip": "Skip",
   "intro.replay": "Replay the intro",
 
@@ -320,8 +322,10 @@ const ar: Dict = {
   "panel.note": "تركيب لوح عام، مرسوم عشان يوضح شغل كل جزء. مو مقطع لوح شركة معينة.",
 
   "intro.label": "مقدمة: كيف يتركب اللوح الشمسي",
-  "intro.eyebrow": "سولينك · الطاقة الشمسية بكل بساطة",
-  "intro.open": "هذا لوح شمسي. شوف شفيه داخله.",
+  "intro.eyebrow": "سولينك · من الشمس إلى بيتك",
+  "intro.open": "كل شي يبدأ من الشمس فوق سطحك.",
+  "intro.panel": "اللوح الشمسي يحوّل هذا الضوء إلى كهرباء.",
+  "intro.layers": "طبقات اللوح",
   "intro.skip": "تخطّي",
   "intro.replay": "عيد المقدمة",
 
