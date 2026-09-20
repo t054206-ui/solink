@@ -6,9 +6,9 @@ until decided. Nothing has been assumed silently.
 | # | Decision | Placeholder | Where it lands once decided |
 |---|---|---|---|
 | 1 | ~~**Supabase project**~~ **Done 2026-09-20.** Project `solink` (`bgwvztckesuwlydwcfkj`, ap-south-1) in `t054206-ui's Org`; `gahwa-house` was paused by the owner to free the slot. Migrations 0001–0005 applied. Still needed from the owner: `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel (admin/import actions), and the two public vars in Vercel. | — | done |
-| 2 | ~~**Electricity tariff**~~ **Residential entered 2026-09-20**: 0.002 KWD/kWh, MEW Electrical Energy Statistical Yearbook 2020, p. 113, "Tariff Of Electricity In All Sectors Of Consumption". **Still needed from the owner: a yes to entering the other sectors from the same table** so landlords of apartment buildings are not priced at the private-house rate. Since 2026-09-20 the profile carries a tariff sector (`solar_profiles.tariff_category`, migration 0006) and the setting accepts per-sector rates (`by_category`), so this is one admin entry, no code. The table, verbatim (fils/kWh): Governmental 25 · Residential 2 · Investmental & Commercial 5 · Industrial & Agriculture 5 · Productive Industrial & Agriculture (related facilities) 3 · Others 12. Ready SQL is in §"Proposed entries" below. | — | `platform_settings.electricity_tariff_per_kwh` → `by_category` |
-| 3 | **Solar resource data source** for sites (peak sun hours / irradiance): Google Solar API, another dataset, or manual. **Proposal sourced 2026-09-20, awaiting your yes:** Global Solar Atlas (World Bank / ESMAP, Solargis model, data to 2025, read 2026-09-20) for Kuwait City 29.3759 N, 47.9774 E gives GHI **2037.5 kWh/m²/year = 5.58 kWh/m²/day** on a horizontal plane, GTI at the optimum 27° tilt 2238.4 kWh/m²/year = 6.13/day, and PVOUT 1717 kWh/kWp/year. See §"Proposed entries". | `[PLACEHOLDER: SOLAR RESOURCE DATA SOURCE]`, `[PLACEHOLDER: GOOGLE SOLAR / SOLAR SITE DATA SOURCE]` | `GOOGLE_SOLAR_API_KEY` or platform setting `peak_sun_hours_per_day` |
-| 4 | **Performance ratio / loss factor** assumption (or per-design engineering input). **Proposal from Session 3, still awaiting your yes:** NREL PVWatts default system losses 14 % → **0.86**, citing A. P. Dobos, *PVWatts Version 5 Manual*, NREL/TP-6A20-62641 (2014), §System Losses (soiling 2, shading 3, snow 0, mismatch 2, wiring 2, connections 0.5, LID 1.5, nameplate 1, age 0, availability 3; combined 14.08 %). Kuwait's soiling is heavier than 2 %; tighten later with KISR measurements. Cross-check: Global Solar Atlas's own simulation for Kuwait City implies PVOUT ÷ GTI = 0.77. See §"Proposed entries". | `[PLACEHOLDER: SYSTEM PERFORMANCE RATIO / LOSS FACTOR]` | platform setting `performance_ratio` |
+| 2 | ~~**Electricity tariff**~~ **Residential entered 2026-09-20**: 0.002 KWD/kWh, MEW Electrical Energy Statistical Yearbook 2020, p. 113, "Tariff Of Electricity In All Sectors Of Consumption". **All six sectors entered 2026-09-20 on the owner's yes** (`by_category`), so landlords of apartment buildings are priced at 5 fils, not 2. Since 2026-09-20 the profile carries a tariff sector (`solar_profiles.tariff_category`, migration 0006) and the setting accepts per-sector rates (`by_category`), so this is one admin entry, no code. The table, verbatim (fils/kWh): Governmental 25 · Residential 2 · Investmental & Commercial 5 · Industrial & Agriculture 5 · Productive Industrial & Agriculture (related facilities) 3 · Others 12. Ready SQL is in §"Proposed entries" below. | — | `platform_settings.electricity_tariff_per_kwh` → `by_category` |
+| 3 | ~~**Solar resource data source**~~ **Done 2026-09-20 (platform-wide value; per-site data via Google Solar remains open).** Entered on the owner's yes: Global Solar Atlas (World Bank / ESMAP, Solargis model, data to 2025, read 2026-09-20) for Kuwait City 29.3759 N, 47.9774 E gives GHI **2037.5 kWh/m²/year = 5.58 kWh/m²/day** on a horizontal plane, GTI at the optimum 27° tilt 2238.4 kWh/m²/year = 6.13/day, and PVOUT 1717 kWh/kWp/year. See §"Proposed entries". | `[PLACEHOLDER: SOLAR RESOURCE DATA SOURCE]`, `[PLACEHOLDER: GOOGLE SOLAR / SOLAR SITE DATA SOURCE]` | `GOOGLE_SOLAR_API_KEY` or platform setting `peak_sun_hours_per_day` |
+| 4 | ~~**Performance ratio / loss factor**~~ **Done 2026-09-20.** Entered on the owner's yes: NREL PVWatts default system losses 14 % → **0.86**, citing A. P. Dobos, *PVWatts Version 5 Manual*, NREL/TP-6A20-62641 (2014), §System Losses (soiling 2, shading 3, snow 0, mismatch 2, wiring 2, connections 0.5, LID 1.5, nameplate 1, age 0, availability 3; combined 14.08 %). Kuwait's soiling is heavier than 2 %; tighten later with KISR measurements. Cross-check: Global Solar Atlas's own simulation for Kuwait City implies PVOUT ÷ GTI = 0.77. See §"Proposed entries". | `[PLACEHOLDER: SYSTEM PERFORMANCE RATIO / LOSS FACTOR]` | platform setting `performance_ratio` |
 | 5 | ~~**Grid CO₂ emission factor**~~ **Done 2026-09-20.** 0.635 kgCO₂e/kWh lifecycle, Ember (2026) via Our World in Data, Kuwait 2025. | — | done |
 | 6 | **Real solar-panel data source** and **import method** | `[PLACEHOLDER: REAL SOLAR PANEL DATA SOURCE]`, `[PLACEHOLDER: SOLAR PANEL DATA IMPORT METHOD]` | Admin → Product Imports (CSV mapping UI exists; Excel/API pending) |
 | 7 | **Payment provider** | `[PLACEHOLDER: PAYMENT PROVIDER]` | `src/app/(app)/purchase` step 3 + `orders.payment_provider` |
@@ -24,13 +24,11 @@ until decided. Nothing has been assumed silently.
 | 17 | **Nearby-system comparison** data-sharing & privacy design | `[PLACEHOLDER: ANONYMIZED NEARBY SYSTEM DATA]` | `area_aggregates` |
 | 18 | ~~**GitHub remote**~~ **Done.** https://github.com/t054206-ui/solink, `main` deploys to Vercel. | — | done |
 
-## Proposed entries — sourced, not entered (2026-09-20, Session 5)
+## Entries made on the owner's yes (2026-09-20, Session 5)
 
-Three platform values were sourced from primary or near-primary documents and
-are ready to enter. None has been written to the database: entering a platform
-number is your call, as it was for the tariff and the CO₂ factor. Say yes to
-any of them and the next session runs the matching statement (or you enter it
-at `/admin/settings`, which requires the same source text).
+Three platform values were sourced from primary or near-primary documents,
+proposed, and **entered after the owner said yes**. The statements below are
+the ones that ran, kept as the record of exactly what was written and why.
 
 ### Peak sun hours (decision 3)
 
@@ -66,10 +64,11 @@ update platform_settings set
 where key = 'performance_ratio';
 ```
 
-Session 5 could not open nrel.gov from its network; the loss table above was
-confirmed against pvlib's `pvwatts_losses` documentation, which reproduces the
-manual's defaults and cites it. Read the manual's §System Losses once before
-entering, or have the next session do it.
+Session 5 could not open nrel.gov from its network, before or after the yes;
+the loss table above was confirmed against pvlib's `pvwatts_losses`
+documentation, which reproduces the manual's defaults and cites it. **Still
+worth one read of the manual's §System Losses from a network that reaches
+nrel.gov**, to close the loop on the primary source.
 
 ### Tariff by sector (decision 2)
 

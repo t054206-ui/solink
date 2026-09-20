@@ -749,7 +749,8 @@ supplier list, a yes on two numbers). This session did the unblocked ones and
 prepared the owner-gated ones so each is one yes away. **Nothing was pushed
 and no platform value was written**: the owner has said "push and deploy" once,
 for Session 3, and every platform number so far went in after an explicit yes.
-Commits are local on `main`.
+Commits are local on `main`. **Late in the session the owner said yes to the
+three entries and they were written** (see "What to do next", item 1).
 
 All three checks were clean at the start (`a95d7ae`) and at the end.
 
@@ -758,8 +759,8 @@ All three checks were clean at the start (`a95d7ae`) and at the end.
 | Item | Where | Notes |
 | --- | --- | --- |
 | Session 3 next-step 7, **tariff category on the profile** | migration `supabase/migrations/0006_solink_tariff_category.sql` (**applied** to the live project, additive and nullable), `src/lib/types.ts` (`TariffCategory`), `src/lib/solar/tariff.ts` (new), `src/lib/data/settings.ts`, `src/app/(app)/profile/{ProfileForm,actions}.tsx`, `_plan/AssumptionField.tsx`, `analysis/PotentialAnalysis.tsx`, `dashboard/_role/HomeownerDashboard.tsx`, `admin/_components/SettingsForm.tsx`, `src/lib/demo/data.ts` | The MEW yearbook table (p. 113) was re-read with positioned text; it has six sectors, now the `tariff_category` enum. The profile has an "Electricity tariff sector" select, suggested from the house type the moment one is chosen and never overwriting a choice. The tariff setting's value may carry `by_category`; `tariffFor()` picks the rate for the profile's sector, and when the platform has no rate for that sector it returns **nothing and a sentence**, never the Residential rate. The admin settings form has a per-sector editor for the tariff. No rate was added to the database; the SQL is in `docs/DECISIONS-NEEDED.md`. |
-| Session 3 next-step 2, **peak sun hours sourced** | `docs/DECISIONS-NEEDED.md` §Proposed entries | Global Solar Atlas API for Kuwait City: GHI 2037.5 kWh/m²/year = **5.58 h/day** (horizontal), GTI at optimum 27° = 6.13/day, PVOUT 1717 kWh/kWp/year. Recommendation GHI until tilt is modelled. Ready SQL with the full citation. |
-| Session 3 next-step 1, **performance ratio** | same | 0.86 from PVWatts v5 defaults, loss table confirmed via pvlib's documentation because nrel.gov was unreachable from this network. Ready SQL. Still needs the owner's yes. |
+| Session 3 next-step 2, **peak sun hours sourced** | `docs/DECISIONS-NEEDED.md` §Proposed entries | Global Solar Atlas API for Kuwait City: GHI 2037.5 kWh/m²/year = **5.58 h/day** (horizontal), GTI at optimum 27° = 6.13/day, PVOUT 1717 kWh/kWp/year. Recommendation GHI until tilt is modelled. Entered on the owner's yes, with the full citation in `source`. |
+| Session 3 next-step 1, **performance ratio** | same | 0.86 from PVWatts v5 defaults, loss table confirmed via pvlib's documentation because nrel.gov was unreachable from this network. Entered on the owner's yes. |
 | Session 4 not-done 4, **spec labels drift** | `src/components/three/PanelStudio.tsx` (`labels` prop), `src/app/(marketing)/page.tsx` | The three labels moved into the stage and show only when the module is closed and at rest (after the sequence, or the moment a drag cancels it); hidden again on replay. Verified in the browser: 3 labels → 0 during the tour → 3 after. `DIRECTION.md` records it. |
 | Docs | `docs/DECISIONS-NEEDED.md` (rows 2, 3, 4, 5, 18 updated; new §Proposed entries), `CLAUDE.md`, `design-system/solink/DIRECTION.md` | |
 
@@ -811,24 +812,30 @@ Monthly PVOUT (kWh/kWp): 124.2 · 123.5 · 151.5 · 140.2 · 151.2 · 157.3 · 1
 
 ## What to do next, in priority order
 
-1. **Owner's yes on three entries**, then run the SQL in
-   `docs/DECISIONS-NEEDED.md` §Proposed entries: peak sun hours (5.58, GHI),
-   performance ratio (0.86), tariff by sector. Production figures light up with
-   the first two; apartment-building landlords get the right rate with the
-   third.
-2. **Push and deploy** when the owner says so. Migration 0006 is already live,
-   so the deployed code and the database agree either way.
-3. **Email sender, keys, domain** (Session 3 items 3, 4, 11): owner.
-4. **Wire Google Solar** (Session 3 item 5). Not started: the key is absent and
+1. ~~Owner's yes on three entries~~ **Done.** The owner said yes at the end of
+   the session and the three statements ran: peak sun hours 5.58 (GHI),
+   performance ratio 0.86, tariff by sector. All eight production-relevant
+   settings except degradation, TCO period and thresholds are now entered.
+   Production figures light up on the live site immediately, because the
+   deployed code reads `value.value` and ignores the extras; the per-sector
+   rates take effect once the new code is deployed.
+2. **Push and deploy** when the owner says so. Migration 0006 is already live
+   and the settings are entered, so the deployed code and the database agree
+   either way.
+3. **Read the PVWatts manual §System Losses** from a network that reaches
+   nrel.gov, to confirm the 14 % against the primary source (Session 5 only had
+   pvlib's reproduction of it).
+4. **Email sender, keys, domain** (Session 3 items 3, 4, 11): owner.
+5. **Wire Google Solar** (Session 3 item 5). Not started: the key is absent and
    Kuwait coverage is unverified, so any wiring would be untestable here.
    Suggested shape when it happens: a "Read from Google Solar" step beside the
    coordinates in `ProfileForm`, same confirm-each-field pattern as
    `RoofCapture`, area classified `source`.
-5. **Tilt → output** (item 6) now has the inputs it needs from Global Solar
+6. **Tilt → output** (item 6) now has the inputs it needs from Global Solar
    Atlas (GHI, DNI, DIF); still needs a cited transposition model.
-6. **Privacy policy and terms** (item 10): none exist. Draft for the owner's
+7. **Privacy policy and terms** (item 10): none exist. Draft for the owner's
    review; the site stores addresses, roof photos and bills.
-7. Session 4's remaining items: click-to-hold a part, leader lines from parts
+8. Session 4's remaining items: click-to-hold a part, leader lines from parts
    to labels, the intro video asset.
-8. About page placeholders, Kuwaiti review of the Arabic, real catalogue,
+9. About page placeholders, Kuwaiti review of the Arabic, real catalogue,
    the other 56 pages.

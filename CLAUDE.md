@@ -26,10 +26,11 @@ The current position, as of 2026-09-20:
   applied. Both local and production run in Supabase mode (public vars set on Vercel via
   the logged-in CLI). Sign-up is live and Supabase Auth URLs are configured; the owner's account is
   admin; still needed: service-role key, an SMTP sender, and a domain.
-- Platform settings: tariff (Residential) and CO₂ factor are entered with
-  sources. Peak sun hours and performance ratio are **sourced and awaiting the
-  owner's yes**; the ready SQL is in `docs/DECISIONS-NEEDED.md` §"Proposed
-  entries". Never enter a platform number without that yes.
+- Platform settings entered with sources (all on the owner's yes): tariff by
+  MEW sector, CO₂ factor, peak sun hours (5.58, GHI, Kuwait City), performance
+  ratio (0.86). Still null: degradation rate, TCO period, alert thresholds,
+  end-of-life criteria. Never enter a platform number without the owner's yes;
+  the record of what was entered and why is in `docs/DECISIONS-NEEDED.md`.
 - The profile carries an MEW tariff sector (`solar_profiles.tariff_category`,
   migration 0006, applied). The tariff setting accepts per-sector rates in
   `by_category`; `src/lib/solar/tariff.ts` decides which applies and says so
