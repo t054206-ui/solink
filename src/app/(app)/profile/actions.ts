@@ -18,6 +18,7 @@ const ProfileInput = z.object({
   country_code: z.string().length(2).optional(),
   governorate: z.string().max(120).nullable().optional(),
   house_type: z.enum(["villa", "apartment_building", "townhouse", "commercial", "other"]).nullable().optional(),
+  tariff_category: z.enum(["residential", "investment_commercial", "industrial_agricultural", "productive_industrial_agricultural", "governmental", "other"]).nullable().optional(),
   roof_length_m: numOrNull, roof_width_m: numOrNull, roof_area_m2: numOrNull, available_roof_area_m2: numOrNull,
   roof_orientation: z.enum(["N", "NE", "E", "SE", "S", "SW", "W", "NW", "flat", "unknown"]).nullable().optional(),
   roof_tilt_deg: z.number().min(0).max(90).nullable().optional(),

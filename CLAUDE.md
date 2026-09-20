@@ -5,8 +5,8 @@
 ## Read HANDOFF.md first, before doing anything else
 
 `HANDOFF.md` is the state of this project. Read it at the start of every session.
-It has two parts, and **Session 2 at the end supersedes Session 1 on anything
-visual.**
+Session 3 describes the site as it is; Sessions 4 and 5 are additions on top of
+it. **Session 2 supersedes Session 1 on anything visual.**
 
 The current position, as of 2026-09-20:
 
@@ -26,10 +26,17 @@ The current position, as of 2026-09-20:
   applied. Both local and production run in Supabase mode (public vars set on Vercel via
   the logged-in CLI). Sign-up is live and Supabase Auth URLs are configured; the owner's account is
   admin; still needed: service-role key, an SMTP sender, and a domain.
-- Still placeholders: team roles/bios/photos, team description, and the
-  platform settings (tariff, CO₂ factor, performance ratio) — sourced values
-  exist in Session 3 but cannot take effect until the demo-mode settings path is
-  built.
+- Platform settings: tariff (Residential) and CO₂ factor are entered with
+  sources. Peak sun hours and performance ratio are **sourced and awaiting the
+  owner's yes**; the ready SQL is in `docs/DECISIONS-NEEDED.md` §"Proposed
+  entries". Never enter a platform number without that yes.
+- The profile carries an MEW tariff sector (`solar_profiles.tariff_category`,
+  migration 0006, applied). The tariff setting accepts per-sector rates in
+  `by_category`; `src/lib/solar/tariff.ts` decides which applies and says so
+  in words when none does. Still placeholders: team roles/bios/photos, team
+  description.
+- Nothing is pushed or deployed without the owner's word. Session 5 committed
+  locally on `main` and did not push.
 - `git checkout v1-superseded` still recovers v1.
 
 ## Working conventions

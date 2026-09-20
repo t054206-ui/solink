@@ -102,6 +102,14 @@ export interface ProductVersion {
 
 export type HouseType = "villa" | "apartment_building" | "townhouse" | "commercial" | "other";
 export type RoofOrientation = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "flat" | "unknown";
+/**
+ * The MEW consumption sector a property is billed under. These are the six
+ * rows of "Tariff Of Electricity In All Sectors Of Consumption" (Electrical
+ * Energy Statistical Yearbook 2020, p. 113). Rates are NOT here: they are a
+ * platform setting entered with a source. A private house is residential; an
+ * apartment building is investment_commercial.
+ */
+export type TariffCategory = "residential" | "investment_commercial" | "industrial_agricultural" | "productive_industrial_agricultural" | "governmental" | "other";
 
 export interface SolarProfile {
   id: UUID;
@@ -112,6 +120,7 @@ export interface SolarProfile {
   country_code: string;            // "KW"
   governorate?: string | null;
   house_type?: HouseType | null;
+  tariff_category?: TariffCategory | null;
   roof_length_m?: number | null;
   roof_width_m?: number | null;
   roof_area_m2?: number | null;

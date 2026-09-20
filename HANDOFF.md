@@ -2,7 +2,9 @@
 
 _Session 1 built the platform. Session 2 rejected three designs. **Session 3 rebuilt the
 interface, connected Supabase and took sign-up live — read Session 3 first; it is the
-state of the site now.** Session 4 added the hero panel's take-apart sequence._
+state of the site now.** Session 4 added the hero panel's take-apart sequence.
+Session 5 added the tariff sector, sourced two settings for the owner's yes, and
+fixed the hero labels; its "What to do next" is the current list._
 Folder: `~/Desktop/solink` (Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
 
 Solink is a solar-energy platform for Kuwait and the GCC. It connects homeowners,
@@ -733,3 +735,100 @@ toolchain, run all three before touching anything.
 4. The three `SpecLabel` markers in `page.tsx` are positioned against the
    container, not the object, so they drift by the 18% the group scales down
    during the sequence.
+
+---
+---
+
+# SESSION 5 — 2026-09-20 (tariff by sector, two settings sourced, hero labels)
+
+## Read this before anything else
+
+Picked up Session 3's "What to do next" with a full toolchain. Of the thirteen
+items, seven need the owner (keys, domain, SMTP, team bios, Arabic review,
+supplier list, a yes on two numbers). This session did the unblocked ones and
+prepared the owner-gated ones so each is one yes away. **Nothing was pushed
+and no platform value was written**: the owner has said "push and deploy" once,
+for Session 3, and every platform number so far went in after an explicit yes.
+Commits are local on `main`.
+
+All three checks were clean at the start (`a95d7ae`) and at the end.
+
+## What was done
+
+| Item | Where | Notes |
+| --- | --- | --- |
+| Session 3 next-step 7, **tariff category on the profile** | migration `supabase/migrations/0006_solink_tariff_category.sql` (**applied** to the live project, additive and nullable), `src/lib/types.ts` (`TariffCategory`), `src/lib/solar/tariff.ts` (new), `src/lib/data/settings.ts`, `src/app/(app)/profile/{ProfileForm,actions}.tsx`, `_plan/AssumptionField.tsx`, `analysis/PotentialAnalysis.tsx`, `dashboard/_role/HomeownerDashboard.tsx`, `admin/_components/SettingsForm.tsx`, `src/lib/demo/data.ts` | The MEW yearbook table (p. 113) was re-read with positioned text; it has six sectors, now the `tariff_category` enum. The profile has an "Electricity tariff sector" select, suggested from the house type the moment one is chosen and never overwriting a choice. The tariff setting's value may carry `by_category`; `tariffFor()` picks the rate for the profile's sector, and when the platform has no rate for that sector it returns **nothing and a sentence**, never the Residential rate. The admin settings form has a per-sector editor for the tariff. No rate was added to the database; the SQL is in `docs/DECISIONS-NEEDED.md`. |
+| Session 3 next-step 2, **peak sun hours sourced** | `docs/DECISIONS-NEEDED.md` §Proposed entries | Global Solar Atlas API for Kuwait City: GHI 2037.5 kWh/m²/year = **5.58 h/day** (horizontal), GTI at optimum 27° = 6.13/day, PVOUT 1717 kWh/kWp/year. Recommendation GHI until tilt is modelled. Ready SQL with the full citation. |
+| Session 3 next-step 1, **performance ratio** | same | 0.86 from PVWatts v5 defaults, loss table confirmed via pvlib's documentation because nrel.gov was unreachable from this network. Ready SQL. Still needs the owner's yes. |
+| Session 4 not-done 4, **spec labels drift** | `src/components/three/PanelStudio.tsx` (`labels` prop), `src/app/(marketing)/page.tsx` | The three labels moved into the stage and show only when the module is closed and at rest (after the sequence, or the moment a drag cancels it); hidden again on replay. Verified in the browser: 3 labels → 0 during the tour → 3 after. `DIRECTION.md` records it. |
+| Docs | `docs/DECISIONS-NEEDED.md` (rows 2, 3, 4, 5, 18 updated; new §Proposed entries), `CLAUDE.md`, `design-system/solink/DIRECTION.md` | |
+
+## Things tried that failed
+
+- **nrel.gov, docs.nrel.gov and osti.gov are unreachable from this network**
+  (DNS/HTTP 000). The PVWatts manual could not be opened; its loss defaults were
+  taken from pvlib's `pvwatts_losses` page, which reproduces and cites them.
+  Read the manual once before entering 0.86.
+- **PVWatts v8 API with `DEMO_KEY`** also returned nothing (same network).
+- **Global Solar Atlas** has no documented API, but the site's own endpoint
+  `https://api.globalsolaratlas.info/data/lta?loc=LAT,LNG` answers with the
+  long-term averages the web app shows (CC BY 4.0). Response saved below.
+- **The first grep for the tariff table** matched nothing because the PDF's
+  text is Arabic-first and the English is split into separate words; searching
+  for "tariff" alone found page index 113 (printed 113/114).
+- **A second `next dev` on another port refuses to start** while one is running
+  on the same project (Next's dev lock). Stop the first; demo mode is
+  `NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npx next dev -p 3412`.
+- **Clicking the replay button through the browser pane's ref click** scrolled
+  the page instead of replaying; `button.click()` from the JS tool did. Trust
+  DOM checks over screenshots for the hero, as Session 3 said.
+- **Import `src/lib/data/settings.ts` from a client component** would pull the
+  server Supabase client in. That is why the tariff logic lives in
+  `src/lib/solar/tariff.ts` with no server imports.
+
+## Decisions worth keeping
+
+- **A profile that names a sector the platform has no rate for gets no
+  tariff**, not the Residential one. An apartment building is billed at two and
+  a half times the private-house rate; assuming 2 fils would understate the
+  bill and every savings figure with it.
+- **A profile with no sector keeps today's behaviour** (headline rate) with a
+  sentence saying which sector that is.
+- **The house type suggests the sector, once, and only into an empty field.**
+- **Labels are hidden during the take-apart rather than scaled with the
+  group**, because scaling would keep them aligned with where the parts were,
+  not where they are.
+
+## Global Solar Atlas response, Kuwait City (29.3759 N, 47.9774 E), read 2026-09-20
+
+Annual: PVOUT_csi 1717.12 kWh/kWp · GHI 2037.51 kWh/m² · DNI 1834.59 · DIF 829.33 ·
+GTI_opta 2238.39 · OPTA 27° · TEMP 26.5 °C · ELE 19 m. Data version 2.2.68
+(updated 2026-04-01), Solargis model, period to 2025.
+Monthly GHI (kWh/m²): Jan 106.9 · Feb 119.3 · Mar 167.8 · Apr 176.6 · May 211.6 ·
+Jun 236.0 · Jul 233.8 · Aug 222.1 · Sep 195.6 · Oct 157.6 · Nov 109.9 · Dec 100.3.
+Monthly PVOUT (kWh/kWp): 124.2 · 123.5 · 151.5 · 140.2 · 151.2 · 157.3 · 158.6 ·
+161.3 · 160.0 · 148.7 · 120.3 · 120.2.
+
+## What to do next, in priority order
+
+1. **Owner's yes on three entries**, then run the SQL in
+   `docs/DECISIONS-NEEDED.md` §Proposed entries: peak sun hours (5.58, GHI),
+   performance ratio (0.86), tariff by sector. Production figures light up with
+   the first two; apartment-building landlords get the right rate with the
+   third.
+2. **Push and deploy** when the owner says so. Migration 0006 is already live,
+   so the deployed code and the database agree either way.
+3. **Email sender, keys, domain** (Session 3 items 3, 4, 11): owner.
+4. **Wire Google Solar** (Session 3 item 5). Not started: the key is absent and
+   Kuwait coverage is unverified, so any wiring would be untestable here.
+   Suggested shape when it happens: a "Read from Google Solar" step beside the
+   coordinates in `ProfileForm`, same confirm-each-field pattern as
+   `RoofCapture`, area classified `source`.
+5. **Tilt → output** (item 6) now has the inputs it needs from Global Solar
+   Atlas (GHI, DNI, DIF); still needs a cited transposition model.
+6. **Privacy policy and terms** (item 10): none exist. Draft for the owner's
+   review; the site stores addresses, roof photos and bills.
+7. Session 4's remaining items: click-to-hold a part, leader lines from parts
+   to labels, the intro video asset.
+8. About page placeholders, Kuwaiti review of the Arabic, real catalogue,
+   the other 56 pages.

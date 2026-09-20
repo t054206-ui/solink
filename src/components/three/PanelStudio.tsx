@@ -76,7 +76,16 @@ function StaticPanel() {
  * panel and the same five sentences as a plain list, so the explanation is
  * never something you have to watch an animation to receive.
  */
-export function PanelStudio() {
+export function PanelStudio({ labels }: {
+  /**
+   * Measurements to hang off the object, positioned against the stage. They
+   * are shown only while the module is closed and at rest: during the
+   * sequence the parts are 800 mm apart and the group is 18% smaller, so a
+   * label pointing at "the cells" would point at air. Desktop only, like the
+   * drag; phones get the readouts and captions.
+   */
+  labels?: React.ReactNode;
+}) {
   const t = useT();
   const reduced = usePrefersReducedMotion();
   const small = useMediaQuery("(max-width: 767px)");
@@ -87,6 +96,11 @@ export function PanelStudio() {
   const [touched, setTouched] = useState(false);
   const [step, setStep] = useState(-1);
   const [played, setPlayed] = useState(false);
+  // True from the moment a tour starts until the scene reports the closed
+  // state (-1) after at least one caption. A drag cancels the tour, and the
+  // scene may not report that if it happens before the first caption, so
+  // `touched` is the second way out.
+  const [touring, setTouring] = useState(true);
   const [run, setRun] = useState(1);
 
   const onTick = useCallback((a: AngleRef) => {
@@ -99,6 +113,7 @@ export function PanelStudio() {
   const onStep = useCallback((i: number) => {
     setStep(i);
     if (i >= 0) setPlayed(true);
+    else setTouring(false);
   }, []);
 
   const onInteract = useCallback(() => setTouched(true), []);
@@ -107,16 +122,19 @@ export function PanelStudio() {
   // starts from the same place it would have on first load.
   const replay = useCallback(() => {
     setTouched(false);
+    setTouring(true);
     setRun((n) => n + 1);
   }, []);
 
   const layer = step >= 0 ? PANEL_LAYERS[step] : null;
+  const atRest = touched || !touring;
 
   if (reduced) {
     return (
       <div className="relative">
         <div className="relative mx-auto aspect-square w-full max-w-[290px] sm:max-w-[520px]">
           <StaticPanel />
+          {labels && <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">{labels}</div>}
         </div>
         <dl className="mx-auto mt-5 max-w-sm">
           {PANEL_LAYERS.map((l) => (
@@ -144,6 +162,9 @@ export function PanelStudio() {
           paused={!onScreen}
           tourKey={run}
         />
+        {labels && atRest && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">{labels}</div>
+        )}
       </div>
 
       <div className="mt-2 flex items-center justify-center gap-6">

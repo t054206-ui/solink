@@ -23,10 +23,12 @@ export function resolveAssumption(user: number | null | undefined, platform: Pla
  * field for the user to enter their own value (badge: user-provided).
  * No default number is ever suggested.
  */
-export function AssumptionField({ label, term, placeholderKey, unit, platform, value, onChange, help, step = "any", min }: {
+export function AssumptionField({ label, term, placeholderKey, unit, platform, value, onChange, help, step = "any", min, note }: {
   label: string; term?: string; placeholderKey: PlaceholderKey; unit?: string;
   platform: PlatformValue | null | undefined; value: number | null; onChange: (v: number | null) => void;
   help: string; step?: string; min?: number;
+  /** Why the platform value is what it is, or why there is none, when a sentence is owed (e.g. the tariff sector). */
+  note?: string | null;
 }) {
   const id = useId();
   const resolved = resolveAssumption(value, platform);
@@ -53,6 +55,7 @@ export function AssumptionField({ label, term, placeholderKey, unit, platform, v
         {resolved.cls === "unavailable" && <>Not set by the platform: <Placeholder k={placeholderKey} />. Any value you enter is labeled user-provided.</>}
         {resolved.cls === "source" && <>From platform setting: {resolved.source}. Edit to override with your own value.</>}
         {resolved.cls === "user" && (platform ? <>Your override replaces the platform value {platform.value}{unit ? ` ${unit}` : ""}.</> : <>Your value. Solink has not verified it.</>)}
+        {note && resolved.cls !== "user" && <p className="mt-1 text-fg-secondary">{note}</p>}
       </div>
     </div>
   );

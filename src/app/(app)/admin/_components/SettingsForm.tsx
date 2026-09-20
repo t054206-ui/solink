@@ -12,14 +12,16 @@ import type { DataMode } from "@/lib/data/mode";
 import { formatDate } from "@/lib/utils";
 import { upsertSettingAction, clearSettingAction } from "../actions";
 import type { SettingRow } from "../_lib/data";
+import { TARIFF_CATEGORIES, TARIFF_CATEGORY_LABELS } from "@/lib/solar/tariff";
+import type { TariffCategory } from "@/lib/types";
 
 export interface SettingDef {
   key: string; label: string; placeholder: PlaceholderKey; unit?: string; help: string;
-  kind: "number" | "text" | "thresholds" | "json";
+  kind: "number" | "text" | "thresholds" | "json" | "tariff";
 }
 
 export const SETTING_DEFS: SettingDef[] = [
-  { key: "electricity_tariff_per_kwh", label: "Electricity tariff", placeholder: "ELECTRICITY_TARIFF", unit: "KWD / kWh", kind: "number", help: "Price the homeowner pays per kWh. Source: utility tariff document or regulator page." },
+  { key: "electricity_tariff_per_kwh", label: "Electricity tariff", placeholder: "ELECTRICITY_TARIFF", unit: "KWD / kWh", kind: "tariff", help: "Price per kWh by MEW consumption sector. Residential is the headline rate and is required; the other sectors are optional and apply to profiles billed in them (an apartment building is Investmental & Commercial). Source: MEW tariff table, with page and date." },
   { key: "peak_sun_hours_per_day", label: "Peak sun hours per day", placeholder: "SOLAR_RESOURCE_DATA_SOURCE", unit: "h/day", kind: "number", help: "Site solar resource (kWh/m²/day). Source: irradiance dataset or measured data." },
   { key: "performance_ratio", label: "Performance ratio", placeholder: "SYSTEM_LOSS_FACTOR", unit: "0–1", kind: "number", help: "System losses from heat, soiling, wiring and inverter." },
   { key: "grid_co2_kg_per_kwh", label: "Grid CO₂ emission factor", placeholder: "GRID_CO2_EMISSION_FACTOR", unit: "kg CO₂ / kWh", kind: "number", help: "Emission intensity of the Kuwait grid." },
@@ -36,6 +38,12 @@ function describeValue(def: SettingDef, value: unknown): string | null {
   if (def.kind === "number") { const v = typeof value === "object" && value !== null && "value" in value ? (value as { value: unknown }).value : value; return typeof v === "number" ? `${v}${def.unit ? ` ${def.unit}` : ""}` : String(v); }
   if (def.kind === "thresholds" && typeof value === "object") { const t = value as { warn_pct?: number; alert_pct?: number }; return `warn at −${t.warn_pct ?? "?"} % · alert at −${t.alert_pct ?? "?"} %`; }
   if (def.kind === "text") return typeof value === "object" && value !== null && "value" in value ? String((value as { value: unknown }).value) : String(value);
+  if (def.kind === "tariff" && typeof value === "object") {
+    const t = value as { value?: number; category?: string; by_category?: Partial<Record<TariffCategory, number>> };
+    const parts = [`${t.category ?? "Residential"} ${t.value ?? "?"}`];
+    for (const c of TARIFF_CATEGORIES) { const r = t.by_category?.[c]; if (typeof r === "number") parts.push(`${TARIFF_CATEGORY_LABELS[c]} ${r}`); }
+    return `${parts.join(" · ")}${def.unit ? ` ${def.unit}` : ""}`;
+  }
   return JSON.stringify(value);
 }
 
@@ -47,6 +55,7 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
   const [warn, setWarn] = useState("");
   const [alert, setAlert] = useState("");
   const [json, setJson] = useState("");
+  const [sectors, setSectors] = useState<Partial<Record<TariffCategory, string>>>({});
   const [source, setSource] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const current = describeValue(def, row?.value ?? null);
@@ -55,6 +64,12 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
     if (def.kind === "number") { const n = Number(num); if (num.trim() === "" || !Number.isFinite(n)) return { error: "Enter a number." }; return { value: { value: n } }; }
     if (def.kind === "text") { if (!text.trim()) return { error: "Enter a value." }; return { value: { value: text.trim() } }; }
     if (def.kind === "thresholds") { const w = Number(warn), a = Number(alert); if (!Number.isFinite(w) || !Number.isFinite(a) || warn === "" || alert === "") return { error: "Enter both percentages." }; if (w >= a) return { error: "Warning threshold must be smaller than alert threshold." }; return { value: { warn_pct: w, alert_pct: a } }; }
+    if (def.kind === "tariff") {
+      const res = Number(sectors.residential); if ((sectors.residential ?? "").trim() === "" || !Number.isFinite(res) || res < 0) return { error: "Enter the Residential rate; it is the headline rate." };
+      const by_category: Partial<Record<TariffCategory, number>> = {};
+      for (const c of TARIFF_CATEGORIES) { const raw = (sectors[c] ?? "").trim(); if (!raw) continue; const n = Number(raw); if (!Number.isFinite(n) || n < 0) return { error: `${TARIFF_CATEGORY_LABELS[c]}: enter a number.` }; by_category[c] = n; }
+      return { value: { value: res, unit: "KWD/kWh", category: "Residential", by_category } };
+    }
     try { const parsed: unknown = JSON.parse(json); if (typeof parsed !== "object" || parsed === null) return { error: "Must be a JSON object." }; return { value: parsed }; } catch { return { error: "Invalid JSON." }; }
   };
   const canSave = source.trim().length > 0 && !("error" in buildValue());
@@ -94,6 +109,16 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
           {def.kind === "text" && <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="Provider name" />}
           {def.kind === "thresholds" && <div className="grid grid-cols-2 gap-2"><Input type="number" inputMode="decimal" step="any" min={0} max={100} aria-label="Warning percent" value={warn} onChange={(e) => setWarn(e.target.value)} placeholder="warn %" /><Input type="number" inputMode="decimal" step="any" min={0} max={100} aria-label="Alert percent" value={alert} onChange={(e) => setAlert(e.target.value)} placeholder="alert %" /></div>}
           {def.kind === "json" && <Textarea value={json} onChange={(e) => setJson(e.target.value)} placeholder='{"…": …}' className="font-mono text-[12.5px]" />}
+          {def.kind === "tariff" && (
+            <div className="grid gap-2">
+              {TARIFF_CATEGORIES.map((c) => (
+                <label key={c} className="grid grid-cols-[1fr_7rem] items-center gap-2 text-[12.5px] text-fg-secondary">
+                  <span>{TARIFF_CATEGORY_LABELS[c]}{c === "residential" && <span className="text-critical-fg" aria-hidden> *</span>}</span>
+                  <Input type="number" inputMode="decimal" step="any" min={0} aria-label={`${TARIFF_CATEGORY_LABELS[c]} rate`} value={sectors[c] ?? ""} onChange={(e) => setSectors((p) => ({ ...p, [c]: e.target.value }))} placeholder={c === "residential" ? "required" : "optional"} />
+                </label>
+              ))}
+            </div>
+          )}
         </div>
         <div>
           <Label>Source <span className="text-critical-fg" aria-hidden>*</span></Label>

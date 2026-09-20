@@ -66,13 +66,19 @@ export default function LandingPage() {
 
           {/* The object, with its measurements. */}
           <div className="relative">
-            <PanelStudio />
-
-            <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
-              <SpecLabel className="start-[-6%] top-[12%]" align="start" value="400" unit="W" label={t("label.ratedPower")} />
-              <SpecLabel className="end-[-4%] top-[34%]" align="end" value="20.5" unit="%" label={t("label.efficiency")} />
-              <SpecLabel className="start-[-4%] top-[62%]" align="start" value="1.95" unit="m²" label={t("label.area")} />
-            </div>
+            {/* The labels are positioned against the stage the module sits in,
+                and the studio shows them only while the module is closed and
+                at rest. Session 4 had them on this container, where they
+                drifted by the 18% the group shrinks during the sequence. */}
+            <PanelStudio
+              labels={
+                <>
+                  <SpecLabel className="start-[-8%] top-[14%]" align="start" value="400" unit="W" label={t("label.ratedPower")} />
+                  <SpecLabel className="end-[-6%] top-[40%]" align="end" value="20.5" unit="%" label={t("label.efficiency")} />
+                  <SpecLabel className="start-[-6%] top-[68%]" align="start" value="1.95" unit="m²" label={t("label.area")} />
+                </>
+              }
+            />
 
             <div className="mt-5 flex flex-col items-center gap-2">
               <span className="demo-stripe micro rounded-full border border-[color:var(--cls-demo)] px-3 py-1 text-[color:var(--cls-demo)]">

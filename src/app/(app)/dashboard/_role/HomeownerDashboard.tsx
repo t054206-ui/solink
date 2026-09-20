@@ -22,6 +22,7 @@ import { InfoTip } from "@/components/help/InfoTip";
 import { classified, unavailable, type Classified } from "@/lib/classification";
 import { getPassport, getProfile, listAlerts, listMaintenance, listProduction, listSystems } from "@/lib/data/repositories";
 import { getPlatformSettings, settingsToAssumptions } from "@/lib/data/settings";
+import { tariffFor } from "@/lib/solar/tariff";
 import { DEMO_BANNER, DEMO_PRODUCTION_BANNER } from "@/lib/demo/data";
 import { annualSavings, co2AvoidedKg, formatNumber } from "@/lib/solar/calculations";
 import type { MaintenanceCase, SolarPassport, SolarProfile, SolarSystem } from "@/lib/types";
@@ -46,7 +47,8 @@ export default async function HomeownerDashboard() {
 
   const prodCls = productionCls(production);
   const isDemo = mode === "demo" || system.is_demo;
-  const assumptions = settingsToAssumptions(settings);
+  const tariff = tariffFor(settings.electricity_tariff_per_kwh, profile?.tariff_category);
+  const assumptions = settingsToAssumptions(settings, profile?.tariff_category);
 
   const today = todayKwh(production);
   const month = monthToDateKwh(production);
@@ -83,7 +85,7 @@ export default async function HomeownerDashboard() {
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Key figures">
         <Metric label="Today's production" term="energy_production" data={today} unit="kWh" format={(v) => formatNumber(v, 1)} footnote={today.value === null ? undefined : `Record for ${formatDate(new Date().toISOString())}`} />
         <Metric label="This month" term="kwh" data={month} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={month.notes?.[0]} />
-        <Metric label="Estimated savings (annual)" term="payback_period" data={savings} unit={assumptions.currency} format={(v) => formatNumber(v, 0)} footnote={savings.value === null ? <Placeholder k="ELECTRICITY_TARIFF" /> : savings.notes?.[0]} />
+        <Metric label="Estimated savings (annual)" term="payback_period" data={savings} unit={assumptions.currency} format={(v) => formatNumber(v, 0)} footnote={savings.value === null ? (tariff.note ?? <Placeholder k="ELECTRICITY_TARIFF" />) : savings.notes?.[0]} />
         <Metric label="CO₂ reduction (annual)" term="co2_reduction" data={co2} unit="kg" format={(v) => formatNumber(v, 0)} footnote={co2.value === null ? <Placeholder k="GRID_CO2_EMISSION_FACTOR" /> : co2.notes?.[0]} />
         <Metric label="System capacity" term="system_capacity" data={capacity} unit="kWp" format={(v) => formatNumber(v, 1)} footnote={system.panel_count ? `${system.panel_count} panels · ${capacity.source}` : capacity.source} />
         <Metric label="Performance (7d vs prev. 30d)" term="performance_ratio" data={signal.deviation} format={(v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}

@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "./mode";
 import type { SolarAssumptions } from "@/lib/solar/calculations";
+import { tariffFor, type TariffSetting } from "@/lib/solar/tariff";
+import type { TariffCategory } from "@/lib/types";
 
 /**
  * Platform-wide assumptions set by an admin (platform_settings table).
@@ -8,7 +10,8 @@ import type { SolarAssumptions } from "@/lib/solar/calculations";
  * user type their own value, labeled as user-provided.
  */
 export interface PlatformSettings {
-  electricity_tariff_per_kwh: { value: number; source: string } | null;
+  /** Headline rate plus, when entered, per-sector rates. See `src/lib/solar/tariff.ts`. */
+  electricity_tariff_per_kwh: TariffSetting | null;
   peak_sun_hours_per_day: { value: number; source: string } | null;
   performance_ratio: { value: number; source: string } | null;
   grid_co2_kg_per_kwh: { value: number; source: string } | null;
@@ -31,16 +34,28 @@ export async function getPlatformSettings(): Promise<PlatformSettings> {
   const out: PlatformSettings = { ...EMPTY };
   for (const row of data ?? []) {
     if (row.value === null || !(row.key in out)) continue;
-    // value stored as {"value": n} or raw object; attach source
-    const v = typeof row.value === "object" && row.value !== null && "value" in row.value ? (row.value as { value: number }).value : row.value;
-    (out as unknown as Record<string, unknown>)[row.key] = typeof v === "number" ? { value: v, source: row.source ?? "platform setting" } : { ...(row.value as object), source: row.source ?? "platform setting" };
+    // value stored as {"value": n, ...extras} or a raw object; attach the source.
+    // The extras (unit, category, by_category, year, basis) ride along so a
+    // setting can say more than one number without a schema change.
+    const isObj = typeof row.value === "object" && row.value !== null;
+    const v = isObj && "value" in (row.value as object) ? (row.value as { value: unknown }).value : row.value;
+    const source = row.source ?? "platform setting";
+    (out as unknown as Record<string, unknown>)[row.key] = typeof v === "number"
+      ? { ...(isObj ? (row.value as object) : {}), value: v, source }
+      : { ...(row.value as object), source };
   }
   return out;
 }
 
-export function settingsToAssumptions(s: PlatformSettings): SolarAssumptions {
+/**
+ * Platform settings as calculator inputs. Pass the profile's tariff category
+ * when there is a profile: the tariff then follows the sector the property is
+ * billed under, and is null (not the Residential rate) when the platform has
+ * no rate for that sector.
+ */
+export function settingsToAssumptions(s: PlatformSettings, tariffCategory: TariffCategory | null | undefined = undefined): SolarAssumptions {
   return {
-    tariffPerKwh: s.electricity_tariff_per_kwh?.value ?? null,
+    tariffPerKwh: tariffFor(s.electricity_tariff_per_kwh, tariffCategory).platform?.value ?? null,
     peakSunHoursPerDay: s.peak_sun_hours_per_day?.value ?? null,
     performanceRatio: s.performance_ratio?.value ?? null,
     gridCo2KgPerKwh: s.grid_co2_kg_per_kwh?.value ?? null,

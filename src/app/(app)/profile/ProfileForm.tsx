@@ -11,7 +11,8 @@ import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
 import { InfoTip } from "@/components/help/InfoTip";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import type { DataMode } from "@/lib/data/mode";
-import type { HouseType, RoofOrientation, SolarProfile } from "@/lib/types";
+import type { HouseType, RoofOrientation, SolarProfile, TariffCategory } from "@/lib/types";
+import { TARIFF_CATEGORIES, TARIFF_CATEGORY_LABELS } from "@/lib/solar/tariff";
 import { cn } from "@/lib/utils";
 import { MapView } from "./MapView";
 import { RoofCapture } from "./RoofCapture";
@@ -27,6 +28,17 @@ const ORIENTATIONS: { value: RoofOrientation; label: string }[] = [
   { value: "E", label: "East" }, { value: "SE", label: "South-east" }, { value: "S", label: "South" }, { value: "SW", label: "South-west" },
   { value: "W", label: "West" }, { value: "NW", label: "North-west" },
 ];
+
+/**
+ * MEW bills by the property's sector, so the house type usually decides the
+ * tariff sector. Offered as a suggestion the moment a house type is chosen and
+ * the sector is still blank; never overwrites a sector the user has set.
+ * Yearbook 2020, p. 113: private houses are Residential, apartment buildings
+ * are Investmental & Commercial. "Other" suggests nothing.
+ */
+const SUGGESTED_TARIFF_CATEGORY: Partial<Record<HouseType, TariffCategory>> = {
+  villa: "residential", townhouse: "residential", apartment_building: "investment_commercial", commercial: "investment_commercial",
+};
 
 type GeoCandidate = { formatted_address: string; lat: number; lng: number };
 type GeoState = { status: "idle" } | { status: "loading" } | { status: "results"; items: GeoCandidate[] } | { status: "not_configured" } | { status: "zero" } | { status: "error"; message: string };
@@ -207,7 +219,11 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
               <Input id="governorate" aria-label="Governorate" value={values.governorate ?? ""} onChange={(e) => update({ governorate: e.target.value || null })} placeholder="e.g. Hawalli" />
             </Field>
             <Field label="House type" hint={<DataBadge cls="user" compact />}>
-              <Select id="house_type" aria-label="House type" value={values.house_type ?? ""} onChange={(e) => update({ house_type: (e.target.value || null) as HouseType | null })}>
+              <Select id="house_type" aria-label="House type" value={values.house_type ?? ""} onChange={(e) => {
+                const house_type = (e.target.value || null) as HouseType | null;
+                const suggested = house_type ? SUGGESTED_TARIFF_CATEGORY[house_type] : undefined;
+                update({ house_type, ...(values.tariff_category == null && suggested ? { tariff_category: suggested } : {}) });
+              }}>
                 <option value="">Select…</option>
                 {HOUSE_TYPES.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
               </Select>
@@ -277,6 +293,13 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
       <Card>
         <CardHeader title="Electricity and budget" subtitle="Enter your monthly consumption in kWh or your monthly bill. One is required." />
         <CardBody className="grid gap-4">
+          <Field label="Electricity tariff sector" hint={<DataBadge cls="user" compact />} className="sm:max-w-md"
+            help="MEW prices a kWh by the sector the property is billed under, not by who lives there. A private house is Residential; an apartment building is Investmental & Commercial. Savings estimates use this sector's rate when the platform has one.">
+            <Select id="tariff_category" aria-label="Electricity tariff sector" value={values.tariff_category ?? ""} onChange={(e) => update({ tariff_category: (e.target.value || null) as TariffCategory | null })}>
+              <option value="">Not sure / not stated</option>
+              {TARIFF_CATEGORIES.map((c) => <option key={c} value={c}>{TARIFF_CATEGORY_LABELS[c]}</option>)}
+            </Select>
+          </Field>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label={<>Monthly consumption (kWh) <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />} error={errors.consumption} help="From your electricity bill or meter.">
               <Input id="monthly_consumption_kwh" aria-label="Monthly consumption in kWh" type="number" inputMode="decimal" step="1" min={0} value={show(values.monthly_consumption_kwh)} onChange={(e) => update({ monthly_consumption_kwh: toNum(e.target.value) })} />

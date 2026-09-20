@@ -13,6 +13,7 @@ import { InfoTip } from "@/components/help/InfoTip";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import type { DataMode } from "@/lib/data/mode";
 import type { PlatformSettings } from "@/lib/data/settings";
+import { tariffFor } from "@/lib/solar/tariff";
 import type { Product, SolarProfile } from "@/lib/types";
 import { type Classified, unavailable } from "@/lib/classification";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
@@ -40,7 +41,9 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
   // Assumptions: platform setting (source) → user value → unavailable. Never a built-in default.
   const psh = resolveAssumption(user.psh, settings.peak_sun_hours_per_day);
   const pr = resolveAssumption(user.pr, settings.performance_ratio);
-  const tariff = resolveAssumption(user.tariff, settings.electricity_tariff_per_kwh);
+  // The tariff follows the sector the property is billed under (Solar Profile).
+  const tariffPlatform = tariffFor(settings.electricity_tariff_per_kwh, profile?.tariff_category);
+  const tariff = resolveAssumption(user.tariff, tariffPlatform.platform);
   const co2 = resolveAssumption(user.co2, settings.grid_co2_kg_per_kwh);
   const a: SolarAssumptions = { peakSunHoursPerDay: psh.value, performanceRatio: pr.value, tariffPerKwh: tariff.value, gridCo2KgPerKwh: co2.value, currency: profile?.currency ?? "KWD" };
   const missingAssumptions = [psh, pr, tariff, co2].filter((x) => x.cls === "unavailable").length;
@@ -124,7 +127,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
           <CardBody className="grid gap-3 sm:grid-cols-2">
             <AssumptionField label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={user.psh} onChange={(v) => setUser((u) => ({ ...u, psh: v }))} help="Equivalent hours of full-strength sun per day at your site. Drives how much a kWp produces." step="0.1" min={0} />
             <AssumptionField label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={user.pr} onChange={(v) => setUser((u) => ({ ...u, pr: v }))} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
-            <AssumptionField label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${a.currency}/kWh`} platform={settings.electricity_tariff_per_kwh} value={user.tariff} onChange={(v) => setUser((u) => ({ ...u, tariff: v }))} help="What you pay per kWh. Needed to turn production into savings." step="0.001" min={0} />
+            <AssumptionField label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${a.currency}/kWh`} platform={tariffPlatform.platform} note={tariffPlatform.note} value={user.tariff} onChange={(v) => setUser((u) => ({ ...u, tariff: v }))} help="What you pay per kWh. Needed to turn production into savings." step="0.001" min={0} />
             <AssumptionField label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={user.co2} onChange={(v) => setUser((u) => ({ ...u, co2: v }))} help="Kilograms of CO₂ the grid emits per kWh. Needed for the CO₂ reduction estimate." step="0.01" min={0} />
           </CardBody>
         )}

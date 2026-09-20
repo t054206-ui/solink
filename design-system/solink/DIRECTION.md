@@ -54,6 +54,12 @@ serif italic accents.
   once a solar resource source and a performance ratio exist, and only then via
   a tilt-aware model whose constants come with a citation.
 - Micro-labels on leader lines: glass, cells, frame, junction box.
+- The three spec labels (rated power, efficiency, area) hang off the stage
+  the module sits in and are shown only while it is closed and at rest
+  (Session 5, 2026-09-20). During the take-apart the parts are 800 mm apart
+  and the group is 18 % smaller, so a label pointing at the cells would point
+  at air; they appear when the sequence closes or the moment a drag cancels
+  it, and go away again on replay. Desktop only, like the drag.
 - Loaded only on routes that use it. Static render for `prefers-reduced-motion`.
 - **It comes apart** (2026-09-20, the owner's second brief for the hero). The
   module arrives, settles, separates into glass, cells, backsheet, frame and

@@ -130,7 +130,7 @@ export const DEMO_PROVIDERS: ProviderCompany[] = [
 
 export const DEMO_PROFILE: SolarProfile = {
   id: "prof-demo", user_id: DEMO_USER_ID, address: null, lat: null, lng: null, country_code: "KW", governorate: null,
-  house_type: "villa", roof_length_m: 14, roof_width_m: 10, roof_area_m2: 140, available_roof_area_m2: 90,
+  house_type: "villa", tariff_category: "residential", roof_length_m: 14, roof_width_m: 10, roof_area_m2: 140, available_roof_area_m2: 90,
   roof_orientation: "flat", roof_tilt_deg: 0, shading_notes: null, monthly_consumption_kwh: 2400, monthly_bill: null,
   currency: "KWD", budget: null, roof_photo_path: null, updated_at: "2026-09-01T00:00:00Z",
 };
