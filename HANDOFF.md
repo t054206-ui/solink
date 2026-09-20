@@ -749,8 +749,10 @@ supplier list, a yes on two numbers). This session did the unblocked ones and
 prepared the owner-gated ones so each is one yes away. **Nothing was pushed
 and no platform value was written**: the owner has said "push and deploy" once,
 for Session 3, and every platform number so far went in after an explicit yes.
-Commits are local on `main`. **Late in the session the owner said yes to the
-three entries and they were written** (see "What to do next", item 1).
+**Late in the session the owner said yes to the three entries and they were
+written, then said "push and deploy"**: pushed as `4a7b0e0` + `1a1e0b3` on top
+of another session's intro commits, and `627bfa1` deployed to production by
+CLI because `main` did not build (see "What to do next", items 1 and 2).
 
 All three checks were clean at the start (`a95d7ae`) and at the end.
 
@@ -819,9 +821,21 @@ Monthly PVOUT (kWh/kWp): 124.2 · 123.5 · 151.5 · 140.2 · 151.2 · 157.3 · 1
    Production figures light up on the live site immediately, because the
    deployed code reads `value.value` and ignores the extras; the per-sector
    rates take effect once the new code is deployed.
-2. **Push and deploy** when the owner says so. Migration 0006 is already live
-   and the settings are entered, so the deployed code and the database agree
-   either way.
+2. ~~Push and deploy~~ **Done, with a wrinkle.** The owner said "push and
+   deploy". `main` had moved: another session (GitHub account `t040262-cmyk`)
+   was pushing an opening sequence (`src/components/intro/*`, a curtain in
+   `public/bootstrap.js` and `layout.tsx`) commit by commit, and every
+   git-triggered production build since 18:47 failed on `tsc`: the intro uses
+   dictionary keys `intro.label`, `intro.skip`, `intro.replay` that do not exist
+   in `dictionary.ts`. Session 5 rebased onto their tip and pushed (`1a1e0b3`),
+   then deployed its own verified commit `627bfa1` straight to production with
+   `vercel deploy --prod` from a detached worktree. **solink-nu.vercel.app now
+   serves `627bfa1`** (tariff sectors, entered settings, hero labels). It does
+   not contain the intro. The next git push that builds will replace it, and
+   will include everything. **Whoever finishes the intro: add the three
+   `intro.*` keys to both languages in `dictionary.ts`, then run all three
+   checks.** Session 5 deliberately did not add them into someone else's
+   in-flight work.
 3. **Read the PVWatts manual §System Losses** from a network that reaches
    nrel.gov, to confirm the 14 % against the primary source (Session 5 only had
    pvlib's reproduction of it).

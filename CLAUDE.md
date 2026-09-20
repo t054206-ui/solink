@@ -22,7 +22,7 @@ The current position, as of 2026-09-20:
   RTL, roof photo/video reader, and `/about`.
 - Light theme is the default. Roles are homeowner (includes landlord),
   manufacturer, company, admin.
-- Supabase is connected: project `bgwvztckesuwlydwcfkj`, migrations 0001–0005
+- Supabase is connected: project `bgwvztckesuwlydwcfkj`, migrations 0001–0006
   applied. Both local and production run in Supabase mode (public vars set on Vercel via
   the logged-in CLI). Sign-up is live and Supabase Auth URLs are configured; the owner's account is
   admin; still needed: service-role key, an SMTP sender, and a domain.
@@ -36,8 +36,11 @@ The current position, as of 2026-09-20:
   `by_category`; `src/lib/solar/tariff.ts` decides which applies and says so
   in words when none does. Still placeholders: team roles/bios/photos, team
   description.
-- Nothing is pushed or deployed without the owner's word. Session 5 committed
-  locally on `main` and did not push.
+- Nothing is pushed or deployed without the owner's word. Session 5 pushed and
+  deployed on "push and deploy" (2026-09-20 evening). **Production serves
+  Session 5's `627bfa1` via a CLI deploy; `main` itself does not build** until
+  the intro sequence another session is adding gets its three `intro.*`
+  dictionary keys. See HANDOFF Session 5, "What to do next" item 2.
 - `git checkout v1-superseded` still recovers v1.
 
 ## Working conventions
