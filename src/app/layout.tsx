@@ -4,6 +4,7 @@ import { Archivo, JetBrains_Mono, IBM_Plex_Sans_Arabic } from "next/font/google"
 import "./globals.css";
 import { publicEnv } from "@/lib/config/env";
 import { LocaleProvider } from "@/lib/i18n/provider";
+import { IntroHost } from "@/components/intro/IntroHost";
 
 /**
  * "Studio" pairing. Archivo is the display and interface face: a grotesque with
@@ -71,7 +72,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <Script src="/bootstrap.js" strategy="beforeInteractive" />
-        <LocaleProvider>{children}</LocaleProvider>
+        {/* The curtain is server-rendered and hidden. bootstrap.js raises it
+            before paint for a browser that has not seen the opening, so the
+            landing page never flashes behind it, and the sequence takes it
+            down as it leaves. An attribute on <html> is the whole mechanism:
+            no DOM is written before hydration. */}
+        <div className="intro-curtain" aria-hidden="true" />
+        <LocaleProvider>
+          <IntroHost />
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );
