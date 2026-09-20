@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
+import { LAYER_COUNT, PANEL_LAYERS } from "./panelLayers";
 
 /** Live angles, written every frame and read by the HTML readout, not by React. */
 export interface AngleRef {
@@ -21,7 +22,10 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
  */
 const PANEL_W = 1.134;
 const PANEL_H = 1.722;
-const FRAME = 0.03;
+
+/** Anodised rail: 28 mm wide, 35 mm deep, which is an ordinary residential frame. */
+const RAIL = 0.028;
+const FRAME_D = 0.035;
 
 /**
  * Framing, derived rather than eyeballed.
@@ -37,12 +41,11 @@ const FRAME = 0.03;
  *
  * If you want the panel bigger in frame, raise the field of view — do not move
  * the camera closer without re-checking this number.
- */
-/**
- * Azimuth is clamped to ±95° of due south. Not an arbitrary limit: a
- * roof-mounted panel in Kuwait that faces north produces almost nothing, so
- * the range the control offers is the range a real installation occupies. It
- * also means the hero never presents its blank backsheet to the visitor.
+ *
+ * The exploded assembly is a longer object than the closed one: the far corner
+ * of the junction box sits at radius 1.175 m, which does not fit. That is why
+ * the group scales to OPEN_SCALE while it is open — 1.175 × 0.82 = 0.96 m, back
+ * inside the 1.052 the camera was placed for. Scale it, do not dolly in.
  */
 const AZIMUTH_LIMIT = 95;
 const TILT_LIMIT = 60;
@@ -50,12 +53,54 @@ const TILT_LIMIT = 60;
 const PANEL_Y = 0.1;
 const CAMERA_FOV = 34;
 const CAMERA_POS: [number, number, number] = [0, 0.55, 3.88];
+const OPEN_SCALE = 0.82;
+
+/** The front pane fades up as it leaves the stack. See the glass mesh. */
+const GLASS_CLOSED = 0.06;
+const GLASS_OPEN = 0.44;
+
+/**
+ * The opening sequence, in seconds from the moment the tour starts.
+ *
+ * Enter, hold, then one part every STEP seconds — STEP is set by how long a
+ * seven-word sentence takes to read, not by how long the movement takes, which
+ * is TRAVEL. Then a beat, then everything closes at once. Total 10.6s. Dragging
+ * the panel cancels it at any point.
+ */
+const ENTER = 0.8;
+const HOLD = 0.6;
+const STEP = 1.45;
+const TRAVEL = 1.05;
+const READ = 1.0;
+const CLOSE = 1.3;
+
+const OPEN_AT = ENTER + HOLD;
+const LAST_AT = OPEN_AT + (LAYER_COUNT - 1) * STEP + TRAVEL;
+const CLOSE_AT = LAST_AT + READ;
+const END_AT = CLOSE_AT + CLOSE;
+
+/** Which part is being explained at time t, or -1 for none. */
+function captionAt(t: number): number {
+  if (t < OPEN_AT || t >= CLOSE_AT) return -1;
+  return Math.min(LAYER_COUNT - 1, Math.floor((t - OPEN_AT) / STEP));
+}
+
+/** How far part i has travelled, 0 to 1. */
+const openAt = (t: number, i: number) =>
+  THREE.MathUtils.smootherstep(t, OPEN_AT + i * STEP, OPEN_AT + i * STEP + TRAVEL);
+
+/** Everything closes together, which is what makes the reassembly read as one move. */
+const closeAt = (t: number) => 1 - THREE.MathUtils.smootherstep(t, CLOSE_AT, END_AT);
 
 interface RigProps {
   onTick: (a: AngleRef) => void;
+  onStep: (i: number) => void;
   autoSpin: boolean;
   onInteract: () => void;
   initialTilt: number;
+  draggable: boolean;
+  /** Changing this number restarts the sequence. */
+  tourKey: number;
 }
 
 /**
@@ -67,20 +112,36 @@ interface RigProps {
  * mutable state local to the component that mutates it is both legal and
  * simpler to follow.
  */
-function PanelRig({ onTick, autoSpin, onInteract, initialTilt }: RigProps) {
+function PanelRig({ onTick, onStep, autoSpin, onInteract, initialTilt, draggable, tourKey }: RigProps) {
   const group = useRef<THREE.Group>(null);
   const angles = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
   const target = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
+  const clock = useRef({ key: -1, t: 0, life: 0, cancelled: false });
+  const shown = useRef(-1);
   const texture = useMemo(() => makeCellTexture(), []);
   const { gl } = useThree();
+
+  const glass = useRef<THREE.Mesh>(null);
+  const cells = useRef<THREE.Mesh>(null);
+  const backsheet = useRef<THREE.Mesh>(null);
+  const frame = useRef<THREE.Group>(null);
+  const junction = useRef<THREE.Mesh>(null);
+  // Same order as PANEL_LAYERS, which is the order they separate in.
+  const parts: React.RefObject<THREE.Object3D | null>[] = [glass, cells, backsheet, frame, junction];
 
   useEffect(() => () => texture.dispose(), [texture]);
 
   // Pointer drag turns the module: vertical changes tilt, horizontal changes
   // the direction it faces. Listeners only — the cursor is styled in CSS.
+  //
+  // Not attached on a touch screen. The canvas needs touch-action: none to read
+  // a drag, and a hero-sized element that swallows vertical swipes is a page
+  // nobody can scroll. Phones get the sequence and the readouts, not the grab.
   useEffect(() => {
+    if (!draggable) return;
     const el = gl.domElement;
     const t = target.current;
+    const c = clock.current;
     let dragging = false;
     let lastX = 0;
     let lastY = 0;
@@ -90,6 +151,8 @@ function PanelRig({ onTick, autoSpin, onInteract, initialTilt }: RigProps) {
       lastX = e.clientX;
       lastY = e.clientY;
       el.setPointerCapture(e.pointerId);
+      // The visitor taking hold of the object outranks the sequence.
+      c.cancelled = true;
       onInteract();
     };
     const move = (e: PointerEvent) => {
@@ -116,41 +179,127 @@ function PanelRig({ onTick, autoSpin, onInteract, initialTilt }: RigProps) {
       el.removeEventListener("pointerup", up);
       el.removeEventListener("pointercancel", up);
     };
-  }, [gl, onInteract]);
+  }, [gl, onInteract, draggable]);
 
-  useFrame((state, dt) => {
+  useFrame((_state, dt) => {
     const g = group.current;
     if (!g) return;
     const a = angles.current;
-    const t = target.current;
-    // Idle motion is a slow sway rather than a spin. A full rotation would
-    // keep turning the panel away from the viewer, and the owner asked for
-    // animated without being distracting on first sight.
-    if (autoSpin) t.azimuth = -18 + Math.sin(state.clock.elapsedTime * 0.32) * 34;
-    a.tilt = THREE.MathUtils.damp(a.tilt, t.tilt, 4, dt);
-    a.azimuth = THREE.MathUtils.damp(a.azimuth, t.azimuth, 4, dt);
+    const tg = target.current;
+    const c = clock.current;
+
+    // The sequence keeps its own clock rather than reading the renderer's.
+    // r3f resets clock.elapsedTime whenever frameloop changes, and this scene
+    // parks itself when it scrolls out of view, so an absolute time would jump
+    // backwards mid-sequence. The step is capped because a tab that was in the
+    // background hands back one enormous delta on its first frame.
+    const delta = Math.min(dt, 0.05);
+    c.life += delta;
+
+    // Restarting is a prop change rather than an effect, so the replay button
+    // never has to reach into the scene.
+    if (c.key !== tourKey) {
+      c.key = tourKey;
+      c.t = 0;
+      c.cancelled = false;
+    } else {
+      c.t += delta;
+    }
+
+    const t = c.t;
+    const running = !c.cancelled && t < END_AT;
+    const spread = running ? closeAt(t) : 0;
+
+    // Parts. Damped toward the timeline rather than set from it, so a cancel
+    // mid-flight glides home instead of snapping.
+    for (let i = 0; i < PANEL_LAYERS.length; i++) {
+      const part = parts[i]?.current;
+      if (!part) continue;
+      const layer = PANEL_LAYERS[i];
+      const want = layer.base + layer.explode * openAt(t, i) * spread;
+      part.position.z = THREE.MathUtils.damp(part.position.z, running ? want : layer.base, 7, delta);
+    }
+
+    // The object arrives: up from below, and a little short of full size, so
+    // the first thing it does on screen is settle rather than appear.
+    const entered = running ? THREE.MathUtils.smootherstep(t, 0, ENTER) : 1;
+    const open = running ? openAt(t, 0) * spread : 0;
+    g.position.y = PANEL_Y - (1 - entered) * 0.3;
+    const scale = (0.9 + 0.1 * entered) * (1 - (1 - OPEN_SCALE) * open);
+    g.scale.setScalar(THREE.MathUtils.damp(g.scale.x, scale, 7, delta));
+
+    // The pane becomes glass only while it is out of the stack.
+    const pane = glass.current?.material;
+    if (pane instanceof THREE.MeshPhysicalMaterial) {
+      pane.opacity = THREE.MathUtils.damp(
+        pane.opacity,
+        GLASS_CLOSED + (GLASS_OPEN - GLASS_CLOSED) * open,
+        7,
+        delta,
+      );
+    }
+
+    if (running) {
+      // Turning toward the viewer as it opens: at 52° the separation between
+      // the parts is visible, at 20° they overlap into one line.
+      tg.tilt = 20 + 32 * THREE.MathUtils.smootherstep(t, ENTER * 0.5, OPEN_AT);
+      tg.azimuth = -34 + 28 * THREE.MathUtils.smootherstep(t, OPEN_AT, CLOSE_AT);
+    } else if (autoSpin) {
+      // Idle motion is a slow sway rather than a spin. A full rotation would
+      // keep turning the panel away from the viewer, and the owner asked for
+      // animated without being distracting on first sight.
+      tg.azimuth = -18 + Math.sin(c.life * 0.32) * 34;
+      tg.tilt = initialTilt;
+    }
+
+    a.tilt = THREE.MathUtils.damp(a.tilt, tg.tilt, 4, delta);
+    a.azimuth = THREE.MathUtils.damp(a.azimuth, tg.azimuth, 4, delta);
     // Tilt is measured from horizontal, the way an installer measures it, so a
     // panel lying flat on the roof reads 0 and not 90.
     g.rotation.x = -Math.PI / 2 + a.tilt / DEG;
     g.rotation.y = a.azimuth / DEG;
     onTick(a);
+
+    // React hears about the caption only when it changes, which is five times
+    // in ten seconds rather than sixty times a second.
+    const caption = running ? captionAt(t) : -1;
+    if (caption !== shown.current) {
+      shown.current = caption;
+      onStep(caption);
+    }
   });
 
   return (
     <group ref={group} position={[0, PANEL_Y, 0]}>
-      {/* Anodised frame and backsheet in one box. It sits wholly behind the
-          glass plane — an earlier version straddled z=0 and its front face hid
-          every cell. */}
-      <mesh castShadow receiveShadow position={[0, 0, -0.021]}>
-        <boxGeometry args={[PANEL_W + FRAME, PANEL_H + FRAME, 0.032]} />
-        <meshStandardMaterial color="#b9bec6" metalness={0.85} roughness={0.34} />
+      {/* Front glass, 3.2 mm. Almost invisible while the module is closed, on
+          purpose: the sheen that makes the object read as glass belongs to the
+          laminate below, which is where it was before this pane existed, and a
+          36% white sheet over the cells turns the only dark mass on the page
+          pale. Its opacity is raised in the frame loop as it separates, so it
+          is a real pane when it is being talked about and a hairline the rest
+          of the time. No castShadow: a transparent mesh still casts an opaque
+          shadow in three, and an opaque rectangle landing on the cells 300 mm
+          below it is exactly what glass does not do. */}
+      <mesh ref={glass} position={[0, 0, PANEL_LAYERS[0].base]}>
+        <boxGeometry args={[PANEL_W, PANEL_H, 0.0032]} />
+        <meshPhysicalMaterial
+          color="#dde7f4"
+          transparent
+          opacity={GLASS_CLOSED}
+          metalness={0}
+          roughness={0.04}
+          clearcoat={1}
+          clearcoatRoughness={0.02}
+          reflectivity={0.85}
+          envMapIntensity={1.4}
+          depthWrite={false}
+        />
       </mesh>
 
-      {/* Glass over the cells. Physical material so the sun leaves a specular
-          streak across it as the panel turns — that streak is the whole reason
-          the object reads as glass rather than as a blue rectangle. */}
-      <mesh castShadow receiveShadow>
-        <planeGeometry args={[PANEL_W, PANEL_H]} />
+      {/* The cells, drawn once into a canvas. Physical rather than standard so
+          the sun leaves a specular streak across the laminate as it turns. */}
+      <mesh ref={cells} castShadow receiveShadow position={[0, 0, PANEL_LAYERS[1].base]}>
+        <boxGeometry args={[PANEL_W - 0.024, PANEL_H - 0.024, 0.0026]} />
         <meshPhysicalMaterial
           map={texture}
           metalness={0.28}
@@ -162,43 +311,130 @@ function PanelRig({ onTick, autoSpin, onInteract, initialTilt }: RigProps) {
         />
       </mesh>
 
+      {/* Backsheet. White, matte, and the reason a module reads as a sandwich
+          and not as a slab once it comes apart. */}
+      <mesh ref={backsheet} castShadow receiveShadow position={[0, 0, PANEL_LAYERS[2].base]}>
+        <boxGeometry args={[PANEL_W - 0.004, PANEL_H - 0.004, 0.0018]} />
+        <meshStandardMaterial color="#f2f1ec" metalness={0.02} roughness={0.86} />
+      </mesh>
+
+      {/* Frame: four rails, not a box. A solid box would have to sit behind the
+          laminate to avoid hiding it, and then it is not a frame. */}
+      <group ref={frame} position={[0, 0, PANEL_LAYERS[3].base]}>
+        {([1, -1] as const).map((s) => (
+          <mesh key={`rail-y${s}`} castShadow receiveShadow position={[0, (s * (PANEL_H + RAIL)) / 2, 0]}>
+            <boxGeometry args={[PANEL_W + 2 * RAIL, RAIL, FRAME_D]} />
+            <meshStandardMaterial color="#c3c8d0" metalness={0.9} roughness={0.28} envMapIntensity={1} />
+          </mesh>
+        ))}
+        {([1, -1] as const).map((s) => (
+          <mesh key={`rail-x${s}`} castShadow receiveShadow position={[(s * (PANEL_W + RAIL)) / 2, 0, 0]}>
+            <boxGeometry args={[RAIL, PANEL_H, FRAME_D]} />
+            <meshStandardMaterial color="#c3c8d0" metalness={0.9} roughness={0.28} envMapIntensity={1} />
+          </mesh>
+        ))}
+      </group>
+
       {/* Junction box on the back */}
-      <mesh position={[0, -0.42, -0.05]}>
+      <mesh ref={junction} castShadow position={[0, -0.42, PANEL_LAYERS[4].base]}>
         <boxGeometry args={[0.18, 0.11, 0.028]} />
-        <meshStandardMaterial color="#20242b" roughness={0.7} />
+        <meshStandardMaterial color="#20242b" metalness={0.1} roughness={0.7} />
       </mesh>
     </group>
   );
 }
 
+/**
+ * The room the object reflects.
+ *
+ * Built from a 64 × 32 gradient rather than fetched: an HDRI from a CDN is a
+ * network request in the hero's critical path, and this scene only needs to
+ * know that there is a bright ceiling, a bone floor and one window. Without it
+ * the glass has nothing to reflect and reads as flat plastic.
+ */
+function StudioEnv() {
+  const { gl, scene } = useThree();
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const sky = ctx.createLinearGradient(0, 0, 0, 32);
+    sky.addColorStop(0, "#ffffff");
+    sky.addColorStop(0.46, "#e4eaf3");
+    sky.addColorStop(0.54, "#c9c6bd");
+    sky.addColorStop(1, "#6e6a61");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, 64, 32);
+
+    // One window, warm, to the left. This is the streak that crosses the glass.
+    ctx.fillStyle = "#fff4e2";
+    ctx.fillRect(7, 3, 17, 9);
+
+    const equirect = new THREE.CanvasTexture(canvas);
+    equirect.mapping = THREE.EquirectangularReflectionMapping;
+    equirect.colorSpace = THREE.SRGBColorSpace;
+
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const target = pmrem.fromEquirectangular(equirect);
+    scene.environment = target.texture;
+
+    equirect.dispose();
+    pmrem.dispose();
+    return () => {
+      scene.environment = null;
+      target.dispose();
+    };
+  }, [gl, scene]);
+
+  return null;
+}
+
 export default function PanelScene({
   onTick,
+  onStep,
   autoSpin,
   onInteract,
   initialTilt = 22,
+  draggable = true,
+  economy = false,
+  paused = false,
+  tourKey = 1,
 }: {
   onTick: (a: AngleRef) => void;
+  onStep: (i: number) => void;
   autoSpin: boolean;
   onInteract: () => void;
   initialTilt?: number;
+  draggable?: boolean;
+  /** Phones: half the shadow map, half the pixels, same sequence. */
+  economy?: boolean;
+  /** Scrolled past. A hero that keeps drawing sixty frames a second into a
+      screen nobody is looking at is a battery bill, not a feature. */
+  paused?: boolean;
+  tourKey?: number;
 }) {
   return (
     <Canvas
       shadows
-      dpr={[1, 2]}
+      frameloop={paused ? "never" : "always"}
+      dpr={economy ? [1, 1.5] : [1, 2]}
       camera={{ position: CAMERA_POS, fov: CAMERA_FOV }}
       gl={{ antialias: true, alpha: true }}
       className="panel-canvas"
-      style={{ touchAction: "none" }}
+      style={draggable ? { touchAction: "none" } : undefined}
     >
       {/* Studio lighting: one hard key standing in for the sun, a broad fill so
           the frame does not go black, and a warm bounce off the front. */}
-      <ambientLight intensity={0.85} />
+      <ambientLight intensity={0.7} />
       <directionalLight
         position={[2.6, 4.2, 2.2]}
         intensity={2.6}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={economy ? [512, 512] : [1024, 1024]}
         shadow-camera-near={0.5}
         shadow-camera-far={12}
         shadow-bias={-0.0004}
@@ -206,8 +442,24 @@ export default function PanelScene({
       <directionalLight position={[-3, 1.6, -2]} intensity={0.55} color="#cddcf0" />
       <pointLight position={[0, 0.4, 2.4]} intensity={1.1} color="#fff3dd" />
 
-      <PanelRig onTick={onTick} autoSpin={autoSpin} onInteract={onInteract} initialTilt={initialTilt} />
-      <ContactShadows position={[0, -1.05, 0]} opacity={0.24} scale={5} blur={3} far={3} resolution={512} />
+      <StudioEnv />
+      <PanelRig
+        onTick={onTick}
+        onStep={onStep}
+        autoSpin={autoSpin}
+        onInteract={onInteract}
+        initialTilt={initialTilt}
+        draggable={draggable}
+        tourKey={tourKey}
+      />
+      <ContactShadows
+        position={[0, -1.05, 0]}
+        opacity={0.24}
+        scale={5}
+        blur={3}
+        far={3}
+        resolution={economy ? 256 : 512}
+      />
     </Canvas>
   );
 }

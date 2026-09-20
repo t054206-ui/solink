@@ -36,6 +36,21 @@ const en = {
   "hero.tilt": "Tilt",
   "hero.azimuth": "Direction",
 
+  // The hero panel takes itself apart once, a part at a time. One short line
+  // each, because the object is the explanation and the text is the caption.
+  "panel.glass": "Glass",
+  "panel.glassD": "Protects the solar cells and lets the sunlight through.",
+  "panel.cells": "Solar cells",
+  "panel.cellsD": "Capture sunlight and turn it into electricity.",
+  "panel.backsheet": "Backsheet",
+  "panel.backsheetD": "Seals the panel from behind and keeps moisture out.",
+  "panel.frame": "Frame",
+  "panel.frameD": "Holds the panel together and fixes it to the roof.",
+  "panel.junction": "Junction box",
+  "panel.junctionD": "Where the electricity leaves the panel, through its cables.",
+  "panel.replay": "Show the parts again",
+  "panel.note": "A generic panel assembly, drawn to show what each part does. Not one manufacturer's cross section.",
+
   "label.ratedPower": "Rated power",
   "label.efficiency": "Efficiency",
   "label.area": "Panel area",
@@ -256,6 +271,19 @@ const ar: Dict = {
   "hero.drag": "حرّك اللوح عشان تغيّر الميلان",
   "hero.tilt": "الميلان",
   "hero.azimuth": "الاتجاه",
+
+  "panel.glass": "الزجاج",
+  "panel.glassD": "يحمي الخلايا ويخلي ضوء الشمس يعدي.",
+  "panel.cells": "الخلايا الشمسية",
+  "panel.cellsD": "تاخذ ضوء الشمس وتحوّله كهرباء.",
+  "panel.backsheet": "الطبقة الخلفية",
+  "panel.backsheetD": "تسكّر اللوح من ورا وتمنع الرطوبة.",
+  "panel.frame": "الإطار",
+  "panel.frameD": "يمسك اللوح كله ويثبته على السطح.",
+  "panel.junction": "علبة التوصيل",
+  "panel.junctionD": "من هني تطلع الكهرباء عبر الكيبلات.",
+  "panel.replay": "عيد عرض الأجزاء",
+  "panel.note": "تركيب لوح عام، مرسوم عشان يوضح شغل كل جزء. مو مقطع لوح شركة معينة.",
 
   "label.ratedPower": "القدرة",
   "label.efficiency": "الكفاءة",

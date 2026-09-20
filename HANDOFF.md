@@ -619,3 +619,69 @@ supplied by the owner · no founding story.
    The `user_role` enum is now homeowner|manufacturer|company|admin, matching
    `src/lib/roles.ts`; `user_profiles.manufacturer_id` was added.
 7. The other 56 pages carry the new tokens but were not redesigned.
+
+---
+
+# SESSION 4 — 2026-09-20 (the hero panel takes itself apart)
+
+## Read this before anything else
+
+Owner's brief: make the intro's 3D visual stronger. The panel should arrive and
+rotate slightly, break apart into its parts with a very short line of
+explanation for each, reassemble, stay cinematic rather than busy, and work on
+phones. Everything below is that brief and nothing else. No other page changed.
+
+**Written without `tsc`, `eslint` or `next build`.** The machine this session
+ran on has no Node, no npm and no git; the work reached GitHub through the web
+UI. Vercel's build is what checked it. If you are picking this up with a real
+toolchain, run all three before touching anything.
+
+## What was built
+
+| Area | Where | Notes |
+| --- | --- | --- |
+| The parts list | `src/components/three/panelLayers.ts` (new) | Glass, cells, backsheet, frame, junction box, front to back, with their assembled and exploded positions and their two dictionary keys. One list, so the order they separate in and the order the sentences appear in cannot drift. |
+| The sequence | `src/components/three/PanelScene.tsx` | Enter 0.8s, hold 0.6s, one part every 1.45s, 1.0s beat, everything closes together in 1.3s. 10.6s in total. 1.45s is a reading speed, not a movement speed. |
+| Reflections | `StudioEnv` in the same file | `scene.environment` from a 64 × 32 canvas gradient through `PMREMGenerator`. No HDRI, no CDN request in the hero's critical path. The frame reads as anodised aluminium because of this, not because of its roughness value. |
+| Captions | `src/components/three/PanelStudio.tsx` | One slot with a reserved height under the object. The scene reports the index of the part being explained, so React renders five times in ten seconds rather than sixty times a second. `aria-live="polite"`. |
+| Copy | `src/lib/i18n/dictionary.ts` | `panel.*`, English and Arabic. Same standing caveat: the Arabic is Claude's draft. |
+| Phones | `PanelStudio` | The canvas now runs on phones, which it did not before. Lower dpr, half the shadow map, smaller contact shadow. |
+| Battery | `src/lib/hooks/useOnScreen.ts` (new) | `frameloop="never"` once the hero scrolls away. `useSyncExternalStore`, like `useMediaQuery`, so nothing is set in an effect. |
+
+## Decisions worth keeping
+
+- **No drag on touch screens.** Reading a drag needs `touch-action: none` on the
+  canvas, and a hero-sized element that swallows vertical swipes is a page
+  nobody can scroll. Phones get the sequence and the readouts, not the grab.
+- **The sequence keeps its own clock.** r3f resets `clock.elapsedTime` when
+  `frameloop` changes, and this scene parks itself off-screen, so absolute time
+  would jump backwards mid-sequence. The delta is capped at 50 ms because a
+  backgrounded tab hands back one enormous frame on return.
+- **The glass pane is 6% opaque while closed** and fades to 44% as it leaves the
+  stack. The sheen that makes the object read as glass belongs to the laminate,
+  where it already was; a white sheet over the cells turns the only dark mass on
+  the page pale.
+- **The glass casts no shadow.** A transparent mesh still casts an opaque one in
+  three, and a hard rectangle landing on the cells 300 mm below it is precisely
+  what glass does not do.
+- **The group scales to 0.82 while open.** The exploded assembly reaches radius
+  1.13 m and the camera was placed for 1.052 m. Scale it; do not dolly in.
+- **`prefers-reduced-motion` gets the five sentences as a plain list** beside the
+  still panel. The explanation is never something you have to watch an animation
+  to receive.
+- **The note under the object** says it is a generic assembly and not one
+  manufacturer's cross section, because an anatomy diagram of a panel is a claim
+  about panels.
+
+## Not done
+
+1. **The intro video.** The brief asked the sequence to hand off to it. There is
+   no intro video anywhere in this repository and none was supplied, so the
+   sequence hands off to the page instead. Ask the owner for the asset.
+2. Clicking a part to hold its explanation open. The sequence is timed; there is
+   no raycast picking, and adding it means separating a click from a drag.
+3. Leader lines from the parts to their labels, which `DIRECTION.md` still calls
+   for. The caption slot does the job for now and survives RTL and 375 px.
+4. The three `SpecLabel` markers in `page.tsx` are positioned against the
+   container, not the object, so they drift by the 18% the group scales down
+   during the sequence.

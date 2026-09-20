@@ -54,8 +54,20 @@ serif italic accents.
   once a solar resource source and a performance ratio exist, and only then via
   a tilt-aware model whose constants come with a citation.
 - Micro-labels on leader lines: glass, cells, frame, junction box.
-- Loaded only on routes that use it. Static render for phones and for
-  `prefers-reduced-motion`.
+- Loaded only on routes that use it. Static render for `prefers-reduced-motion`.
+- **It comes apart** (2026-09-20, the owner's second brief for the hero). The
+  module arrives, settles, separates into glass, cells, backsheet, frame and
+  junction box one part at a time with one short sentence each, then closes
+  again and returns to the sway. Ten and a half seconds, once, and dragging it
+  cancels it. A button replays it.
+- The five sentences are the whole text. The object is the explanation and the
+  caption is a caption.
+- Phones run the sequence too, at a lower dpr and half the shadow map, but
+  cannot drag: a hero-sized canvas with `touch-action: none` is a page nobody
+  can scroll. `prefers-reduced-motion` gets the still panel and the same five
+  sentences as a list.
+- The exploded stack is 820 mm deep. A real laminate is 10 mm. It is a diagram,
+  and the line under the object says so.
 
 ## Motion — cinematic, both marketing and product
 
