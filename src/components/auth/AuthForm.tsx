@@ -1,16 +1,21 @@
 "use client";
-import { Suspense } from "react";
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Field, Input } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";
 
-/** Email + password auth via Supabase (browser client, anon key only). */
-function AuthFormInner({ mode }: { mode: "login" | "signup" }) {
+/**
+ * Email + password auth via Supabase (browser client, anon key only).
+ *
+ * The redirect target arrives as a prop. Reading it here with useSearchParams()
+ * would opt the component out of server rendering, and a sign-in page whose
+ * form only exists after JavaScript loads is not a sign-in page. The pages read
+ * ?next= on the server and hand it down.
+ */
+export function AuthForm({ mode, nextPath = "/dashboard" }: { mode: "login" | "signup"; nextPath?: string }) {
   const router = useRouter();
-  const params = useSearchParams();
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null); const [info, setInfo] = useState<string | null>(null); const [busy, setBusy] = useState(false);
 
@@ -19,11 +24,14 @@ function AuthFormInner({ mode }: { mode: "login" | "signup" }) {
     const supabase = createClient();
     if (!supabase) { setError("Supabase is not configured."); setBusy(false); return; }
     if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+      // The confirmation link should bring people back to this site, not to the
+      // Supabase project's default Site URL. The origin is read at click time so
+      // the same code serves localhost, previews and production.
+      const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/login?confirmed=1` } });
       if (error) setError(error.message); else setInfo("Check your email to confirm your account, then sign in.");
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message); else { router.push(params.get("next") ?? "/dashboard"); router.refresh(); }
+      if (error) setError(error.message); else { router.push(nextPath); router.refresh(); }
     }
     setBusy(false);
   }
@@ -44,19 +52,5 @@ function AuthFormInner({ mode }: { mode: "login" | "signup" }) {
         {mode === "login" ? <>No account? <Link href="/signup" className="text-fg underline underline-offset-2">Create one</Link></> : <>Already have an account? <Link href="/login" className="text-fg underline underline-offset-2">Sign in</Link></>}
       </p>
     </form>
-  );
-}
-
-/**
- * useSearchParams() opts a client component out of static prerendering, and
- * Next refuses to build a page that does that without a Suspense boundary. The
- * fallback is the same form with the redirect target unknown, which is what a
- * user sees for the few milliseconds before hydration anyway.
- */
-export function AuthForm(props: Parameters<typeof AuthFormInner>[0]) {
-  return (
-    <Suspense fallback={<div aria-busy="true" className="h-64 w-full max-w-sm animate-pulse rounded-[var(--radius-lg)] bg-inset" />}>
-      <AuthFormInner {...props} />
-    </Suspense>
   );
 }

@@ -5,7 +5,11 @@ import { AuthForm } from "@/components/auth/AuthForm";
 
 export const metadata = { title: "Sign in" };
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: PageProps<"/login">) {
+  const sp = await searchParams;
+  const raw = Array.isArray(sp.next) ? sp.next[0] : sp.next;
+  // Only a same-origin path is honoured; anything else falls back to the dashboard.
+  const nextPath = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
   if (!isSupabaseConfigured()) {
     return (
       <div>
@@ -16,5 +20,5 @@ export default function LoginPage() {
       </div>
     );
   }
-  return <AuthForm mode="login" />;
+  return <AuthForm mode="login" nextPath={nextPath} />;
 }

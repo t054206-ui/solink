@@ -5,7 +5,11 @@ import { AuthForm } from "@/components/auth/AuthForm";
 
 export const metadata = { title: "Create account" };
 
-export default function SignupPage() {
+export default async function SignupPage({ searchParams }: PageProps<"/signup">) {
+  const sp = await searchParams;
+  const raw = Array.isArray(sp.next) ? sp.next[0] : sp.next;
+  // Only a same-origin path is honoured; anything else falls back to the dashboard.
+  const nextPath = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
   if (!isSupabaseConfigured()) {
     return (
       <div>
@@ -16,5 +20,5 @@ export default function SignupPage() {
       </div>
     );
   }
-  return <AuthForm mode="signup" />;
+  return <AuthForm mode="signup" nextPath={nextPath} />;
 }

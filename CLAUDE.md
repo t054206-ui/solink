@@ -23,8 +23,9 @@ The current position, as of 2026-09-20:
 - Light theme is the default. Roles are homeowner (includes landlord),
   manufacturer, company, admin.
 - Supabase is connected: project `bgwvztckesuwlydwcfkj`, migrations 0001–0005
-  applied. Locally the app runs in Supabase mode when `.env.local` has the two
-  public vars; production still needs them set in Vercel.
+  applied. Both local and production run in Supabase mode (public vars set on Vercel via
+  the logged-in CLI). Sign-up is live; the owner still needs to paste the
+  service-role key and set the Supabase Auth Site URL.
 - Still placeholders: team roles/bios/photos, team description, and the
   platform settings (tariff, CO₂ factor, performance ratio) — sourced values
   exist in Session 3 but cannot take effect until the demo-mode settings path is

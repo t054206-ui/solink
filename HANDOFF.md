@@ -591,8 +591,10 @@ supplied by the owner · no founding story.
   `private` schema instead (policies hold the OID, not the name). Verified: anon
   reads still pass RLS, `/rest/v1/rpc/is_admin` is 404, advisor is clean.
 - **`useSearchParams()` in AuthForm** broke the production build the moment
-  Supabase was configured (`/login` and `/signup` stopped prerendering). Wrapped
-  in Suspense inside AuthForm so the pages need no change.
+  Supabase was configured (`/login` and `/signup` stopped prerendering). First wrapped in
+  Suspense, which made the server-rendered page a skeleton; then fixed properly:
+  the pages read `?next=` server-side and pass it as a prop, so the form is in
+  the HTML and no Suspense is needed.
 - **MEW's investor portal (tariff calculator) 404s.** The yearbook PDF on
   mew.gov.kw is the working primary source.
 
