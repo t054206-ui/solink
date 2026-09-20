@@ -853,3 +853,80 @@ Monthly PVOUT (kWh/kWp): 124.2 · 123.5 · 151.5 · 140.2 · 151.2 · 157.3 · 1
    to labels, the intro video asset.
 9. About page placeholders, Kuwaiti review of the Arabic, real catalogue,
    the other 56 pages.
+
+---
+---
+
+# SESSION 6 — 2026-09-20 evening (the opening, and sign in / sign up)
+
+## Read this before anything else
+
+Same machine and toolchain as Session 5, later the same day, a new brief from
+the owner: a cinematic 3D intro that plays on entering the site (the module
+arrives, comes apart with one line per part, reassembles), an automatic
+transition into the site, a replay button, a clean sign-up (full name, email,
+password, confirm password) and sign-in (email, password) with eye toggles on
+both password fields, all in the site's own design. **The intended journey:
+enter → opening → sign up or sign in → the site.**
+
+Another session (GitHub account `t040262-cmyk`) had started the opening an hour
+earlier and pushed six commits to `main` that did not build (`intro.*`
+dictionary keys missing, no CSS). It went quiet for a quarter of an hour, so
+this session took the work over and finished it in place. If that session
+resumes, its next push will conflict with `IntroSequence.tsx`; this section is
+the record of what changed and why.
+
+## What was built
+
+| Area | Where | Notes |
+| --- | --- | --- |
+| Opening, finished | `src/components/intro/IntroSequence.tsx` (rewritten), `introStore.ts` (+`markShown`, `introShownThisLoad`, `isReplay`), `IntroHost.tsx`, `ReplayIntroButton.tsx` (unchanged), `public/bootstrap.js` (curtain attribute, unchanged), `src/app/layout.tsx` (mount, unchanged), `src/app/globals.css` (all `.intro-*` styles, new) | Header with the mark and Skip; ink stage with a blue light pool and a fading grid; title card while the module arrives; five ticks in sun amber; the site headline on the closed module for 1.9 s; wipe upward in 720 ms. Escape and Skip go through the same exit. |
+| Hand-off to sign-up | `IntroSequence.tsx` `leave()` | Not a replay, not already on `/login` or `/signup`, Supabase configured, no session → `router.push("/signup")` (with `?next=` when the visitor arrived on a deeper page), 340 ms for the route to render behind the curtain, then the curtain drops and the wipe reveals the form. Otherwise the wipe reveals the page they were on. |
+| Hero defers to the opening | `src/components/three/PanelStudio.tsx`, `PanelScene.tsx` (`autoplay` prop) | The hero is `paused` while the overlay is up (two WebGL contexts, one invisible) and, once the opening has played in this page load, declines its own tour: labels shown, replay button ready. |
+| Dark stage | `PanelScene.tsx` (`stage="dark"`) | No contact shadow, rim 1.2, ambient 0.42, key 3. The light stage is untouched. |
+| Copy | `src/lib/i18n/dictionary.ts` | `intro.*` (5 keys) and `auth.*` (24 keys), English and light Kuwaiti Arabic. Same standing caveat: the Arabic is Claude's draft. |
+| Replay button | `src/components/layout/Footer.tsx` (bottom bar), `src/components/auth/AuthAside.tsx` | Hidden under `prefers-reduced-motion`, like the opening itself. |
+| Sign in / sign up | `src/components/auth/AuthForm.tsx` (rewritten), `PasswordInput.tsx` (new), `AuthAside.tsx` (new), `AuthMobileHeader.tsx` (new), `src/app/(auth)/layout.tsx` (rewritten), `login/page.tsx`, `signup/page.tsx` | Confirm password checked client-side before the request; eye toggle is a real button with `aria-pressed` and a label; `Field` wires label → input through `PasswordInput`. Pages redirect a signed-in visitor onward and pass `?confirmed=1` down as a notice. "Look around first" under the form leads to `/`. |
+
+## Verified in the browser
+
+Desktop 1440 × 900 and phone 375 × 812, Supabase mode, storage cleared:
+opening plays (title → five parts → headline → wipe) and lands on `/signup`
+without a click. Sign-up: both eye buttons flip their own field between
+`password` and `text`, `aria-pressed` and the label follow, mismatched
+passwords show "The two passwords do not match." and mark the field invalid;
+every label is wired to its input. Footer replay on `/`: overlay mounts,
+plays, unmounts, path stays `/`, hero at rest with labels and its own replay.
+
+## Things tried that failed, or to know
+
+- **The three.js chunk takes a few seconds on the dev server** on first load,
+  so the module appears late in the opening there. Production is quicker; the
+  title card covers the gap either way.
+- **`useRef(introOn)` to detect "the opening is up" at hero mount** does not
+  work: the store's server snapshot is false and the true value arrives a
+  render later. The module-level `introShownThisLoad()` flag, set when the
+  sequence mounts, is what the hero reads.
+- **`forced` is cleared in `finishIntro()`**, so `isReplay()` must be read at
+  the start of `leave()`, before the timeout. It is.
+- **A dark half-page aside** was considered for sign-in and rejected: the
+  direction says the panel is the only dark mass on a light page. The aside is
+  `--bg-sunken` with the object as the dark mass, like the hero.
+
+## Decisions (owner's brief, and two of Claude's, flagged)
+
+- Journey exactly as briefed: opening → sign-up → site. **Claude added a quiet
+  "Look around first" link** under the form so the marketing pages are not
+  locked behind an account; remove it if the owner wants the gate hard.
+- **After sign-in the destination is `/dashboard`**, the app's home, unless a
+  `?next=` says otherwise. "Main website" for a signed-in person is the app.
+- The opening is the same sequence as the hero, on purpose: one object, one
+  set of sentences, two rooms.
+
+## What to do next
+
+1. Kuwaiti review of the 29 new Arabic strings.
+2. If the other session resumes on the intro, reconcile against this file.
+3. Session 5's list still stands: PVWatts manual read, Google Solar, tilt
+   model, privacy policy and terms (now more pressing: accounts are the front
+   door), About placeholders, catalogue, the other 56 pages.

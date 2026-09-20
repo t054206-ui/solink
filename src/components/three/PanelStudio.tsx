@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useRef, useState } from "react";
 import { useMediaQuery, usePrefersReducedMotion } from "@/lib/hooks/useMediaQuery";
 import { useOnScreen } from "@/lib/hooks/useOnScreen";
+import { introShownThisLoad, useIntroOnScreen } from "@/components/intro/introStore";
 import { useT } from "@/lib/i18n/provider";
 import { PANEL_LAYERS } from "./panelLayers";
 import type { AngleRef } from "./PanelScene";
@@ -25,7 +26,7 @@ function compass(az: number): string {
  * The still version. Shown under prefers-reduced-motion and while the scene
  * loads, so the hero never collapses to an empty box.
  */
-function StaticPanel() {
+export function StaticPanel() {
   return (
     <svg viewBox="0 0 240 300" className="h-full w-full" role="img" aria-label="A solar panel seen at an angle">
       <g transform="translate(120 150) rotate(-14) skewX(-8) translate(-120 -150)">
@@ -93,6 +94,13 @@ export function PanelStudio({ labels }: {
   const azRef = useRef<HTMLSpanElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const onScreen = useOnScreen(stage);
+  // The opening plays the same sequence full bleed before the site. While it
+  // is up the hero does not draw (two WebGL contexts, one of them invisible),
+  // and once it has played the hero declines its own tour and sits at rest
+  // with its labels, the replay button ready. Nobody is shown the same ten
+  // seconds twice in a row.
+  const introOn = useIntroOnScreen();
+  const skipped = !introOn && introShownThisLoad();
   const [touched, setTouched] = useState(false);
   const [step, setStep] = useState(-1);
   const [played, setPlayed] = useState(false);
@@ -127,7 +135,8 @@ export function PanelStudio({ labels }: {
   }, []);
 
   const layer = step >= 0 ? PANEL_LAYERS[step] : null;
-  const atRest = touched || !touring;
+  const atRest = touched || !touring || skipped;
+  const canReplay = played || skipped;
 
   if (reduced) {
     return (
@@ -159,7 +168,8 @@ export function PanelStudio({ labels }: {
           onInteract={onInteract}
           draggable={!small}
           economy={small}
-          paused={!onScreen}
+          paused={!onScreen || introOn}
+          autoplay={!skipped}
           tourKey={run}
         />
         {labels && atRest && (
@@ -183,7 +193,7 @@ export function PanelStudio({ labels }: {
               {t(layer.descKey)}
             </p>
           </div>
-        ) : played ? (
+        ) : canReplay ? (
           <div className="text-center">
             <button
               type="button"

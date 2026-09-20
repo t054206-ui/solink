@@ -96,6 +96,7 @@ interface RigProps {
   onTick: (a: AngleRef) => void;
   onStep: (i: number) => void;
   autoSpin: boolean;
+  autoplay: boolean;
   onInteract: () => void;
   initialTilt: number;
   draggable: boolean;
@@ -112,7 +113,7 @@ interface RigProps {
  * mutable state local to the component that mutates it is both legal and
  * simpler to follow.
  */
-function PanelRig({ onTick, onStep, autoSpin, onInteract, initialTilt, draggable, tourKey }: RigProps) {
+function PanelRig({ onTick, onStep, autoSpin, autoplay, onInteract, initialTilt, draggable, tourKey }: RigProps) {
   const group = useRef<THREE.Group>(null);
   const angles = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
   const target = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
@@ -204,10 +205,18 @@ function PanelRig({ onTick, onStep, autoSpin, onInteract, initialTilt, draggable
     if (c.key !== tourKey) {
       c.key = tourKey;
       c.t = 0;
-      c.cancelled = false;
+      // The first tour can be declined (the opening has just shown the same
+      // sequence full bleed); a replay, which is any later key, always runs.
+      c.cancelled = tourKey === 1 && !autoplay;
     } else {
       c.t += delta;
     }
+
+    // Declining the first tour also stops one already under way: the opening
+    // can be replayed from the footer while the hero is mid-sequence, and when
+    // it lifts the hero must be closed and at rest, not halfway open under
+    // labels that assume a closed module. A replay (any later key) is exempt.
+    if (!autoplay && c.key === 1) c.cancelled = true;
 
     const t = c.t;
     const running = !c.cancelled && t < END_AT;
@@ -406,6 +415,8 @@ export default function PanelScene({
   economy = false,
   paused = false,
   tourKey = 1,
+  autoplay = true,
+  stage = "light",
 }: {
   onTick: (a: AngleRef) => void;
   onStep: (i: number) => void;
@@ -413,6 +424,13 @@ export default function PanelScene({
   onInteract: () => void;
   initialTilt?: number;
   draggable?: boolean;
+  /** False: the first tour does not run and the module simply sits at rest.
+      Set by the hero when the opening has just played the same sequence. */
+  autoplay?: boolean;
+  /** "dark" is the opening's ink stage: no contact shadow (there is no floor
+      to catch it), a cooler rim so the frame separates from the black, and
+      a little less ambient so the glass keeps its contrast. */
+  stage?: "light" | "dark";
   /** Phones: half the shadow map, half the pixels, same sequence. */
   economy?: boolean;
   /** Scrolled past. A hero that keeps drawing sixty frames a second into a
@@ -432,37 +450,40 @@ export default function PanelScene({
     >
       {/* Studio lighting: one hard key standing in for the sun, a broad fill so
           the frame does not go black, and a warm bounce off the front. */}
-      <ambientLight intensity={0.7} />
+      <ambientLight intensity={stage === "dark" ? 0.42 : 0.7} />
       <directionalLight
         position={[2.6, 4.2, 2.2]}
-        intensity={2.6}
+        intensity={stage === "dark" ? 3 : 2.6}
         castShadow
         shadow-mapSize={economy ? [512, 512] : [1024, 1024]}
         shadow-camera-near={0.5}
         shadow-camera-far={12}
         shadow-bias={-0.0004}
       />
-      <directionalLight position={[-3, 1.6, -2]} intensity={0.55} color="#cddcf0" />
-      <pointLight position={[0, 0.4, 2.4]} intensity={1.1} color="#fff3dd" />
+      <directionalLight position={[-3, 1.6, -2]} intensity={stage === "dark" ? 1.2 : 0.55} color="#cddcf0" />
+      <pointLight position={[0, 0.4, 2.4]} intensity={stage === "dark" ? 0.8 : 1.1} color="#fff3dd" />
 
       <StudioEnv />
       <PanelRig
         onTick={onTick}
         onStep={onStep}
         autoSpin={autoSpin}
+        autoplay={autoplay}
         onInteract={onInteract}
         initialTilt={initialTilt}
         draggable={draggable}
         tourKey={tourKey}
       />
-      <ContactShadows
-        position={[0, -1.05, 0]}
-        opacity={0.24}
-        scale={5}
-        blur={3}
-        far={3}
-        resolution={economy ? 256 : 512}
-      />
+      {stage === "light" && (
+        <ContactShadows
+          position={[0, -1.05, 0]}
+          opacity={0.24}
+          scale={5}
+          blur={3}
+          far={3}
+          resolution={economy ? 256 : 512}
+        />
+      )}
     </Canvas>
   );
 }

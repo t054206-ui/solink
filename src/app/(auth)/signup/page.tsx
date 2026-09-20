@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/config/env";
+import { createClient } from "@/lib/supabase/server";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { Button } from "@/components/ui/Button";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -10,6 +12,12 @@ export default async function SignupPage({ searchParams }: PageProps<"/signup">)
   const raw = Array.isArray(sp.next) ? sp.next[0] : sp.next;
   // Only a same-origin path is honoured; anything else falls back to the dashboard.
   const nextPath = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
+  // Someone already signed in has nowhere to go on this page but onward.
+  const c = await createClient();
+  if (c) {
+    const { data: { user } } = await c.auth.getUser();
+    if (user) redirect(nextPath);
+  }
   if (!isSupabaseConfigured()) {
     return (
       <div>

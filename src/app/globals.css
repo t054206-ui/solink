@@ -343,3 +343,77 @@ summary, label[for], select:not(:disabled) { cursor: pointer; touch-action: mani
    immutability and this is presentation anyway. */
 .panel-canvas { cursor: grab; }
 .panel-canvas:active { cursor: grabbing; }
+
+/* ── The opening ──────────────────────────────────────────────────────────
+   Full bleed on ink, before the site. The curtain is a server-rendered div
+   that only shows while <html data-intro="pending">, which bootstrap.js sets
+   before first paint for a browser that has not seen the opening, so the
+   landing page never flashes behind it. The overlay itself mounts after
+   hydration and wipes upward when it is done. */
+.intro-curtain { display: none; position: fixed; inset: 0; z-index: 90; background: #0e1116; }
+html[data-intro="pending"] .intro-curtain { display: block; }
+html[data-intro="pending"] body { overflow: hidden; }
+
+.intro-root {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; grid-template-rows: auto 1fr auto;
+  background: #0e1116; color: #f2f1ed;
+  overflow: hidden;
+  animation: intro-in 600ms var(--ease-out) both;
+}
+.intro-root.is-leaving { animation: intro-out 720ms var(--ease-snap) forwards; }
+@keyframes intro-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes intro-out { from { clip-path: inset(0 0 0 0) } to { clip-path: inset(0 0 100% 0) } }
+
+.intro-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px 20px 0;
+}
+@media (min-width: 768px) { .intro-head { padding: 28px 36px 0; } }
+.intro-brand { display: inline-flex; align-items: center; gap: 8px; color: #f2f1ed; font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+.intro-eyebrow { color: rgba(242, 241, 237, .55); }
+.intro-skip {
+  color: rgba(242, 241, 237, .7);
+  border: 1px solid rgba(242, 241, 237, .22); border-radius: 999px;
+  padding: 8px 14px; background: transparent;
+  transition: border-color var(--dur-fast) linear, color var(--dur-fast) linear;
+}
+.intro-skip:hover { color: #f2f1ed; border-color: rgba(242, 241, 237, .5); }
+
+/* The stage. The only light in the room is behind the object: a pool of the
+   panel's own glass blue, so the module reads as lit rather than pasted. */
+.intro-stage { position: relative; min-height: 0; }
+.intro-stage::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 52% 46% at 50% 54%, rgba(26, 58, 99, .62), rgba(26, 58, 99, 0) 100%);
+}
+.intro-stage::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
+  background-image:
+    linear-gradient(to right, rgba(242, 241, 237, .12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(242, 241, 237, .12) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 30%, transparent 100%);
+}
+.intro-stage > * { position: relative; z-index: 1; }
+
+.intro-copy { padding: 0 20px 28px; text-align: center; }
+@media (min-width: 768px) { .intro-copy { padding: 0 36px 44px; } }
+.intro-ticks { display: flex; justify-content: center; gap: 6px; margin-bottom: 18px; }
+.intro-ticks span { width: 28px; height: 2px; border-radius: 1px; background: rgba(242, 241, 237, .18); transition: background-color 400ms var(--ease-out); }
+.intro-ticks span.on { background: var(--sun); }
+.intro-caption { min-height: 96px; }
+@media (min-width: 768px) { .intro-caption { min-height: 104px; } }
+.intro-name { color: #f5b556; display: block; }
+.intro-line {
+  margin: 8px auto 0; max-width: 30ch;
+  font-size: 19px; line-height: 1.35; letter-spacing: -0.01em; color: #f2f1ed; text-wrap: balance;
+}
+@media (min-width: 768px) { .intro-line { font-size: 24px; max-width: 34ch; } }
+.intro-line.is-title { font-size: 24px; letter-spacing: -0.025em; font-weight: 600; }
+@media (min-width: 768px) { .intro-line.is-title { font-size: 34px; } }
+.intro-note { margin: 18px auto 0; max-width: 46ch; font-size: 11px; line-height: 1.45; color: rgba(242, 241, 237, .45); }
+
+/* ── Sign in / sign up ──────────────────────────────────────────────────── */
+.auth-aside { background: var(--bg-sunken); }
+.auth-panel-shadow { fill: var(--fg); opacity: .12; }

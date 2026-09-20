@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { ReplayIntroButton } from "@/components/intro/ReplayIntroButton";
 
 export function Footer() {
   return (
@@ -28,7 +29,10 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-border py-3 text-center text-[11.5px] text-fg-muted">© {new Date().getFullYear()} Solink · Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize</div>
+      <div className="flex flex-col items-center justify-center gap-2 border-t border-border px-4 py-3 text-center text-[11.5px] text-fg-muted sm:flex-row sm:gap-4">
+        <span>© {new Date().getFullYear()} Solink · Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize</span>
+        <ReplayIntroButton />
+      </div>
     </footer>
   );
 }

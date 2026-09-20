@@ -75,6 +75,45 @@ serif italic accents.
 - The exploded stack is 820 mm deep. A real laminate is 10 mm. It is a diagram,
   and the line under the object says so.
 
+## The opening — /, first visit (2026-09-20, owner's third brief for the panel)
+
+The take-apart sequence plays **full bleed, before the site**, once per
+browser. Ink stage, a pool of the panel's own glass blue behind the object, a
+faint plotted grid fading out toward the edges. A title card while the module
+arrives ("This is a solar panel. Here is what is inside it."), the five parts
+with their one-line captions and a five-tick progress row in sun amber, the
+site's own headline on the closed module, then the overlay wipes upward.
+Nothing is clicked. Escape or Skip cuts it short.
+
+**Where the wipe lands is the point.** A first-time visitor without an account
+is on the sign-up page when the overlay lifts: the route is pushed while the
+curtain is still up. A signed-in visitor, a replay, or someone already on a
+sign-in page is returned to where they were. The hero declines its own copy of
+the sequence for the rest of that page load, so nobody watches the same ten
+seconds twice.
+
+"Replay the intro" lives in the footer's bottom bar and on the sign-in aside.
+Not shown, and not offered, under `prefers-reduced-motion`; the still panel and
+the five sentences as text remain.
+
+The same `PanelScene` renders it, with `stage="dark"`: no contact shadow, a
+stronger cool rim, less ambient. One object, one set of five sentences, two
+rooms.
+
+## Sign in and sign up — /login, /signup
+
+Same room as the landing page, split in two. Left, on `--bg-sunken` with the
+plotted grid: the still module with its four parts named on leader lines, the
+site's headline, the replay button. Right: the form on the page colour, one
+column, a rounded primary button. Sign-up asks for full name, email, password
+and the password again; sign-in for email and password. Both password fields
+carry the standard eye toggle (a real button, `aria-pressed`, labelled "Show
+password" / "Hide password"). The second password is checked before anything
+is sent. A quiet "Look around first" under the form leads to the landing page,
+because the site is not locked behind an account. Bilingual through the
+dictionary (`auth.*`), Arabic drafted by Claude. Phones get the form with a
+one-row header.
+
 ## Motion — cinematic, both marketing and product
 
 - Scroll-driven section takeovers: sections slide over the previous one.

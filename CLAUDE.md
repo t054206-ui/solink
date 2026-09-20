@@ -5,8 +5,8 @@
 ## Read HANDOFF.md first, before doing anything else
 
 `HANDOFF.md` is the state of this project. Read it at the start of every session.
-Session 3 describes the site as it is; Sessions 4 and 5 are additions on top of
-it. **Session 2 supersedes Session 1 on anything visual.**
+Session 3 describes the site as it is; Sessions 4, 5 and 6 are additions on top
+of it. **Session 2 supersedes Session 1 on anything visual.**
 
 The current position, as of 2026-09-20:
 
@@ -17,6 +17,13 @@ The current position, as of 2026-09-20:
   owner's reference sites and is recorded in `design-system/solink/DIRECTION.md`
   — read that file before touching anything visual. HANDOFF.md Session 3 has
   the full account.
+- **The opening** (Session 6): the take-apart sequence plays full bleed once
+  per browser before the site and lands a signed-out first-timer on `/signup`.
+  `src/components/intro/*`, curtain attribute in `public/bootstrap.js`,
+  mounted in the root layout. Replay in the footer and on the sign-in aside.
+- **Auth** (Session 6): `/login` and `/signup` redesigned on the Studio palette;
+  sign-up has full name, email, password, confirm password; both password
+  fields have the eye toggle (`PasswordInput`). Bilingual via `auth.*` keys.
 - Built and approved by the owner: landing page with a draggable 3D panel,
   role-aware dashboard (`/dashboard?as=…`), English/Kuwaiti Arabic toggle with
   RTL, roof photo/video reader, and `/about`.

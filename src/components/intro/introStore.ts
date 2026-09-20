@@ -30,6 +30,10 @@ const ATTR = "data-intro";
 /** Set by the replay button, which overrides "this browser has seen it". */
 let forced = false;
 
+/** True once the opening has mounted in this page load. The hero reads it to
+    decline its own copy of the sequence rather than play it a second time. */
+let shownThisLoad = false;
+
 const calm = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -65,6 +69,20 @@ export function getServerSnapshot(): boolean {
  */
 export function useIntroOnScreen(): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+/** The opening is on screen. Called by the sequence when it mounts. */
+export function markShown(): void {
+  shownThisLoad = true;
+}
+
+export function introShownThisLoad(): boolean {
+  return shownThisLoad;
+}
+
+/** Is the current showing a replay someone asked for, rather than the first one? */
+export function isReplay(): boolean {
+  return forced;
 }
 
 /** Take the curtain down so the exit wipe reveals the page, not more ink. */
