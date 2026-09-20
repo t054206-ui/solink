@@ -24,5 +24,7 @@ export async function POST(req: Request) {
     maxTokens: 2500,
   });
   if (!r.ok) return Response.json(r, { status: 502 });
-  return Response.json({ ok: true, answer: r.data, contextUsed: used, cls: "ai" });
+  // The model id travels back so the run recorded in `recommendations` names
+  // what actually answered, rather than guessing from configuration.
+  return Response.json({ ok: true, answer: r.data, contextUsed: used, model: r.model, cls: "ai" });
 }

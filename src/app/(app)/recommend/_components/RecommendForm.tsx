@@ -8,19 +8,17 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input, Textarea } from "@/components/ui/Form";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { ErrorState, UnavailableState } from "@/components/ui/States";
+import { EmptyState, ErrorState, UnavailableState } from "@/components/ui/States";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
-import type { SolarProfile } from "@/lib/types";
+import type { DataMode } from "@/lib/data/mode";
+import type { Product, SolarProfile } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { getSpecNum } from "../../marketplace/_components/product-helpers";
+import { logRecommendationRun } from "../actions";
+import { MatchCard } from "./MatchCard";
+import { matchPanels, PRIORITY_IDS, PRIORITY_LABEL, type MatchResult } from "./match";
 
-const PRIORITIES: { id: string; label: string }[] = [
-  { id: "lowest_upfront_cost", label: "Lowest upfront cost" },
-  { id: "maximum_production", label: "Maximum production" },
-  { id: "smallest_roof_area", label: "Smallest roof area" },
-  { id: "hot_climate_performance", label: "Hot-climate performance" },
-  { id: "longest_warranty", label: "Longest warranty" },
-  { id: "verified_data_only", label: "Verified data only" },
-];
+const PRIORITIES: { id: string; label: string }[] = PRIORITY_IDS.map((id) => ({ id, label: PRIORITY_LABEL[id] }));
 
 interface FormState { budget: string; roofAreaM2: string; monthlyKwh: string; desiredKwp: string; priorities: string[]; notes: string }
 const EMPTY: FormState = { budget: "", roofAreaM2: "", monthlyKwh: "", desiredKwp: "", priorities: [], notes: "" };
@@ -34,11 +32,20 @@ type Result =
 
 const toNum = (s: string) => { const n = Number(s); return s.trim() !== "" && Number.isFinite(n) ? n : null; };
 
-/** AI recommendation request form. Inputs are user-provided; the answer is AI interpretation of real catalog data only. */
-export function RecommendForm() {
+/**
+ * Requirements in, ranked panels out.
+ *
+ * Two answers, kept apart. The ranked list is deterministic: it filters and
+ * orders the catalogue rows the server loaded from the database, and every
+ * line under "why this matches" is arithmetic on a recorded value. The AI
+ * paragraph underneath is an interpretation of the same records and is labelled
+ * as such. The ranking never waits for the AI, and the AI never changes it.
+ */
+export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataMode }) {
   const [form, setForm] = useLocalStore<FormState>("recommend:form", EMPTY);
   const [profile, , profileLoaded] = useLocalStore<Partial<SolarProfile> | null>("profile", null);
   const [result, setResult] = useState<Result>({ status: "idle" });
+  const [ranked, setRanked] = useState<MatchResult | null>(null);
   const [prefilled, setPrefilled] = useState<string[]>([]);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -61,22 +68,62 @@ export function RecommendForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+
+    // The deterministic pass first: it needs no network and no AI, so the
+    // ranked list is on screen before the model has been asked anything.
+    const req = {
+      budget: toNum(form.budget), roofAreaM2: toNum(form.roofAreaM2), monthlyKwh: toNum(form.monthlyKwh),
+      desiredKwp: toNum(form.desiredKwp), priorities: form.priorities,
+    };
+    const matchResult = matchPanels(panels, req);
+    setRanked(matchResult);
     setResult({ status: "loading" });
+
+    let aiStatus: "ok" | "not_configured" | "error" = "error";
+    let aiModel: string | null = null;
     try {
       const res = await fetch("/api/ai/recommend", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          budget: toNum(form.budget), roofAreaM2: toNum(form.roofAreaM2), monthlyKwh: toNum(form.monthlyKwh), desiredKwp: toNum(form.desiredKwp),
+          budget: req.budget, roofAreaM2: req.roofAreaM2, monthlyKwh: req.monthlyKwh, desiredKwp: req.desiredKwp,
           priorities: form.priorities, notes: form.notes.trim() || undefined,
         }),
       });
-      const body = await res.json().catch(() => null) as { ok?: boolean; answer?: string; contextUsed?: string[]; reason?: string; message?: string; error?: string } | null;
-      if (body?.ok && typeof body.answer === "string") setResult({ status: "ok", answer: body.answer, contextUsed: body.contextUsed ?? [] });
-      else if (body?.reason === "not_configured") setResult({ status: "not_configured", message: body.message ?? "AI recommendations are not connected yet." });
-      else setResult({ status: "error", message: body?.message ?? body?.error ?? `The AI service returned an error (HTTP ${res.status}).` });
+      const body = await res.json().catch(() => null) as { ok?: boolean; answer?: string; contextUsed?: string[]; model?: string; reason?: string; message?: string; error?: string } | null;
+      if (body?.ok && typeof body.answer === "string") {
+        setResult({ status: "ok", answer: body.answer, contextUsed: body.contextUsed ?? [] });
+        aiStatus = "ok";
+        aiModel = typeof body.model === "string" ? body.model : null;
+      } else if (body?.reason === "not_configured") {
+        setResult({ status: "not_configured", message: body.message ?? "AI recommendations are not connected yet." });
+        aiStatus = "not_configured";
+      } else {
+        setResult({ status: "error", message: body?.message ?? body?.error ?? `The AI service returned an error (HTTP ${res.status}).` });
+      }
     } catch {
       setResult({ status: "error", message: "Could not reach the AI service. Check your connection and try again." });
     }
+
+    // The run is recorded whatever the AI did. A failed or unconfigured model
+    // is a fact about the run, not a reason to lose it.
+    void logRecommendationRun({
+      inputs: req,
+      candidates: matchResult.matches.slice(0, 50).map((m, i) => ({
+        product_id: m.product.id,
+        manufacturer: m.product.manufacturer_name,
+        model: m.product.model,
+        rank: i + 1,
+        rated_power_w: getSpecNum(m.product.specs, "rated_power_w"),
+        estimated_cost_kwd: m.estimatedCostKwd,
+      })),
+      excluded_count: matchResult.excluded.length,
+      ranked_by: matchResult.rankedBy,
+      status: matchResult.status,
+      catalogue_size: panels.length,
+      model: aiModel,
+      ai_status: aiStatus,
+    });
+
     requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
 
@@ -136,9 +183,65 @@ export function RecommendForm() {
         </CardBody>
       </Card>
 
-      <div ref={resultRef} aria-live="polite">
+      <div ref={resultRef} aria-live="polite" className="space-y-5">
+        {ranked ? (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader
+                title="Panels that fit your requirements"
+                subtitle={
+                  ranked.status === "empty_catalogue"
+                    ? "There are no panels in the catalogue yet."
+                    : ranked.status === "no_matches"
+                      ? "Nothing in the catalogue satisfies every constraint you set."
+                      : `${ranked.matches.length} of ${panels.length} ${panels.length === 1 ? "panel" : "panels"} match${ranked.excluded.length ? `, ${ranked.excluded.length} ruled out` : ""}.${ranked.rankedBy ? ` Ordered by ${PRIORITY_LABEL[ranked.rankedBy].toLowerCase()}.` : " Ordered by rated power, because you chose no priority."}`
+                }
+                action={<DataBadge cls="calculated" compact />}
+              />
+              <CardBody className="space-y-2 text-[12.5px] leading-relaxed text-fg-muted">
+                <p>
+                  Filtered and ordered from the catalogue records themselves. A panel with a missing value keeps its place and is
+                  labelled: nothing missing is counted as zero, and nothing here is an estimate of production, savings or
+                  installation cost.
+                </p>
+                {mode === "demo" && <p>Supabase is not connected, so these are the labelled demo records rather than a real catalogue.</p>}
+              </CardBody>
+            </Card>
+
+            {ranked.matches.map((m, i) => (
+              <MatchCard key={m.product.id} match={m} rank={i + 1} />
+            ))}
+
+            {ranked.status !== "ok" && (
+              <EmptyState title={ranked.status === "empty_catalogue" ? "No panels in the catalogue" : "No panel matches every constraint"}>
+                {ranked.status === "empty_catalogue"
+                  ? "Panels appear here once they are imported from a real data source."
+                  : "Widen the budget or roof area, or drop a priority, and run it again. The reasons each panel was ruled out are listed below."}
+              </EmptyState>
+            )}
+
+            {ranked.excluded.length > 0 && (
+              <Card>
+                <CardHeader title="Ruled out, and why" subtitle="Shown so the filter is auditable rather than invisible." />
+                <CardBody>
+                  <ul className="space-y-2 text-[13px] leading-relaxed text-fg-secondary">
+                    {ranked.excluded.map((x) => (
+                      <li key={x.product.id} className="flex flex-col gap-0.5">
+                        <span className="font-medium text-fg">
+                          {x.product.manufacturer_name} <span className="font-mono text-[12.5px]">{x.product.model}</span>
+                        </span>
+                        <span>{x.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardBody>
+              </Card>
+            )}
+          </div>
+        ) : null}
+
         {result.status === "loading" && (
-          <Card><CardBody className="flex items-center gap-3 pt-5 text-[13.5px] text-fg-secondary"><Loader2 className="size-4 animate-spin text-[var(--cls-ai)]" aria-hidden /> Comparing the panels in the catalog against your inputs…</CardBody></Card>
+          <Card><CardBody className="flex items-center gap-3 pt-5 text-[13.5px] text-fg-secondary"><Loader2 className="size-4 animate-spin text-[var(--cls-ai)]" aria-hidden /> The ranking above is ready. Asking the AI Solar Agent for the trade-offs in words…</CardBody></Card>
         )}
         {result.status === "not_configured" && (
           <UnavailableState title="AI recommendations are not connected">

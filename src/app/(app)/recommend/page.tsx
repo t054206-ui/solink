@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
+import { listProducts } from "@/lib/data/repositories";
 import { RecommendForm } from "./_components/RecommendForm";
 
 export const metadata: Metadata = {
@@ -24,17 +25,21 @@ const NOT_ALLOWED = [
   "Treat demo records as real products.",
 ];
 
-export default function RecommendPage() {
+export default async function RecommendPage() {
+  // The catalogue comes from the database on every request. Nothing about the
+  // panels below is defined in the front end.
+  const { data: panels, mode } = await listProducts({ category: "solar_panel" });
+
   return (
     <div>
       <PageHeader
         eyebrow="Choose"
-        title="AI recommendation"
-        description="Describe your situation and the AI Solar Agent explains how the panels in the catalog trade off against each other. It reasons only from recorded data and tells you what is missing."
+        title="Find your panel"
+        description="Describe your situation. Solink filters the catalogue against it, ranks what is left by what you said matters, and shows the sources behind every figure. The AI Solar Agent adds the trade-offs in words."
         actions={<Button href="/compare" variant="outline">Compare panels yourself</Button>}
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        <RecommendForm />
+        <RecommendForm panels={panels} mode={mode} />
         <div className="space-y-5">
           <Card>
             <CardHeader title="What the AI may do" action={<DataBadge cls="ai" compact />} />

@@ -38,6 +38,35 @@ export interface ProductSource {
   verified_at?: ISODate | null;
   /** Required note recorded when an admin sets verification_status to 'verified'. */
   verification_note?: string | null;
+
+  /* ---- provenance for records imported from a real source -----------------
+   * Manufacturer facts and market facts are kept apart on purpose. A global
+   * datasheet is good evidence for a specification and no evidence at all for
+   * what a shop in Kuwait stocks or charges, so the two never share a field.
+   * Everything here is optional: records imported before this existed, and
+   * records with no market data, simply do not carry it. */
+
+  /** Official manufacturer product page for this model. */
+  manufacturer_url?: string | null;
+  /** What the manufacturer source is and any caveat, e.g. a preliminary revision. */
+  manufacturer_source_note?: string | null;
+
+  /** Name of the local supplier whose listing supplied the market data below. */
+  kuwait_supplier?: string | null;
+  /** The supplier's page for this exact product. Never a homepage. */
+  kuwait_supplier_url?: string | null;
+  /** Price exactly as published locally, in KWD. Never converted from another currency. */
+  kuwait_price_kwd?: number | null;
+  /** The day the price above was read from that page. */
+  kuwait_price_observed_at?: ISODate | null;
+  /** 'listed_by_retailer' means a shop lists it. It does not mean stock was confirmed. */
+  kuwait_availability?: "listed_by_retailer" | "unavailable" | null;
+  kuwait_availability_note?: string | null;
+
+  /** Field name -> the exact URL the value came from. */
+  field_sources?: Record<string, string> | null;
+  /** Set when sources disagreed, saying which value was kept and why. */
+  source_conflict_note?: string | null;
 }
 
 export interface PanelSpecifications {

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calculator, PencilRuler, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Calculator, LibraryBig, PencilRuler, ShoppingCart } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
+import { SourceReferences } from "@/components/ui/SourceReferences";
 import { DEMO_PRODUCT_BANNER } from "@/lib/demo/data";
 import { getProduct } from "@/lib/data/repositories";
 import { CompareToggle } from "../_components/CompareToggle";
@@ -85,6 +86,14 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <CardHeader
+              title={<><LibraryBig className="size-4 text-[var(--brand-strong)]" aria-hidden /> Sources &amp; References</>}
+              subtitle="Each reference sits against the thing it actually supports. Where nothing was found the row says so."
+            />
+            <CardBody><SourceReferences product={p} /></CardBody>
+          </Card>
+
           <SourceCard product={p} />
           <Card>
             <CardHeader title="Next steps" />
