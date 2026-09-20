@@ -1,7 +1,8 @@
 # HANDOFF — Solink
 
-_Session 1 below built the platform. **Session 2 at the end of this file supersedes it on
-anything visual, and records a decision to rebuild from zero. Read Session 2 first.**
+_Session 1 built the platform. Session 2 rejected three designs. **Session 3 rebuilt the
+interface, connected Supabase and took sign-up live — read Session 3 first; it is the
+state of the site now.** Session 4 added the hero panel's take-apart sequence._
 Folder: `~/Desktop/solink` (Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
 
 Solink is a solar-energy platform for Kuwait and the GCC. It connects homeowners,
@@ -511,155 +512,162 @@ design-system/solink/MASTER.md         created by the skill, then corrected
 ---
 ---
 
-# SESSION 3 — 2026-09-19 → 2026-09-20 (the rebuild, done)
+# SESSION 3 — 2026-09-19 → 2026-09-20 (rebuild, Supabase, live sign-up)
 
 ## Read this before anything else
 
-The rebuild Session 2 was waiting for **happened**. The owner sent three
-reference sites (screen recordings from motionsites.com), chose direction
-**"Studio"**, approved the landing page and dashboards, and then kept going:
-bilingual, roles, a roof photo reader, an About page. Everything visual is
-governed by `design-system/solink/DIRECTION.md`, which is the contract for this
-direction and records every decision the owner made and why.
+This is the section that describes the website as it is **now**. Session 1
+built the platform; Session 2 rejected three designs and decided to rebuild;
+this session did the rebuild and then took the site live with a real database.
+Session 4, after this one in the file, was another machine adding the hero
+panel's take-apart sequence — read it too, it is short.
 
-Deployed to production on 2026-09-20 on the owner's instruction "push and
-deploy". v1 remains at tag `v1-superseded`.
+**Production is https://solink-nu.vercel.app, on `main`, in Supabase mode.**
+Anyone can sign up. The owner's account is admin. The two platform settings
+that were sourced this session are entered. Nothing is broken.
 
-## What was built
+Open the folder and run `npx tsc --noEmit && npx eslint src && npm run build`
+before touching anything — all three are clean at commit `3c613cd`.
 
-| Area | Where | Notes |
-| --- | --- | --- |
-| Token system "Studio" | `src/app/globals.css` | Bone `#F4F3EF`, ink `#0E1116`, panel blue `#1A3A63`, amber `#F0A02A` for energy figures only (`--sun-ink` for amber text on light). Light is the default theme; dark is opt-in and high-contrast. |
-| Fonts | `src/app/layout.tsx` | Archivo (display/UI), JetBrains Mono (figures, micro-labels), IBM Plex Sans Arabic. |
-| Bilingual | `src/lib/i18n/` | EN + light Kuwaiti Arabic, one dictionary, `Dict` type forces identical keys. Locale in `solink:locale`; `public/bootstrap.js` sets `lang`/`dir` before paint. **Arabic is Claude's draft, unreviewed by a Kuwaiti speaker.** |
-| 3D panel | `src/components/three/` | Real 1722×1134 mm geometry, procedural cell texture, drag to tilt/rotate, angles clamped (tilt 0–60°, azimuth ±95°), camera distance derived from the bounding sphere so nothing clips. Static SVG on phones and under reduced motion. Reports angle only — see "not done". |
-| Landing | `src/app/(marketing)/page.tsx` | Object-in-empty-room hero, two doors (installer/manufacturer), journey, honesty takeover, CTA. |
-| Roles | `src/lib/roles.ts`, `src/app/(app)/dashboard/` | homeowner (= landlord), manufacturer, company, admin. Role in `?as=` so dashboards stay server components. Company view follows `ProviderCompany.kind` (install / maintenance / cleaning). Switcher is demo-only. |
-| Roof reader | `src/app/api/ai/inspect-roof/route.ts`, `src/app/(app)/profile/RoofCapture.tsx` | Photos or video (frames extracted in-browser). Suggests, never measures; user confirms each field. Nothing stored. Needs `CLAUDE_API_KEY`. |
-| About | `src/app/(marketing)/about/` | Eleven sections per the owner's brief. Vision and mission are the owner's words; team is four named people (`src/lib/content/team.ts`) with roles/bios/photos still placeholders; Kuwait Vision 2035 wording sourced from MOFA + UN ESCWA. |
-| Env | `.env.local` (gitignored) | Created from `.env.example`, `NEXT_PUBLIC_APP_URL` set to the local port. Keys to be pasted by the owner, never by Claude. |
+## Goal of this session
 
-Checks were clean at every step: `tsc`, `eslint`, `next build` (65 routes).
+1. Rebuild the interface from the owner's reference sites, landing page and
+   dashboard first, and get a yes before touching anything else. **Done, and
+   the owner then approved going further.**
+2. Make the site bilingual, role-aware, and able to read a roof from a photo.
+   **Done.**
+3. Build the About page to the owner's brief without inventing anything.
+   **Done; team roles, bios, photos and the team description remain
+   placeholders.**
+4. Connect Supabase and take sign-up live. **Done.**
+5. Find real sources for the four platform numbers. **Two sourced and entered;
+   two remain (see "What to do next").**
 
-## Decisions the owner made (all recorded in DIRECTION.md)
+## Current state
 
-Studio palette · drag-to-rotate panel · cinematic motion (no fade-in-on-scroll,
-which is banned) · landlord = homeowner · company services drive the install
-area · light Kuwaiti Arabic, drafted by Claude · fake panel data allowed **only**
-as labelled demo data · no push, no deploy until told — then, at the end of the
-session, "push and deploy" to `main` · About page vision/mission/team sentence
-supplied by the owner · no founding story.
+| | |
+| --- | --- |
+| Production | https://solink-nu.vercel.app — the rebuild, Supabase mode, sign-up live |
+| Repository | https://github.com/t054206-ui/solink, branch `main`, latest `3c613cd` |
+| Recovery | tag `v1-superseded` = the old site |
+| Vercel | project `solink`, team `t054206-3843`. **The Vercel MCP connector cannot see this team** (zero projects, zero deployments); use the CLI, which is logged in on the owner's Mac: `npx -y vercel@latest <cmd> --scope t054206-3843` |
+| Supabase | project `solink`, ref `bgwvztckesuwlydwcfkj`, region `ap-south-1`, org `t054206-ui's Org`. Free tier. `gahwa-house` was paused by the owner to free the slot |
+| Migrations | `0001`–`0005` applied and recorded; `list_migrations` shows five |
+| Data | demo catalogue seeded (`is_demo = true`, three panels, each versioned). One user: the owner, `t0…@coded.edu.kw`, role `admin` |
+| Settings entered | `electricity_tariff_per_kwh` 0.002 KWD/kWh (MEW yearbook 2020, Residential); `grid_co2_kg_per_kwh` 0.635 kgCO₂e/kWh lifecycle (Ember 2026 via OWID, 2025 data). Both carry full sources in the `source` column |
+| Settings still null | `performance_ratio`, `peak_sun_hours_per_day` — so production figures are still "unavailable"; savings and CO₂ now compute |
+| Auth | Site URL `https://solink-nu.vercel.app`; redirect allow-list `https://solink-nu.vercel.app/**` and `http://localhost:3412/**`. Email confirmation on, via Supabase's built-in mailer (test-grade, rate-limited) |
+| Env, production | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` set (publishable values). **Not set:** `SUPABASE_SERVICE_ROLE_KEY`, `CLAUDE_API_KEY`, weather, maps, solar |
+| Env, local | `.env.local` has the two Supabase vars and `NEXT_PUBLIC_APP_URL=http://localhost:3412`; `vercel link` appended a harmless `VERCEL_OIDC_TOKEN`. Claude key **still empty** — the owner has not pasted it |
+| Dev server | `npm run dev -- -p 3412` (3000 is usually held by a stale server). `preview_start` with launch.json does not work here; open the URL with `preview_start url=` |
+| Checks | tsc, eslint, next build — all clean, 65 routes |
 
-## Sources found for the platform settings (not yet wired — see below)
+## Files this session created or changed
 
-| Setting | Value | Source |
-| --- | --- | --- |
-| Electricity tariff, residential | **2 fils/kWh = 0.002 KWD/kWh** | MEW *Electrical Energy Statistical Yearbook 2020*, ch. 4, p. 113, "Tariff Of Electricity In All Sectors Of Consumption". Investment & commercial 5, government 25, industrial & agriculture 5, others 12. MEW categorises by property type, not nationality — a private house is Residential, a rented apartment building is Investmental. |
-| Grid CO₂ factor | **0.635 kgCO₂e/kWh, lifecycle** | Ember via Our World in Data, shown for 2025; the actual data year must be read from the chart's Table view before citing. |
-| Performance ratio | proposed 0.86 (NREL PVWatts default 14% losses) | Owner has not yet said yes. KISR soiling studies for the Kuwait adjustment later. |
-| Peak sun hours | — | WeatherAPI `short_rad` (paid tier) or Google Solar (Kuwait coverage unverified) or NREL PVWatts (free). |
+**Design system and shell**
+- `src/app/globals.css` — rewritten: the "Studio" tokens, light default, real dark theme, motion vocabulary, `.micro`, `.display`, `.figure`, RTL-aware skip link
+- `src/app/layout.tsx` — Archivo / JetBrains Mono / IBM Plex Sans Arabic; `data-theme="light"` server-side; bootstrap via `next/script` `beforeInteractive` from `public/bootstrap.js`
+- `public/bootstrap.js` — applies stored theme/locale before paint
+- `src/components/layout/MarketingNav.tsx` (floating pill), `LocaleToggle.tsx`, `SkipLink.tsx` (new), `ThemeToggle.tsx` (light default), `Footer.tsx` (About link), `AppShell.tsx` (typed `Role`)
+- `src/components/brand/Logo.tsx` — lit cell is now `--sun`
+
+**Bilingual**
+- `src/lib/i18n/dictionary.ts` — EN + light Kuwaiti Arabic, one `Dict` type so keys cannot drift. **All Arabic is Claude's draft, unreviewed by a Kuwaiti speaker.**
+- `src/lib/i18n/provider.tsx` — `LocaleProvider`, `useT`, sets `lang`/`dir`
+
+**3D panel** — `src/components/three/PanelScene.tsx`, `PanelStudio.tsx`, `panelTexture.ts`; Session 4 added `panelLayers.ts` and `src/lib/hooks/useOnScreen.ts`. `src/lib/hooks/useMediaQuery.ts` (new)
+
+**Pages**
+- `src/app/(marketing)/page.tsx` — landing, rewritten
+- `src/app/(marketing)/about/page.tsx` + `AboutPage.tsx` (new); `src/lib/content/team.ts` (new, four names, rest placeholders)
+- `src/app/(app)/dashboard/page.tsx` — role gate; `_role/{Homeowner,Manufacturer,Company,Admin}Dashboard.tsx`; `_components/RoleSwitcher.tsx` (demo only)
+- `src/app/(app)/profile/RoofCapture.tsx` (new) + `ProfileForm.tsx` (wired); `src/app/api/ai/inspect-roof/route.ts` (new)
+- `src/app/(auth)/login/page.tsx`, `signup/page.tsx`, `src/components/auth/AuthForm.tsx` — `?next=` read server-side, `emailRedirectTo` on sign-up
+- `src/components/motion/Count.tsx` (new)
+
+**Roles and data**
+- `src/lib/roles.ts` (new) — `homeowner | manufacturer | company | admin`
+- `src/lib/supabase/server.ts` — `getCurrentRole()`
+- `src/app/(app)/admin/{_lib/data.ts,_lib/auth.ts,actions.ts,_components/RoleSelect.tsx}` — shared `Role` type
+- `supabase/migrations/0001` (enum + `manufacturer_id` + FK), `0002` (manufacturer policies), `0004_solink_security_hardening.sql` (new), `0005_solink_fix_version_snapshot_trigger.sql` (new)
+
+**Docs** — `CLAUDE.md`, `HANDOFF.md`, `design-system/solink/DIRECTION.md` (new, the design contract), `docs/DECISIONS-NEEDED.md` (decision 1 done), `.claude/launch.json`
+
+## What changed, in the order it happened
+
+1. **Direction.** Three reference sites (screen recordings from motionsites.com) → one through-line: *one real object in an empty room with its measurements hung off it.* Palette "Studio". Everything is in `DIRECTION.md`; read it before any visual work.
+2. **Landing page** with a draggable, real-size 3D module; specs as micro-labels; annual output honestly "needs your roof"; sticky takeover into the honesty section.
+3. **Bilingual toggle**, RTL mirroring, light Kuwaiti Arabic, direction set before paint.
+4. **Roles.** Landlord = homeowner (owner's words). Company's install area follows `provider_companies.kind`. Manufacturer publishes and tracks verification state. Admin sees the verification queue and the 24 open placeholders.
+5. **Roof reader.** Photos or video (frames extracted in the browser). Suggests, never measures; user confirms each field; nothing stored. Needs the Claude key.
+6. **About page**, eleven sections, owner's vision and mission, four named people, Kuwait Vision 2035 wording sourced from MOFA and UN ESCWA. No founding story, by the owner's choice.
+7. **Sources found:** MEW tariff table (primary, yearbook p.113), Ember CO₂ via OWID, NREL PVWatts for the performance ratio, WeatherAPI's `short_rad/dni/diff_rad/gti` fields (paid tier) for irradiance. Google Solar's Kuwait coverage remains **unverified**.
+8. **Pushed and deployed** on the owner's "push and deploy".
+9. **Supabase.** Project created, migrations applied, advisor-clean after `0004`, first insert exposed the trigger bug fixed in `0005`, demo catalogue seeded.
+10. **Sign-up live** with the public vars set via the Vercel CLI; auth URLs set through the owner's Chrome; sign-in/sign-up server-rendered; role from the account.
+11. **Owner promoted to admin; two settings entered with sources.**
 
 ## Things tried that failed — read before repeating
 
-- **`preview_start` with launch.json** resolves against the original scratch
-  workspace, not the project. Run `npm run dev -- -p <port>` in Bash and open
-  the URL with `preview_start url=`. Port 3000 is often held by a stale server.
-- **A raw `<script>` in the root layout** makes React 19 log "Encountered a
-  script tag" and can break hydration. Use `next/script` with
-  `strategy="beforeInteractive"` and an external `src`.
-- **"Script is not defined" persisted after the import was fixed** — a stale
-  Turbopack cache. `rm -rf .next` and restart.
-- **`react-hooks/immutability`** rejects writing to a ref passed as a prop and
-  to `gl.domElement.style`. Keep mutable refs local to the component that
-  mutates them; style the canvas cursor in CSS.
-- **Lucide 1.x has no `Github`/`Linkedin` icons.** Use text pills.
-- **A frame as solid box in front of the glass hid every cell** — z-order.
-- **The 3D camera was too close** and clipped the panel at high tilt; distance
-  is now derived from the bounding sphere (`CAMERA_POS` comment in
-  `PanelScene.tsx`). Do not move it closer without redoing that maths.
-- **Sticky sections bleed through anything after them that lacks its own
-  background and z-index.** On `/about` everything after the Problem section is
-  wrapped in one `relative z-10 bg-bg` layer.
-- **Browser-pane screenshots come back blank right after an instant scroll** —
-  compositor timing, not a bug. Wait and shoot again; trust the DOM check.
-- **The 0001 product snapshot trigger was BEFORE INSERT** and wrote a
-  product_versions row before the product existed, so no product could ever be
-  inserted; updates worked, so review missed it. Fixed in 0005 as an AFTER
-  trigger on `insert or update of specs, price`.
-- **The Supabase advisor flagged the RLS helpers as callable over REST.**
-  Revoking EXECUTE would break the policies that call them; 0004 moves them to a
-  `private` schema instead (policies hold the OID, not the name). Verified: anon
-  reads still pass RLS, `/rest/v1/rpc/is_admin` is 404, advisor is clean.
-- **`useSearchParams()` in AuthForm** broke the production build the moment
-  Supabase was configured (`/login` and `/signup` stopped prerendering). First wrapped in
-  Suspense, which made the server-rendered page a skeleton; then fixed properly:
-  the pages read `?next=` server-side and pass it as a prop, so the form is in
-  the HTML and no Suspense is needed.
-- **MEW's investor portal (tariff calculator) 404s.** The yearbook PDF on
-  mew.gov.kw is the working primary source.
+- **preview_start with launch.json** resolves against the original scratch workspace. Run the dev server from Bash and open the URL.
+- **A raw `<script>` in the root layout** breaks React 19 hydration. Use `next/script` `beforeInteractive` with an external `src`.
+- **"Script is not defined" after fixing the import** was a stale Turbopack cache. `rm -rf .next`.
+- **`react-hooks/immutability`** rejects mutating a ref passed as a prop, mutating `gl.domElement.style`, a render-local array reached from `useFrame`, and assigning `scene.environment`. Keep mutable refs local; cursor in CSS; parts list in a ref; environment via `<primitive attach="environment">`. Session 4 hit two of these because it had no toolchain — **always run eslint after merging work from a session without one; `next build` does not catch this rule.**
+- **Lucide 1.x has no brand icons** (`Github`, `Linkedin`). Text pills.
+- **3D frame drawn as a solid box in front of the glass** hid every cell — z-order.
+- **Camera too close** clipped the panel at high tilt. Distance is derived from the bounding sphere; see the comment on `CAMERA_POS`.
+- **Sticky sections bleed through** later sections lacking their own background and z-index. On `/about` everything after the Problem section is one `relative z-10 bg-bg` layer.
+- **Browser-pane screenshots come back blank** right after an instant scroll — compositor timing. Wait and shoot again; trust the DOM check.
+- **MEW's investor portal 404s.** The yearbook PDF on mew.gov.kw is the primary source; `pymupdf` positioned text resolved the table columns that plain extraction scrambled.
+- **The `0001` snapshot trigger was BEFORE INSERT** and could never insert a product. `0005`.
+- **Revoking EXECUTE on RLS helper functions would break the policies** that call them. `0004` moves them to a `private` schema instead; policies hold the OID.
+- **`useSearchParams()` in AuthForm** broke the build once Supabase was configured; wrapping in Suspense made the page a skeleton. Read `?next=` on the server.
+- **`getPlatformSettings()` returns empty in demo mode** — was going to need a local config path; moot once production went to Supabase mode.
+- **Vercel MCP connector**: zero visibility into this team. CLI works (auth already on the Mac). zsh does not word-split `$V` — use a shell function.
+- **Supabase dashboard "one URL per line" box** flattens a programmatic newline into one string. Add rows with the dialog's "+ Add URL" button.
+- **Stale demo copy after going live:** About CTA said "runs in demo mode today"; the dashboard role switcher still rendered and honoured `?as=`. Fixed; the hero's `DEMO PRODUCT — NOT REAL` chip is kept because the panel's specs genuinely are the demo catalogue's.
 
-## Addendum, later on 2026-09-20 — sign-up went live
+## Decisions the owner made (binding, all in DIRECTION.md)
 
-- **Vercel env set from the CLI**, not the dashboard: `npx vercel env add … --scope
-  t054206-3843` using the auth already on this Mac. The Vercel MCP connector
-  cannot see this team's projects at all (zero projects, zero deployments); do
-  not waste time on it. `vercel link --yes --project solink` appends a harmless
-  `VERCEL_OIDC_TOKEN` line to `.env.local`.
-- **Production is in Supabase mode.** Sign-up and sign-in are server-rendered
-  forms (the pages read `?next=` on the server; no `useSearchParams`, no
-  Suspense skeleton). Confirmation emails redirect to the site's own origin.
-- **Role comes from the account in Supabase mode.** `getCurrentRole()` in
-  `src/lib/supabase/server.ts` reads `user_profiles.role`; `/dashboard` ignores
-  `?as=` and hides the switcher unless the app is in demo mode. Before this, a
-  signed-in user could pick any dashboard from the URL.
-- **First account exists**: `t0…@coded.edu.kw`, confirmed, role `homeowner`,
-  profile auto-created — which also proves `handle_new_user` fires correctly
-  from the `private` schema. Promoted to `admin` on the owner's "yes" (2026-09-20 14:59 UTC) with an
-  UPDATE scoped to the single confirmed user.
-- **Session 4 (another machine, no toolchain) left two `react-hooks/immutability`
-  errors** in `PanelScene.tsx`; fixed here with no visual change (parts list in
-  a ref; environment attached via `<primitive attach="environment">`). Its
-  `next build` passed because that rule is lint-only — always run `eslint`, not
-  just `build`, after merging work from a session without a toolchain.
-- **Two lines of copy still claimed the site was a demo** after it stopped being
-  one (About CTA; the hero chip read as a status line). Fixed. The hero chip is
-  kept because the panel's specs genuinely are the demo catalogue's.
-- **Supabase Auth URL configuration is set** (done through the owner's Chrome,
-  2026-09-20): Site URL `https://solink-nu.vercel.app`; redirect allow-list
-  `https://solink-nu.vercel.app/**` and `http://localhost:3412/**`. There is no
-  MCP or SQL route to these settings; the dashboard is the only way. Gotcha:
-  the dashboard's "one URL per line" box flattens a programmatic newline into
-  one string — add rows with the dialog's own "+ Add URL" button instead.
-- Still owner-side: the service-role key, and a real SMTP sender for auth
-  emails before anyone but the team signs up.
+Studio palette · light theme default · drag-to-rotate panel · cinematic motion,
+no fade-in-on-scroll · landlord = homeowner · company services drive the install
+area · light Kuwaiti Arabic drafted by Claude, owner reviews · fake panel data
+only as labelled demo · sentence-case headings · About has no founding story ·
+the owner's vision and mission text · a team of four · pause `gahwa-house` for
+the Supabase slot · push and deploy to `main` · promote the owner to admin ·
+enter the two sourced settings.
 
-## Not done, in priority order
+## What to do next, in priority order
 
-1. ~~Demo-mode settings path~~ Moot: production runs in Supabase mode, so
-   `platform_settings` is live. **Entered 2026-09-20 with sources** (owner's
-   "yes"): `electricity_tariff_per_kwh` = 0.002 KWD/kWh (MEW yearbook 2020,
-   Residential) and `grid_co2_kg_per_kwh` = 0.635 kgCO₂e/kWh lifecycle (Ember
-   2026 via OWID, 2025 data — the export has a real 2025 row, 635.31, distinct
-   from 2024's 635.2). Still null: `performance_ratio` (owner has not yet said
-   yes to the PVWatts 0.86 default) and `peak_sun_hours_per_day` (needs a
-   solar-resource source). Savings figures now compute; production figures
-   still say unavailable until those two land.
-2. Wire `getBuildingInsights` (Google Solar) — it has zero callers. Test one
-   Kuwaiti address first; coverage is unverified.
-3. Tilt → output. `calculations.ts` has no tilt/azimuth. Needs DNI/DHI/GHI from
-   WeatherAPI plus a cited transposition model. The hero panel reports angle only
-   until then.
-4. Tariff category on the profile: private house (2) vs apartment building (5).
-5. Team roles/bios/photos; team description.
-6. ~~Supabase~~ Done 2026-09-20: project `bgwvztckesuwlydwcfkj` (`solink`, ap-south-1),
-   migrations 0001–0005 applied, demo catalogue seeded, app leaves demo mode
-   locally. Owner paused `gahwa-house` to free the slot. Outstanding: service-role
-   key (owner pastes), the two public vars on Vercel, first admin user
-   (`update user_profiles set role='admin' where user_id = …` after signup).
-   The `user_role` enum is now homeowner|manufacturer|company|admin, matching
-   `src/lib/roles.ts`; `user_profiles.manufacturer_id` was added.
-7. The other 56 pages carry the new tokens but were not redesigned.
+1. **Performance ratio.** Owner has not yet said yes to NREL PVWatts' default
+   (14 % losses → 0.86, cite the PVWatts v5 manual). Enter via `/admin/settings`
+   or SQL with the source. Later tighten soiling with the KISR papers.
+2. **Peak sun hours.** Needs a source: WeatherAPI paid tier (`short_rad`),
+   Google Solar (test one Kuwaiti address first — coverage unverified), or NREL
+   PVWatts for Kuwait City, cited. Until then production figures are
+   unavailable.
+3. **Email sender.** Supabase's mailer is test-grade. Needs a domain the owner
+   owns (cannot send from `*.vercel.app`) and an SMTP provider. Claude may fill
+   the non-secret SMTP fields; the API key is pasted by the owner. Same
+   provider later closes the notification placeholder.
+4. **Keys the owner pastes** (never Claude): `SUPABASE_SERVICE_ROLE_KEY` (admin
+   imports), `CLAUDE_API_KEY` (roof reader, agent, recommendations) — into
+   `.env.local` and Vercel as Sensitive.
+5. **Wire Google Solar** — `getBuildingInsights` has zero callers.
+6. **Tilt → output.** `calculations.ts` has no tilt/azimuth. Needs DNI/DHI/GHI
+   plus a cited transposition model.
+7. **Tariff category on the profile**: private house (2 fils) vs apartment
+   building (5 fils) — MEW categorises by property type, not nationality.
+8. **About page placeholders**: four roles, bios, photos; team description.
+9. **A Kuwaiti speaker reads the Arabic.**
+10. **Privacy policy and terms** — none exist; the site stores addresses, roof
+    photos and bills.
+11. **Domain** — also unblocks email.
+12. **Real panel catalogue** via `/admin/products/import` once the supplier list
+    or datasheets arrive.
+13. The other 56 pages carry the new tokens but were not redesigned.
 
+---
 ---
 
 # SESSION 4 — 2026-09-20 (the hero panel takes itself apart)
