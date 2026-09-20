@@ -94,7 +94,10 @@ function fmt(n: number, digits = 1): string {
 export function matchPanels(products: Product[], req: Requirements): MatchResult {
   const priorities = req.priorities.filter(isPriority);
   const verifiedOnly = priorities.includes("verified_data_only");
-  const rankedBy = priorities.find((p) => p !== "verified_data_only") ?? (verifiedOnly ? "verified_data_only" : null);
+  // "Verified data only" removes records; it does not order them. If it is the
+  // only thing chosen there is no ranking key, and the caller is told so rather
+  // than being shown a list that claims an order it does not have.
+  const rankedBy = priorities.find((p) => p !== "verified_data_only") ?? null;
 
   const candidates = products.filter((p) => p.category === "solar_panel" && !p.is_archived);
   if (candidates.length === 0) return { matches: [], excluded: [], status: "empty_catalogue", rankedBy };
@@ -154,7 +157,7 @@ export function matchPanels(products: Product[], req: Requirements): MatchResult
     });
   }
 
-  sortByPriority(matches, rankedBy);
+  sortByPriority(matches, rankedBy, req.desiredKwp !== null);
   return { matches, excluded, status: matches.length === 0 ? "no_matches" : "ok", rankedBy };
 }
 
@@ -208,8 +211,16 @@ function buildReasons(product: Product, req: Requirements, d: Derived): string[]
   return out;
 }
 
-/** Orders in place. Panels missing the ranking field always sort last. */
-function sortByPriority(matches: Match[], priority: PriorityId | null): void {
+/**
+ * Orders in place. Panels missing the ranking field always sort last.
+ *
+ * `sizeKnown` keeps the cost comparison in one unit. With a target system size
+ * every panel is priced as the whole array; without one, every panel is priced
+ * per module. Mixing the two would rank a panel with no recorded power — which
+ * has no array cost — against other panels' array totals using its unit price,
+ * and it would win every time.
+ */
+function sortByPriority(matches: Match[], priority: PriorityId | null, sizeKnown: boolean): void {
   const value = (m: Match): number | null => {
     switch (priority) {
       case "maximum_production":
@@ -224,7 +235,7 @@ function sortByPriority(matches: Match[], priority: PriorityId | null): void {
         return tc === null ? null : -Math.abs(tc);
       }
       case "lowest_upfront_cost": {
-        const cost = m.estimatedCostKwd ?? realPrice(m.product);
+        const cost = sizeKnown ? m.estimatedCostKwd : realPrice(m.product);
         return cost === null ? null : -cost;
       }
       default:

@@ -53,14 +53,14 @@ export function buildReferences(p: Product): ReferenceRow[] {
     linkLabel: "View datasheet",
   });
 
-  if (s.kuwait_supplier || s.kuwait_supplier_url) {
-    rows.push({
-      label: "Kuwait supplier",
-      detail: s.kuwait_supplier ?? UNAVAILABLE,
-      href: s.kuwait_supplier_url ?? null,
-      linkLabel: "View Kuwait listing",
-    });
-  }
+  // Always rendered, like the two market rows below it. A supplier row that
+  // disappears when there is no supplier hides the fact that none was found.
+  rows.push({
+    label: "Kuwait supplier",
+    detail: s.kuwait_supplier ?? UNAVAILABLE,
+    href: s.kuwait_supplier_url ?? null,
+    linkLabel: "View Kuwait listing",
+  });
 
   const price = s.kuwait_price_kwd;
   rows.push({

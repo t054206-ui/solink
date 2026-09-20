@@ -32,6 +32,9 @@ type Result =
 
 const toNum = (s: string) => { const n = Number(s); return s.trim() !== "" && Number.isFinite(n) ? n : null; };
 
+/** Whether this run reached the `recommendations` table, and why not when it did not. */
+type LoggedState = null | { ok: true } | { ok: false; reason: "demo" | "unauthenticated" | "invalid" | "error"; message: string };
+
 /**
  * Requirements in, ranked panels out.
  *
@@ -46,6 +49,7 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
   const [profile, , profileLoaded] = useLocalStore<Partial<SolarProfile> | null>("profile", null);
   const [result, setResult] = useState<Result>({ status: "idle" });
   const [ranked, setRanked] = useState<MatchResult | null>(null);
+  const [logged, setLogged] = useState<LoggedState>(null);
   const [prefilled, setPrefilled] = useState<string[]>([]);
   const resultRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +81,7 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
     };
     const matchResult = matchPanels(panels, req);
     setRanked(matchResult);
+    setLogged(null);
     setResult({ status: "loading" });
 
     let aiStatus: "ok" | "not_configured" | "error" = "error";
@@ -106,23 +111,32 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
 
     // The run is recorded whatever the AI did. A failed or unconfigured model
     // is a fact about the run, not a reason to lose it.
-    void logRecommendationRun({
-      inputs: req,
-      candidates: matchResult.matches.slice(0, 50).map((m, i) => ({
-        product_id: m.product.id,
-        manufacturer: m.product.manufacturer_name,
-        model: m.product.model,
-        rank: i + 1,
-        rated_power_w: getSpecNum(m.product.specs, "rated_power_w"),
-        estimated_cost_kwd: m.estimatedCostKwd,
-      })),
-      excluded_count: matchResult.excluded.length,
-      ranked_by: matchResult.rankedBy,
-      status: matchResult.status,
-      catalogue_size: panels.length,
-      model: aiModel,
-      ai_status: aiStatus,
-    });
+    //
+    // The outcome is kept and shown. A run that was not recorded must not look
+    // like one that was, and a logging failure must not take the results off
+    // the screen either, so this neither throws nor stays silent.
+    try {
+      const logged = await logRecommendationRun({
+        inputs: req,
+        candidates: matchResult.matches.slice(0, 50).map((m, i) => ({
+          product_id: m.product.id,
+          manufacturer: m.product.manufacturer_name,
+          model: m.product.model,
+          rank: i + 1,
+          rated_power_w: getSpecNum(m.product.specs, "rated_power_w"),
+          estimated_cost_kwd: m.estimatedCostKwd,
+        })),
+        excluded_count: matchResult.excluded.length,
+        ranked_by: matchResult.rankedBy,
+        status: matchResult.status,
+        catalogue_size: panels.length,
+        model: aiModel,
+        ai_status: aiStatus,
+      });
+      setLogged(logged.ok ? { ok: true } : { ok: false, reason: logged.reason, message: logged.message });
+    } catch {
+      setLogged({ ok: false, reason: "error", message: "The run could not be recorded: the server action did not respond." });
+    }
 
     requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
@@ -177,13 +191,24 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
                 {loading ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
                 {loading ? "Asking the AI…" : "Get a recommendation"}
               </Button>
-              <Button type="button" variant="ghost" size="sm" disabled={loading} onClick={() => { setForm(EMPTY); setPrefilled([]); setResult({ status: "idle" }); }}>Reset</Button>
+              <Button type="button" variant="ghost" size="sm" disabled={loading} onClick={() => { setForm(EMPTY); setPrefilled([]); setResult({ status: "idle" }); setRanked(null); setLogged(null); }}>Reset</Button>
             </div>
           </form>
         </CardBody>
       </Card>
 
-      <div ref={resultRef} aria-live="polite" className="space-y-5">
+      {/* The live region is this one line, not the results themselves. A
+          polite region wrapped around every card would have a screen reader
+          read the whole list out on each run. */}
+      <p className="sr-only" aria-live="polite">
+        {ranked
+          ? ranked.status === "ok"
+            ? `${ranked.matches.length} panels match your requirements.`
+            : "No panels match your requirements."
+          : ""}
+      </p>
+
+      <div ref={resultRef} className="space-y-5">
         {ranked ? (
           <div className="space-y-4">
             <Card>
@@ -205,6 +230,12 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
                   installation cost.
                 </p>
                 {mode === "demo" && <p>Supabase is not connected, so these are the labelled demo records rather than a real catalogue.</p>}
+                {logged && !logged.ok && (
+                  <p className="text-fg-secondary">
+                    <strong className="font-medium text-fg">This run was not recorded.</strong>{" "}
+                    {logged.message} The ranking above is unaffected.
+                  </p>
+                )}
               </CardBody>
             </Card>
 
