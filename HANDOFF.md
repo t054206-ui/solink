@@ -635,10 +635,15 @@ supplied by the owner · no founding story.
 
 ## Not done, in priority order
 
-1. **Demo-mode settings path.** `getPlatformSettings()` returns empty without
-   Supabase, so the sourced tariff and CO₂ figures cannot take effect. Add a
-   local config read (e.g. `src/lib/config/settings.local.ts` or env) with
-   `{value, source}` per setting. This is the single biggest unlock.
+1. ~~Demo-mode settings path~~ Moot: production runs in Supabase mode, so
+   `platform_settings` is live. **Entered 2026-09-20 with sources** (owner's
+   "yes"): `electricity_tariff_per_kwh` = 0.002 KWD/kWh (MEW yearbook 2020,
+   Residential) and `grid_co2_kg_per_kwh` = 0.635 kgCO₂e/kWh lifecycle (Ember
+   2026 via OWID, 2025 data — the export has a real 2025 row, 635.31, distinct
+   from 2024's 635.2). Still null: `performance_ratio` (owner has not yet said
+   yes to the PVWatts 0.86 default) and `peak_sun_hours_per_day` (needs a
+   solar-resource source). Savings figures now compute; production figures
+   still say unavailable until those two land.
 2. Wire `getBuildingInsights` (Google Solar) — it has zero callers. Test one
    Kuwaiti address first; coverage is unverified.
 3. Tilt → output. `calculations.ts` has no tilt/azimuth. Needs DNI/DHI/GHI from
