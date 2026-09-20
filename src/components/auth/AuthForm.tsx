@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -7,7 +8,7 @@ import { Field, Input } from "@/components/ui/Form";
 import { Button } from "@/components/ui/Button";
 
 /** Email + password auth via Supabase (browser client, anon key only). */
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+function AuthFormInner({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [name, setName] = useState("");
@@ -43,5 +44,19 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         {mode === "login" ? <>No account? <Link href="/signup" className="text-fg underline underline-offset-2">Create one</Link></> : <>Already have an account? <Link href="/login" className="text-fg underline underline-offset-2">Sign in</Link></>}
       </p>
     </form>
+  );
+}
+
+/**
+ * useSearchParams() opts a client component out of static prerendering, and
+ * Next refuses to build a page that does that without a Suspense boundary. The
+ * fallback is the same form with the redirect target unknown, which is what a
+ * user sees for the few milliseconds before hydration anyway.
+ */
+export function AuthForm(props: Parameters<typeof AuthFormInner>[0]) {
+  return (
+    <Suspense fallback={<div aria-busy="true" className="h-64 w-full max-w-sm animate-pulse rounded-[var(--radius-lg)] bg-inset" />}>
+      <AuthFormInner {...props} />
+    </Suspense>
   );
 }

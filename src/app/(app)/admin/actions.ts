@@ -1,4 +1,5 @@
 "use server";
+import { isRole, type Role } from "@/lib/roles";
 /**
  * Admin server actions (Supabase mode). Every action re-checks admin access —
  * never trust the client. In demo mode the UI writes to the local browser store
@@ -143,9 +144,10 @@ export async function setProductFlagsAction(input: { productId: string; is_outda
 }
 
 /* ---------------- users ---------------- */
-export async function setUserRoleAction(input: { userId: string; role: "homeowner" | "provider" | "admin" }): Promise<ActionResult> {
+export async function setUserRoleAction(input: { userId: string; role: Role }): Promise<ActionResult> {
   const a = await admin();
   if ("error" in a) return { ok: false, error: a.error };
+  if (!isRole(input.role)) return { ok: false, error: "Unknown role." };
   if (input.userId === a.userId && input.role !== "admin") return { ok: false, error: "You cannot remove your own admin role." };
   const { error } = await a.c.from("user_profiles").update({ role: input.role }).eq("user_id", input.userId);
   if (error) return { ok: false, error: error.message };

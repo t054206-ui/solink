@@ -32,7 +32,9 @@ create type incident_status as enum ('open','investigating','resolved','closed')
 create type monitor_status as enum ('normal','monitor','inspection_recommended','maintenance_recommended','insufficient_data');
 create type appointment_kind as enum ('installation','maintenance','inspection','cleaning');
 create type appointment_status as enum ('requested','confirmed','completed','cancelled');
-create type user_role as enum ('homeowner','provider','admin');
+-- Mirrors src/lib/roles.ts. 'homeowner' includes landlords; 'company' is an installer and/or
+-- maintenance business (what it may do follows provider_companies.kind, not a second role).
+create type user_role as enum ('homeowner','manufacturer','company','admin');
 create type provider_kind as enum ('solar_company','installer','maintenance','cleaning');
 create type order_status as enum ('draft','requested','quoted','accepted','paid_demo','installation_scheduled','installed','cancelled');
 
@@ -50,8 +52,9 @@ create table user_profiles (
   full_name text,
   phone text,
   locale text not null default 'en',
-  role user_role not null default 'homeowner',   -- [PLACEHOLDER: ADMIN AUTHENTICATION / PERMISSIONS] — role model not final
-  provider_company_id uuid,                       -- set for provider staff
+  role user_role not null default 'homeowner',   -- [PLACEHOLDER: ADMIN AUTHENTICATION / PERMISSIONS] — permission model not final
+  provider_company_id uuid,                       -- set for 'company' staff
+  manufacturer_id uuid,                           -- set for 'manufacturer' staff
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -137,6 +140,7 @@ create table manufacturers (
   unique (name)
 );
 create trigger trg_manufacturers_updated before update on manufacturers for each row execute function set_updated_at();
+alter table user_profiles add constraint user_profiles_manufacturer_fk foreign key (manufacturer_id) references manufacturers(id) on delete set null;
 
 create table data_sources (
   id uuid primary key default gen_random_uuid(),

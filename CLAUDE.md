@@ -22,6 +22,9 @@ The current position, as of 2026-09-20:
   RTL, roof photo/video reader, and `/about`.
 - Light theme is the default. Roles are homeowner (includes landlord),
   manufacturer, company, admin.
+- Supabase is connected: project `bgwvztckesuwlydwcfkj`, migrations 0001–0005
+  applied. Locally the app runs in Supabase mode when `.env.local` has the two
+  public vars; production still needs them set in Vercel.
 - Still placeholders: team roles/bios/photos, team description, and the
   platform settings (tariff, CO₂ factor, performance ratio) — sourced values
   exist in Session 3 but cannot take effect until the demo-mode settings path is

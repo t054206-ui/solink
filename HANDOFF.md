@@ -582,6 +582,17 @@ supplied by the owner · no founding story.
   wrapped in one `relative z-10 bg-bg` layer.
 - **Browser-pane screenshots come back blank right after an instant scroll** —
   compositor timing, not a bug. Wait and shoot again; trust the DOM check.
+- **The 0001 product snapshot trigger was BEFORE INSERT** and wrote a
+  product_versions row before the product existed, so no product could ever be
+  inserted; updates worked, so review missed it. Fixed in 0005 as an AFTER
+  trigger on `insert or update of specs, price`.
+- **The Supabase advisor flagged the RLS helpers as callable over REST.**
+  Revoking EXECUTE would break the policies that call them; 0004 moves them to a
+  `private` schema instead (policies hold the OID, not the name). Verified: anon
+  reads still pass RLS, `/rest/v1/rpc/is_admin` is 404, advisor is clean.
+- **`useSearchParams()` in AuthForm** broke the production build the moment
+  Supabase was configured (`/login` and `/signup` stopped prerendering). Wrapped
+  in Suspense inside AuthForm so the pages need no change.
 - **MEW's investor portal (tariff calculator) 404s.** The yearbook PDF on
   mew.gov.kw is the working primary source.
 
@@ -598,5 +609,11 @@ supplied by the owner · no founding story.
    until then.
 4. Tariff category on the profile: private house (2) vs apartment building (5).
 5. Team roles/bios/photos; team description.
-6. Supabase (org is at the free-project limit).
+6. ~~Supabase~~ Done 2026-09-20: project `bgwvztckesuwlydwcfkj` (`solink`, ap-south-1),
+   migrations 0001–0005 applied, demo catalogue seeded, app leaves demo mode
+   locally. Owner paused `gahwa-house` to free the slot. Outstanding: service-role
+   key (owner pastes), the two public vars on Vercel, first admin user
+   (`update user_profiles set role='admin' where user_id = …` after signup).
+   The `user_role` enum is now homeowner|manufacturer|company|admin, matching
+   `src/lib/roles.ts`; `user_profiles.manufacturer_id` was added.
 7. The other 56 pages carry the new tokens but were not redesigned.

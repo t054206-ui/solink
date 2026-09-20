@@ -9,8 +9,9 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { AgentDrawer } from "./AgentDrawer";
 import { SkipLink } from "./SkipLink";
+import type { Role } from "@/lib/roles";
 
-export interface ShellUser { email: string | null; isDemo: boolean; role: "homeowner" | "provider" | "admin" }
+export interface ShellUser { email: string | null; isDemo: boolean; role: Role }
 
 /**
  * Authenticated app shell: collapsible sidebar (desktop), bottom-sheet nav

@@ -1,3 +1,4 @@
+import type { Role } from "@/lib/roles";
 /**
  * Admin-only reads that are not part of the shared repositories
  * (user_profiles, product_documents, data_sources, product_imports,
@@ -11,7 +12,7 @@ import type { Product } from "@/lib/types";
 
 export interface AdminResult<T> { data: T; mode: DataMode; error: string | null }
 
-export interface UserProfileRow { user_id: string; full_name: string | null; role: "homeowner" | "provider" | "admin"; provider_company_id: string | null; created_at: string }
+export interface UserProfileRow { user_id: string; full_name: string | null; role: Role; provider_company_id: string | null; manufacturer_id: string | null; created_at: string }
 export interface ProductDocumentRow { id: string; product_id: string; kind: string; title: string | null; storage_path: string | null; url: string | null; created_at: string }
 export interface DataSourceRow { id: string; name: string; kind: string; url: string | null; notes: string | null; created_at: string }
 export interface ProductImportRow { id: string; method: string; file_path: string | null; status: string; summary: Record<string, unknown>; created_at: string; applied_at: string | null }

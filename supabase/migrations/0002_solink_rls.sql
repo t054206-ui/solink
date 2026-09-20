@@ -1,6 +1,7 @@
 -- ============================================================================
 -- Solink — Row Level Security
--- Users see only their own data. Providers see cases assigned to their company.
+-- Users see only their own data. Companies see cases assigned to them; manufacturers
+-- manage their own catalogue rows.
 -- Admin access uses user_profiles.role = 'admin' — the permission model is not
 -- final: [PLACEHOLDER: ADMIN AUTHENTICATION / PERMISSIONS]
 -- ============================================================================
@@ -11,6 +12,10 @@ $$;
 
 create or replace function my_provider_id() returns uuid language sql stable security definer set search_path = public as $$
   select provider_company_id from user_profiles where user_id = auth.uid();
+$$;
+
+create or replace function my_manufacturer_id() returns uuid language sql stable security definer set search_path = public as $$
+  select manufacturer_id from user_profiles where user_id = auth.uid();
 $$;
 
 create or replace function owns_system(sid uuid) returns boolean language sql stable security definer set search_path = public as $$
@@ -78,6 +83,10 @@ create policy "data_sources admin" on data_sources for all using (is_admin()) wi
 create policy "products read" on solar_products for select using (not is_archived or is_admin());
 create policy "products admin" on solar_products for all using (is_admin()) with check (is_admin());
 create policy "products provider own" on solar_products for all using (provider_id is not null and provider_id = my_provider_id()) with check (provider_id = my_provider_id());
+-- Manufacturers publish and maintain their own panels. Verification stays an admin-only action:
+-- the product trigger in 0003 demotes any self-set 'verified' with open flags, and nothing here
+-- lets a manufacturer touch another manufacturer's rows.
+create policy "products manufacturer own" on solar_products for all using (manufacturer_id is not null and manufacturer_id = my_manufacturer_id()) with check (manufacturer_id = my_manufacturer_id());
 create policy "versions read" on product_versions for select using (true);
 create policy "versions admin" on product_versions for all using (is_admin()) with check (is_admin());
 create policy "documents read" on product_documents for select using (true);
@@ -87,6 +96,8 @@ create policy "import rows admin" on product_import_rows for all using (is_admin
 create policy "providers read" on provider_companies for select using (true);
 create policy "providers admin" on provider_companies for all using (is_admin()) with check (is_admin());
 create policy "providers self update" on provider_companies for update using (id = my_provider_id()) with check (id = my_provider_id());
+create policy "manufacturers self update" on manufacturers for update using (id = my_manufacturer_id()) with check (id = my_manufacturer_id());
+create policy "documents manufacturer own" on product_documents for all using (exists (select 1 from solar_products p where p.id = product_id and p.manufacturer_id = my_manufacturer_id())) with check (exists (select 1 from solar_products p where p.id = product_id and p.manufacturer_id = my_manufacturer_id()));
 create policy "prices read" on provider_prices for select using (true);
 create policy "prices provider" on provider_prices for all using (provider_id = my_provider_id() or is_admin()) with check (provider_id = my_provider_id() or is_admin());
 

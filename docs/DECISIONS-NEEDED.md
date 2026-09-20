@@ -5,7 +5,7 @@ until decided. Nothing has been assumed silently.
 
 | # | Decision | Placeholder | Where it lands once decided |
 |---|---|---|---|
-| 1 | **Supabase project** — the organisation `t054206-ui's Org` has hit the 2-active-free-project limit (wellness-cafe, gahwa-house). Options: pause one, upgrade, or create the Solink project in another org. | `[PLACEHOLDER: SUPABASE PROJECT]` | `.env.local` / Vercel env; apply `supabase/migrations` |
+| 1 | ~~**Supabase project**~~ **Done 2026-09-20.** Project `solink` (`bgwvztckesuwlydwcfkj`, ap-south-1) in `t054206-ui's Org`; `gahwa-house` was paused by the owner to free the slot. Migrations 0001–0005 applied. Still needed from the owner: `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and Vercel (admin/import actions), and the two public vars in Vercel. | — | done |
 | 2 | **Electricity tariff** (per kWh, with source, incl. any tiered/subsidised structure) | `[PLACEHOLDER: ELECTRICITY TARIFF]` | Admin → Platform Settings (`platform_settings.electricity_tariff_per_kwh`) |
 | 3 | **Solar resource data source** for sites (peak sun hours / irradiance): Google Solar API, another dataset, or manual | `[PLACEHOLDER: SOLAR RESOURCE DATA SOURCE]`, `[PLACEHOLDER: GOOGLE SOLAR / SOLAR SITE DATA SOURCE]` | `GOOGLE_SOLAR_API_KEY` or platform setting `peak_sun_hours_per_day` |
 | 4 | **Performance ratio / loss factor** assumption (or per-design engineering input) | `[PLACEHOLDER: SYSTEM PERFORMANCE RATIO / LOSS FACTOR]` | platform setting `performance_ratio` |
@@ -26,10 +26,10 @@ until decided. Nothing has been assumed silently.
 
 ## Not yet verified
 
-The SQL in `supabase/migrations/` has not been executed anywhere. No Solink
-Supabase project exists (decision 1), and there is no local Postgres or Docker on
-this machine, so the schema, policies and triggers are reviewed but unrun. Expect
-to iterate on them the first time they are applied.
+The SQL in `supabase/migrations/` was applied to the live project on 2026-09-20;
+0001–0003 ran first time without edits beyond the role-enum change, and 0004 adds
+the hardening the Supabase security advisor asked for, and 0005 fixes the product
+snapshot trigger the first insert exposed.
 
 Everything above is a decision only you can make. The application itself runs
 today in demo mode, and each decision swaps a placeholder for a real value
