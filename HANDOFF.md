@@ -5,9 +5,10 @@ interface, connected Supabase and took sign-up live — read Session 3 first; it
 state of the site now.** Session 4 added the hero panel's take-apart sequence.
 Session 5 added the tariff sector, sourced two settings for the owner's yes, and
 fixed the hero labels. Session 6 ran two days: the opening film, sign in and sign
-up, the Marketplace on the real catalogue. **Start with the last section of this
-file, "Session 6 closing state", which is the current position and the current
-to-do list.**_
+up, the Marketplace on the real catalogue. Session 7 drafted the privacy policy
+and terms. **Start with "Session 6 closing state", which is the consolidated
+position, then read "Session 7" at the very end for what changed after it and
+the current to-do list.**_
 Folder: `~/Desktop/solink` (Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
 
 Solink is a solar-energy platform for Kuwait and the GCC. It connects homeowners,
@@ -1170,3 +1171,144 @@ consolidated position so Session 7 does not have to reconcile the addenda.
    catalogue** (Lolwah's import pattern: `supabase/imports/`, one log entry per
    conflict), **the other 56 pages**.
 7. Session 4 leftovers on the hero: click-to-hold a part, leader lines.
+
+---
+
+# SESSION 7 — 2026-09-21 evening (privacy policy and terms of use)
+
+## Read this before anything else
+
+Picked up Session 6's closing "What to do next". Items 1, 2 and 5 are the
+owner's. Item 4 stayed blocked: nrel.gov, docs.nrel.gov and osti.gov were
+unreachable from this network again, both by curl (DNS fails) and by the
+WebFetch tool. Item 3, privacy policy and terms, was the top actionable item
+and is what this session built. **Nothing is committed or pushed**: the change
+sits in the working tree for the owner to read first.
+
+## What was built
+
+- **`/privacy` and `/terms`**, public, in the marketing group (pill nav and
+  footer), bilingual, on the Studio palette, statically prerendered. One shared
+  component, `src/components/legal/LegalPage.tsx`: eyebrow, display headline,
+  lead, "Last updated" in mono, draft notice, then numbered sections down one
+  column with a table of contents beside them (sticky on desktop, a `<details>`
+  on phones). No card grid. Structure in `src/lib/content/legal.ts`; copy in
+  `dictionary.ts` under `legal.*`, `privacy.*`, `terms.*`, 77 keys per
+  language, both blocks checked for identical key sets.
+- **Every sentence was written from the code, not from a template.** Sign-up
+  asks for name, email, password (`AuthForm.tsx`; Supabase Auth hashes it).
+  The solar profile fields are `solar_profiles` in migration 0001. Who can see
+  what is 0002's RLS, stated plainly: a company sees an assigned case's system
+  and governorate, never address, email or phone (matches `PrivacyNote`); an
+  installer sees its systems, passports, orders and appointments; a
+  manufacturer its own catalogue; admins can read profiles, solar profiles,
+  systems, cases and reports. Services named with exactly what each receives:
+  Claude API (question + relevant records, and a photo if inspection is
+  asked), WeatherAPI.com (coordinates), Google Maps Platform (address or
+  coordinates; Google Solar only if access is confirmed), Supabase
+  (ap-south-1, Mumbai), Vercel (server logs). Cookies: Supabase session only.
+  Local storage: language, theme, and everything in demo mode. **No analytics
+  and no trackers**, which is true of the codebase today (`grep` found none).
+  Production data: stated as not collected because no hardware is connected.
+- **Three new placeholders** in `placeholders.ts`: `LEGAL_OPERATOR`,
+  `LEGAL_CONTACT`, `GOVERNING_LAW`. The copy carries them as `{operator}`,
+  `{contact}`, `{law}` and `LegalPage` renders them with the product's own
+  `<Placeholder>`, so an unfilled legal document looks exactly like an
+  unfilled tariff. Decision 19 in `docs/DECISIONS-NEEDED.md`.
+- **Draft notice** above both texts, in the dashed estimated style: drafted
+  2026-09-21 from how Solink works, not reviewed by a lawyer, not approved by
+  the operator, not yet binding.
+- **Footer** bottom bar: Privacy · Terms. **Sign-up form**: a consent line
+  under the button linking both (`auth.agree*`), sign-up mode only.
+- The Arabic leans standard rather than light Kuwaiti, because legal text
+  needs precision; still Claude's draft and still unreviewed. Session 6's
+  item 2 now covers these strings too.
+
+## Verified in the browser
+
+Against the other session's dev server on 3311 (pid 81335 still holds it).
+English and Arabic on both pages (RTL mirrors the layout, table of contents
+moves to the right, the date stays LTR), the three placeholders inline in the
+Contact section, the "See also" cross-link, the footer links, the sign-up
+consent line in both languages, and the privacy page at 375 px (collapsible
+contents, no horizontal scroll). `npx tsc --noEmit`, `npx eslint src` and
+`npm run build` clean. 60 pages now.
+
+## Decisions (Claude's, flagged for the owner)
+
+- The consent line says "agree to the Terms of use" while the terms carry a
+  draft notice. That is honest, but the owner may prefer no consent line until
+  the lawyer's review is done. It is one `{!login && (...)}` block in
+  `AuthForm.tsx`.
+- The Supabase region (ap-south-1, Mumbai) is named in the policy because data
+  location belongs in a privacy notice and it is a recorded fact
+  (`DECISIONS-NEEDED.md`, decision 1). Remove it if the owner prefers.
+- Governing law is a placeholder, not "Kuwait". Naming a law is a legal claim
+  and the lawyer should make it.
+- Admin read access is described as broadly as 0002 grants it, with a
+  sentence saying the permission model is still being finalised (decision 15).
+- Deletion is described as "on request", because there is no self-service
+  delete. Cascades cover the tables; files under `roof-photos/<user_id>` and
+  `incident-images/<user_id>` would need removing explicitly.
+
+## Things tried that failed, or to know
+
+- nrel.gov / osti.gov: DNS failure by curl, `ENOTFOUND` by WebFetch. Same as
+  Sessions 5 and 6. Needs a different network.
+- `next build` runs safely beside the running dev server: Next 16 keeps the
+  dev output in `.next/dev`.
+- Full navigations replay the opening (20 s) while `INTRO_FREQUENCY` is
+  `"always"`. Client-side links do not, so browser checks go through the
+  footer, the nav, and "Create one" rather than the address bar.
+
+## Later the same evening — Google sign-in, and "Continue as a guest"
+
+The owner sent a screenshot of the sign-in form with two requests: a
+"Continue with Google" button, and "Look around first" renamed "Continue as a
+guest" and made visible, "not too much visible but visible".
+
+- **Continue with Google**: a second pill under the primary button, outlined,
+  with Google's four-colour G drawn inline, separated by a hairline "or". It
+  calls `supabase.auth.signInWithOAuth({ provider: "google" })` with
+  `redirectTo` = `/auth/callback?next=…`. New route handler
+  `src/app/auth/callback/route.ts` exchanges the PKCE code for a session (sets
+  the cookies on the redirect response) and forwards to `next`, same-origin
+  only; a missing code or a failed exchange goes to `/login?error=google`,
+  which the login page passes down as `authError` and the form shows as one
+  sentence (`auth.googleFailed`). **The Google provider is not enabled in the
+  Supabase project** (confirmed: `GET /auth/v1/settings` returns
+  `external.google: false`). First attempt relied on `signInWithOAuth`
+  returning an error; it does not, the browser is sent to Supabase's
+  authorize endpoint, which answers a raw JSON error page. So the sign-in
+  pages now ask that public settings endpoint on the server
+  (`src/lib/supabase/providers.ts`, cached five minutes, any failure counts as
+  "off") and pass `googleEnabled` down: off means the button renders disabled,
+  the G greyed, with `auth.googleUnavailable` under it. Enabling the provider
+  (decision 20 in `DECISIONS-NEEDED.md`, three steps, no code) turns it live
+  within five minutes. That is the honest state, not a fake feature.
+- **Continue as a guest**: same link to `/`, now `text-[13.5px] font-medium
+  text-fg-secondary` with a small arrow instead of the mono micro-label. It
+  reads at a glance and still sits a clear step below the two buttons.
+- Strings added: `auth.or`, `auth.google`, `auth.googleUnavailable`,
+  `auth.googleFailed`; `auth.browse` renamed in both languages.
+- `DIRECTION.md` auth section and `CLAUDE.md` updated. tsc and eslint clean.
+
+## What to do next, in priority order
+
+1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.
+2. **Owner and a lawyer read `/privacy` and `/terms`.** Supply the operator,
+   the contact address and the governing law (decision 19), and have the text
+   checked against the Kuwaiti data-protection rules that apply. Then drop the
+   draft notice (`legal.draft` and the `<p>` that renders it in `LegalPage`)
+   and bump `LEGAL_UPDATED`.
+3. **Kuwaiti review of the Arabic**, now including `legal.*`, `privacy.*`,
+   `terms.*` and `auth.agree*`.
+4. **PVWatts manual §System Losses** from a network that reaches nrel.gov.
+5. **Email sender, service-role key, domain**: owner. `LEGAL_CONTACT` depends
+   on the email decision.
+6. **Self-service account deletion**, so the policy can promise more than
+   "on request": a server action deleting `auth.users` (cascades) plus the
+   user's storage folders.
+7. As Session 6: **Google Solar**, **tilt → output**, **About placeholders**,
+   **more catalogue** (Lolwah's import pattern), **the other pages**, and the
+   Session 4 hero leftovers.

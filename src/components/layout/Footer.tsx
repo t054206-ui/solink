@@ -31,6 +31,10 @@ export function Footer() {
       </div>
       <div className="flex flex-col items-center justify-center gap-2 border-t border-border px-4 py-3 text-center text-[11.5px] text-fg-muted sm:flex-row sm:gap-4">
         <span>© {new Date().getFullYear()} Solink · Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize</span>
+        <nav aria-label="Legal" className="flex items-center gap-3">
+          <Link href="/privacy" className="hover:text-fg">Privacy</Link>
+          <Link href="/terms" className="hover:text-fg">Terms</Link>
+        </nav>
         <ReplayIntroButton />
       </div>
     </footer>

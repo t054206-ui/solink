@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/config/env";
 import { createClient } from "@/lib/supabase/server";
+import { googleSignInEnabled } from "@/lib/supabase/providers";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { Button } from "@/components/ui/Button";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -29,5 +30,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     );
   }
   const confirmed = (Array.isArray(sp.confirmed) ? sp.confirmed[0] : sp.confirmed) === "1";
-  return <AuthForm mode="login" nextPath={nextPath} confirmed={confirmed} />;
+  // /auth/callback sends the browser back here when a Google sign-in did not complete.
+  const authError = (Array.isArray(sp.error) ? sp.error[0] : sp.error) === "google" ? "google" : null;
+  const googleEnabled = await googleSignInEnabled();
+  return <AuthForm mode="login" nextPath={nextPath} confirmed={confirmed} authError={authError} googleEnabled={googleEnabled} />;
 }

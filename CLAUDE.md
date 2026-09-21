@@ -5,14 +5,15 @@
 ## Read HANDOFF.md first, before doing anything else
 
 `HANDOFF.md` is the state of this project. Read it at the start of every session.
-Session 3 describes the site as it is; Sessions 4, 5 and 6 are additions on top
+Session 3 describes the site as it is; Sessions 4, 5, 6 and 7 are additions on top
 of it. **Session 2 supersedes Session 1 on anything visual.**
 
 The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
-"Session 6 closing state"):
+"Session 6 closing state", then "Session 7"):
 
-- `main` at `552357e` is deployed to https://solink-nu.vercel.app by Vercel on
-  push. Git-triggered deploys are healthy. v1 is recoverable with
+- `main` at `1e0d3a4` is deployed to https://solink-nu.vercel.app by Vercel on
+  push. Session 7's legal pages are in the working tree, uncommitted, for
+  the owner's review. Git-triggered deploys are healthy. v1 is recoverable with
   `git checkout v1-superseded`.
 - **Direction "Studio"** is recorded in `design-system/solink/DIRECTION.md`;
   read it before touching anything visual.
@@ -24,8 +25,11 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
   `public/bootstrap.js`, change together), runs about 20 s, and ends on the
   page it opened on. Replay button in the footer and on the sign-in aside.
 - **Auth**: `/login` and `/signup` on the Studio palette with confirm-password
-  and eye toggles, bilingual via `auth.*`. Sign out is in the app sidebar
-  footer (desktop) and top bar (phones).
+  and eye toggles, bilingual via `auth.*`. **Continue with Google** (Supabase
+  OAuth, back through `/auth/callback`) sits under the primary button; it says
+  so plainly until the owner enables the provider (decision 20). "Continue as
+  a guest" under the form leads to `/`. Sign out is in the app sidebar footer
+  (desktop) and top bar (phones).
 - **Marketplace** runs on the real catalogue: three LONGi Hi-MO 7 modules in
   `solar_products` with the manufacturer's renders as images. Supabase-mode
   listings exclude demo rows. Behind sign-in. Import pattern and provenance:
@@ -38,8 +42,15 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
   ratio 0.86. Never enter a platform number without the owner's yes;
   `docs/DECISIONS-NEEDED.md` records what was entered and why.
 - Roles: homeowner (includes landlord), manufacturer, company, admin. Light
-  theme default. Still placeholders: team roles/bios/photos, team description,
-  privacy policy and terms.
+  theme default. Still placeholders: team roles/bios/photos, team description.
+- **Privacy policy and terms** exist at `/privacy` and `/terms` (Session 7,
+  2026-09-21): public, bilingual, drafted from how the code behaves, and
+  marked on the page as an unreviewed draft. Operator, contact address and
+  governing law are placeholders (`LEGAL_OPERATOR`, `LEGAL_CONTACT`,
+  `GOVERNING_LAW`; decision 19). Structure in `src/lib/content/legal.ts`,
+  copy under `legal.*`, `privacy.*`, `terms.*` in the dictionary. A lawyer's
+  review is pending; do not describe them as binding. The sign-up form links
+  to both.
 - Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch
   before you work; coordinate before touching the intro or the import.
 - Nothing is pushed or deployed without the owner's word.

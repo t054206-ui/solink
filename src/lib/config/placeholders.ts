@@ -34,6 +34,11 @@ export const PLACEHOLDERS = {
   INSTALLATION_PRICE: "[PLACEHOLDER: INSTALLATION PRICE]",
   SUPABASE_PROJECT: "[PLACEHOLDER: SUPABASE PROJECT]",
   OTHER_REQUIRED_KEYS: "[PLACEHOLDER: OTHER REQUIRED KEYS]",
+  // Legal pages (/privacy, /terms). Drafted 2026-09-21; these three are the
+  // owner's to supply, and a lawyer's review of both documents is pending.
+  LEGAL_OPERATOR: "[PLACEHOLDER: LEGAL OPERATOR / ENTITY]",
+  LEGAL_CONTACT: "[PLACEHOLDER: PRIVACY / LEGAL CONTACT]",
+  GOVERNING_LAW: "[PLACEHOLDER: GOVERNING LAW]",
 } as const;
 
 export type PlaceholderKey = keyof typeof PLACEHOLDERS;
@@ -64,6 +69,9 @@ export const PLACEHOLDER_NOTES: Record<PlaceholderKey, string> = {
   INSTALLATION_PRICE: "Installation providers have not entered prices.",
   SUPABASE_PROJECT: "A Supabase project for Solink has not been created/connected. The app runs in local demo mode.",
   OTHER_REQUIRED_KEYS: "Additional credentials for future integrations.",
+  LEGAL_OPERATOR: "The person or company that operates Solink and is responsible for users' data has not been named.",
+  LEGAL_CONTACT: "No address for privacy and legal requests (a copy of data, a correction, deletion) has been chosen. Depends on the email provider decision.",
+  GOVERNING_LAW: "The governing law and jurisdiction for the privacy policy and terms have not been decided. A lawyer's review of both documents is pending.",
 };
 
 export function placeholder(key: PlaceholderKey): string {

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/config/env";
 import { createClient } from "@/lib/supabase/server";
+import { googleSignInEnabled } from "@/lib/supabase/providers";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { Button } from "@/components/ui/Button";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -28,5 +29,6 @@ export default async function SignupPage({ searchParams }: PageProps<"/signup">)
       </div>
     );
   }
-  return <AuthForm mode="signup" nextPath={nextPath} />;
+  const googleEnabled = await googleSignInEnabled();
+  return <AuthForm mode="signup" nextPath={nextPath} googleEnabled={googleEnabled} />;
 }

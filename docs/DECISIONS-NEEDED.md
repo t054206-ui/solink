@@ -1,7 +1,7 @@
 # Solink — Decisions needed from the project owner
 
 Solink is built so that none of these block the platform; each is a labeled placeholder
-until decided. Nothing has been assumed silently.
+until decided. Nothing has been assumed silently. Decisions 19 and 20 were added 2026-09-21 (Session 7).
 
 | # | Decision | Placeholder | Where it lands once decided |
 |---|---|---|---|
@@ -23,6 +23,8 @@ until decided. Nothing has been assumed silently.
 | 16 | **Maintenance / installation prices** — entered by providers or platform | `[PLACEHOLDER: MAINTENANCE PRICE]`, `[PLACEHOLDER: INSTALLATION PRICE]` | `provider_prices`, product cost fields |
 | 17 | **Nearby-system comparison** data-sharing & privacy design | `[PLACEHOLDER: ANONYMIZED NEARBY SYSTEM DATA]` | `area_aggregates` |
 | 18 | ~~**GitHub remote**~~ **Done.** https://github.com/t054206-ui/solink, `main` deploys to Vercel. | — | done |
+| 19 | **Legal operator, contact address and governing law** for the privacy policy and terms. `/privacy` and `/terms` were drafted 2026-09-21 from how the code actually behaves (what sign-up asks, what the schema stores, what each role can read under RLS, which services are called and with what). **Not yet reviewed by a lawyer.** Both pages carry a draft notice until these three values are supplied and the review is done; the sign-up form links to both. | `[PLACEHOLDER: LEGAL OPERATOR / ENTITY]`, `[PLACEHOLDER: PRIVACY / LEGAL CONTACT]`, `[PLACEHOLDER: GOVERNING LAW]` | `src/lib/config/placeholders.ts` (`LEGAL_OPERATOR`, `LEGAL_CONTACT`, `GOVERNING_LAW`); the copy in `dictionary.ts` reads them through `{operator}`, `{contact}`, `{law}` and needs no edit |
+| 20 | **Google sign-in provider.** The button exists on `/login` and `/signup` (2026-09-21) and calls Supabase's Google OAuth; until the provider is enabled it shows "Google sign-in is not switched on yet". To switch it on: (1) in Google Cloud Console create an OAuth 2.0 client (Web application) with the authorised redirect URI `https://bgwvztckesuwlydwcfkj.supabase.co/auth/v1/callback`; (2) in Supabase → Authentication → Providers → Google, paste the client ID and secret and enable it; (3) in Supabase → Authentication → URL Configuration, add `https://solink-nu.vercel.app/auth/callback` and `http://localhost:3311/auth/callback` to the redirect allow-list (and the production domain once decided). No code change. | — | Supabase Auth settings; the flow returns through `src/app/auth/callback/route.ts` |
 
 ## Entries made on the owner's yes (2026-09-20, Session 5)
 

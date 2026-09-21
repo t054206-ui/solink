@@ -112,10 +112,16 @@ column, a rounded primary button. Sign-up asks for full name, email, password
 and the password again; sign-in for email and password. Both password fields
 carry the standard eye toggle (a real button, `aria-pressed`, labelled "Show
 password" / "Hide password"). The second password is checked before anything
-is sent. A quiet "Look around first" under the form leads to the landing page,
-because the site is not locked behind an account. Bilingual through the
-dictionary (`auth.*`), Arabic drafted by Claude. Phones get the form with a
-one-row header.
+is sent. Under the primary button, a hairline "or" and a second, outlined
+pill: **Continue with Google**, through Supabase's OAuth flow and back via
+`/auth/callback` (owner's request, 2026-09-21). Until the Google provider is
+enabled in the Supabase project the button says so in one sentence instead of
+failing silently. Below that, "Continue as a guest" leads to the landing page,
+because the site is not locked behind an account: a readable secondary link
+with an arrow, one step quieter than the two buttons (the owner asked for it
+to be visible, not prominent; it replaced the mono micro-label "Look around
+first"). Bilingual through the dictionary (`auth.*`), Arabic drafted by
+Claude. Phones get the form with a one-row header.
 
 ## Motion — cinematic, both marketing and product
 
