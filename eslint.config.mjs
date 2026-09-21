@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Third-party bundles shipped as-is. Linting minified vendor code reports
+    // on the minifier's choices, not on anything anyone here can change.
+    "public/vendor/**",
   ]),
 ]);
 
