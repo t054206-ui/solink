@@ -24,7 +24,9 @@
  * and the timeline cut from 37.7 s to 19.2 s (first 14.2 s, then 20 s at the
  * owner's request) with every scene kept and the damping rates scaled so each
  * scene still reaches its composition. Then, the same evening: one tone per
- * layer (cool glass, warm film, brighter cells, sand backsheet, darker frame).
+ * layer (cool glass, warm film, brighter cells, sand backsheet, darker frame),
+ * then all of them darker still, because the stage is light and pale layers
+ * disappeared into it.
  *
  * ES5 style, `var`, and all: do not modernise it. If the owner sends a new
  * version of the file, regenerate this from it the same way rather than
@@ -181,7 +183,7 @@ export function mountFilm(root, opts){
       for (var r=0;r<rows;r++) for (var q=0;q<cols;q++){
         var px = pad+q*(cw+gap), py = pad+r*(ch+gap);
         var g2 = x.createLinearGradient(px,py,px+cw,py+ch);
-        g2.addColorStop(0,"#2C63B8"); g2.addColorStop(.5,"#1A4590"); g2.addColorStop(1,"#2E66BA");   // owner 2026-09-21: clearer cells
+        g2.addColorStop(0,"#2458A8"); g2.addColorStop(.5,"#123670"); g2.addColorStop(1,"#265BAC");   // owner 2026-09-21: clearer cells
         x.fillStyle = g2; x.fillRect(px,py,cw,ch);
         x.fillStyle = "#0A1B33"; var k = cw*.10;
         [[px,py,1,1],[px+cw,py,-1,1],[px,py+ch,1,-1],[px+cw,py+ch,-1,-1]].forEach(function(p){
@@ -253,8 +255,8 @@ export function mountFilm(root, opts){
     // Owner, 2026-09-21: glass more visible and realistic. Clearer tint, a
     // stronger reflection of the room, and half opaque rather than a third.
     // Glass: cool, clear blue-white, reflective. The one cool sheet in the stack.
-    glassMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xD6E9FB, metalness:0, roughness:.02,
-      clearcoat:1, clearcoatRoughness:.015, reflectivity:1, envMapIntensity:3.2, side:THREE.DoubleSide, depthWrite:false }), .56);
+    glassMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0x8FB3D6, metalness:0, roughness:.03,
+      clearcoat:1, clearcoatRoughness:.02, reflectivity:1, envMapIntensity:2.6, side:THREE.DoubleSide, depthWrite:false }), .66);   // owner 2026-09-21 night: darker, it must show on the light stage
     var glass = mk(new THREE.BoxGeometry(W,.036,D), glassMat, .056);
     glass.castShadow = false;
     register(0,[glass],.056,.95,[glassMat]);
@@ -265,8 +267,8 @@ export function mountFilm(root, opts){
     // Owner, 2026-09-21: the solar film lighter, clearer and defined. A cool
     // near-white sheet with a soft sheen, more present than the old cream.
     // Solar film: a warm, light sheet with a soft sheen, so it never reads as more glass.
-    evaMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xFFF0CC, metalness:0, roughness:.2,
-      envMapIntensity:1.4, clearcoat:.85, clearcoatRoughness:.1, side:THREE.DoubleSide }), .74);
+    evaMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xE3BE78, metalness:0, roughness:.22,
+      envMapIntensity:1.2, clearcoat:.8, clearcoatRoughness:.1, side:THREE.DoubleSide }), .84);   // deeper amber film
     var cellsM = mk(new THREE.BoxGeometry(W-.09,.009,D-.09),
                     [sideMat,sideMat,cellMat,sideMat,sideMat,sideMat], .0175);
     var evaTop = mk(new THREE.BoxGeometry(W-.02,.02,D-.02), evaMat, .034);
@@ -274,7 +276,7 @@ export function mountFilm(root, opts){
     register(1,[cellsM,evaTop,evaBot],.0175,.30,[cellMat,sideMat,evaMat]);
 
     // Backsheet: warm sand rather than white, so it is not mistaken for the film above it.
-    var backMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xE6DFD0, roughness:.7, metalness:.02, envMapIntensity:.8 }));
+    var backMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xB9A98C, roughness:.72, metalness:.02, envMapIntensity:.7 }));   // darker sand
     var back = mk(new THREE.BoxGeometry(W,.014,D), backMat, -.010);
     var jbMat = G.panel.add(new THREE.MeshStandardMaterial({ color:0x1B1F24, roughness:.45, metalness:.35 }));
     var jb = new THREE.Mesh(new THREE.BoxGeometry(.34,.075,.20), jbMat);
@@ -292,7 +294,7 @@ export function mountFilm(root, opts){
     register(2,[back,jb].concat(extras),-.010,-.34,[backMat,jbMat,cableMat]);
 
     // Frame: a shade darker aluminium, so it separates from the pale layers.
-    var frameMat = G.panel.add(new THREE.MeshStandardMaterial({ color:0xB8C1CB, metalness:.92, roughness:.26, envMapIntensity:1.6 }));
+    var frameMat = G.panel.add(new THREE.MeshStandardMaterial({ color:0x7F8B99, metalness:.92, roughness:.28, envMapIntensity:1.5 }));   // darker aluminium
     var fw = .055, fh = .155, frameMeshes = [];
     (function(){
       function rail3(w,d,x,z){
@@ -780,7 +782,7 @@ export function mountFilm(root, opts){
             if (off == null){ off = L.meshes[m].position.y - L.baseY; L.meshes[m].userData.off = off; }
             L.meshes[m].position.y = L.y + off;
           }
-          L.target = (focusIdx < 0) ? 1 : (focused ? 1 : .55);   // owner 2026-09-21: layers must not blend
+          L.target = (focusIdx < 0) ? 1 : (focused ? 1 : .68);   // owner 2026-09-21: layers must not blend
           L.op = damp(L.op, L.target, 9, dt);
           for (var k2=0;k2<L.mats.length;k2++) L.mats[k2].userData.dim = L.op;
         }

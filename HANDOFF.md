@@ -952,6 +952,13 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
+## 2026-09-21, later that night — every layer darker
+
+Owner: "make the color of glass more dark and all parts clearer darker since
+background is light". Glass `0x8FB3D6` at .66, film `0xE3BE78` at .84, cells
+`#2458A8`/`#123670`, backsheet `0xB9A98C`, frame `0x7F8B99`, unfocused layers
+dim only to .68. Same places in `film.ts`, same markers.
+
 ## 2026-09-21, night — twenty seconds, and one tone per layer
 
 Owner: "make the intro 20 seconds and the parts of the panel more clear".
