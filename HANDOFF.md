@@ -952,6 +952,17 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
+## 2026-09-21 — the opening plays every time
+
+The owner could not see the new opening (their browser remembered the old one)
+and then asked to see it "on every browser". The frequency is now a setting:
+`INTRO_FREQUENCY` in `introStore.ts`, mirrored by `FREQUENCY` in
+`public/bootstrap.js`, currently `"always"`: every full page load, never on a
+client-side navigation. `"session"` (once per tab) and `"once"` (once per
+browser, key `solink:intro-seen-v2`) are one word away. **Recommend `"session"`
+once the owner has finished reviewing**: a daily user reloading the dashboard
+does not want thirteen seconds of sun each time, Skip or no Skip.
+
 ## What to do next
 
 1. Kuwaiti review of the 31 new Arabic strings.

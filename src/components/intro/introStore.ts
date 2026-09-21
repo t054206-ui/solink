@@ -12,8 +12,8 @@ import { useSyncExternalStore } from "react";
  *
  * Two things carry the state, and they have to agree:
  *
- *  - `localStorage["solink:intro-seen-v2"]`, so the sequence plays once per
- *    browser rather than in front of someone who has already watched it;
+ *  - a storage key, when INTRO_FREQUENCY asks for one, so the sequence plays
+ *    once per browser or tab rather than in front of someone who has watched it;
  *  - `data-intro="pending"` on the root element, set by public/bootstrap.js
  *    before first paint. That attribute drives the curtain in globals.css, so
  *    a first-time visitor never sees the landing page flash behind the intro.
@@ -23,9 +23,45 @@ import { useSyncExternalStore } from "react";
  * standing behind it would be all there was to reveal.
  */
 
+/**
+ * How often the opening plays. The owner's call, 2026-09-21: "every time".
+ *
+ *   "always"  every full page load (client-side navigation never replays it)
+ *   "session" once per tab
+ *   "once"    once per browser, until the key's suffix is bumped
+ *
+ * public/bootstrap.js carries the same word and must be changed with it: it
+ * raises the curtain before React runs, from the same rule.
+ */
+export type IntroFrequency = "always" | "session" | "once";
+export const INTRO_FREQUENCY: IntroFrequency = "always";
+
 // Bump the suffix when the opening changes enough that people who saw the
 // old one should see the new one once. bootstrap.js reads the same key.
 const KEY = "solink:intro-seen-v2";
+
+/** True once this page load's opening has finished, whatever the frequency. */
+let done = false;
+
+function seen(): boolean {
+  try {
+    if (INTRO_FREQUENCY === "always") return false;
+    const store = INTRO_FREQUENCY === "session" ? sessionStorage : localStorage;
+    return store.getItem(KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function remember(): void {
+  try {
+    if (INTRO_FREQUENCY === "always") return;
+    const store = INTRO_FREQUENCY === "session" ? sessionStorage : localStorage;
+    store.setItem(KEY, "1");
+  } catch {
+    // A browser with site data blocked simply gets the opening again next time.
+  }
+}
 const EVENT = "solink:intro";
 const ATTR = "data-intro";
 
@@ -50,11 +86,8 @@ export function getSnapshot(): boolean {
   // animation, and is not shown the button that would start one either.
   if (calm()) return false;
   if (forced) return true;
-  try {
-    return localStorage.getItem(KEY) !== "1";
-  } catch {
-    return true;
-  }
+  if (done) return false;
+  return !seen();
 }
 
 export function getServerSnapshot(): boolean {
@@ -95,11 +128,8 @@ export function dropCurtain(): void {
 /** The sequence is over: remember it, and let the host unmount the overlay. */
 export function finishIntro(): void {
   forced = false;
-  try {
-    localStorage.setItem(KEY, "1");
-  } catch {
-    // A browser with site data blocked simply gets the intro again next time.
-  }
+  done = true;
+  remember();
   dropCurtain();
   window.dispatchEvent(new Event(EVENT));
 }

@@ -17,8 +17,11 @@ The current position, as of 2026-09-20:
   owner's reference sites and is recorded in `design-system/solink/DIRECTION.md`
   — read that file before touching anything visual. HANDOFF.md Session 3 has
   the full account.
-- **The opening** (Session 6): the take-apart sequence plays full bleed once
-  per browser before the site and lands a signed-out first-timer on `/signup`.
+- **The opening** (Session 6): "From sunlight to your home", 12 s, full bleed
+  before the site, lands a signed-out visitor on `/signup`. **Plays on every
+  page load** by the owner's instruction (2026-09-21); `INTRO_FREQUENCY` in
+  `introStore.ts` and `FREQUENCY` in `public/bootstrap.js` switch it to once
+  per tab or once per browser, and must be changed together.
   `src/components/intro/*`, curtain attribute in `public/bootstrap.js`,
   mounted in the root layout. Replay in the footer and on the sign-in aside.
 - **Auth** (Session 6): `/login` and `/signup` redesigned on the Studio palette;

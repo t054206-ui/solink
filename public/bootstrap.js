@@ -12,14 +12,21 @@
       d.setAttribute("lang", "ar");
       d.setAttribute("dir", "rtl");
     }
-    /* The opening plays once per browser. The attribute goes on before paint so
-       a first-time visitor never sees the landing page flash behind it; the
-       overlay takes it off again when the sequence starts to leave. A plain
-       string rather than JSON, because this one is not a useLocalStore key.
-       The timeout is a dead man's switch: without it, a browser that never gets
-       as far as running React would hold the curtain up for ever. */
+    /* The opening. FREQUENCY mirrors INTRO_FREQUENCY in
+       src/components/intro/introStore.ts and must change with it:
+       "always" every page load, "session" once per tab, "once" once per
+       browser. The attribute goes on before paint so a visitor never sees the
+       landing page flash behind the opening; the overlay takes it off again
+       when the sequence starts to leave. The timeout is a dead man's switch:
+       without it, a browser that never gets as far as running React would
+       hold the curtain up for ever. */
+    var FREQUENCY = "always";
+    var KEY = "solink:intro-seen-v2";
+    var seen =
+      FREQUENCY === "always" ? false
+      : (FREQUENCY === "session" ? sessionStorage : localStorage).getItem(KEY) === "1";
     if (
-      localStorage.getItem("solink:intro-seen-v2") !== "1" &&
+      !seen &&
       !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
     ) {
       d.setAttribute("data-intro", "pending");
