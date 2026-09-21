@@ -18,6 +18,12 @@
  *   - the demo host wiring is gone; `opts.onComplete` is what runs when the
  *     film ends.
  *
+ * Two edits the owner asked for on 2026-09-21, each marked in place with
+ * "owner 2026-09-21": the glass and the solar-film sheets made clearer and
+ * more visible (materials, sheet thickness, the dimming of unfocused layers),
+ * and the timeline cut from 37.7 s to 14.2 s with every scene kept and the
+ * damping rates scaled so each scene still reaches its composition.
+ *
  * ES5 style, `var`, and all: do not modernise it. If the owner sends a new
  * version of the file, regenerate this from it the same way rather than
  * editing by hand. Not type-checked or linted for that reason.
@@ -34,7 +40,7 @@ export function mountFilm(root, opts){
   var CONFIG = {
     autoplay:        true,     // start as soon as the page loads
     autoplayDelayMs: 260,
-    holdAfterMs:     1000,     // pause on the last frame before handing over
+    holdAfterMs:     400,      // pause on the last frame before handing over (owner 2026-09-21: 15 s total)
     respectReducedMotion: true,// skip the film for prefers-reduced-motion
     blurWhenIdle:    false,    // blur the panel once the site takes over
     fadeOnScroll:    560,      // px of scroll that fades the panel out (0 = never)
@@ -234,7 +240,7 @@ export function mountFilm(root, opts){
     G.panel = fadeGroup(panel);
     function register(idx, meshes, baseY, exploded, mats){
       parts[idx] = { meshes:meshes, baseY:baseY, exploded:exploded, mats:mats,
-                     y:baseY, op:1, target:1, speed:2.4 + (3-idx)*.6 };
+                     y:baseY, op:1, target:1, speed:(2.4 + (3-idx)*.6) * 2.2 };
       meshes.forEach(function(m){ m.userData.idx = idx; pickable.push(m); });
     }
     function mk(geo, mat, y){
@@ -242,8 +248,10 @@ export function mountFilm(root, opts){
       m.position.y = y; m.castShadow = true; m.receiveShadow = true;
       panel.add(m); return m;
     }
-    glassMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xDCEBFA, metalness:0, roughness:.03,
-      clearcoat:1, clearcoatRoughness:.02, envMapIntensity:2.4, side:THREE.DoubleSide, depthWrite:false }), .34);
+    // Owner, 2026-09-21: glass more visible and realistic. Clearer tint, a
+    // stronger reflection of the room, and half opaque rather than a third.
+    glassMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xE4F0FB, metalness:0, roughness:.02,
+      clearcoat:1, clearcoatRoughness:.015, reflectivity:1, envMapIntensity:3.2, side:THREE.DoubleSide, depthWrite:false }), .52);
     var glass = mk(new THREE.BoxGeometry(W,.036,D), glassMat, .056);
     glass.castShadow = false;
     register(0,[glass],.056,.95,[glassMat]);
@@ -251,12 +259,14 @@ export function mountFilm(root, opts){
     var cellMat = G.panel.add(new THREE.MeshPhysicalMaterial({ map:CELLTEX, metalness:.40, roughness:.28,
       envMapIntensity:1.35, clearcoat:.6 }));
     var sideMat = G.panel.add(new THREE.MeshStandardMaterial({ color:0x0A1B33, roughness:.7, metalness:.2 }));
-    evaMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xFBF6E6, metalness:0, roughness:.5,
-      envMapIntensity:1, clearcoat:.4 }), .55);
+    // Owner, 2026-09-21: the solar film lighter, clearer and defined. A cool
+    // near-white sheet with a soft sheen, more present than the old cream.
+    evaMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xF3F8FF, metalness:0, roughness:.18,
+      envMapIntensity:1.5, clearcoat:.9, clearcoatRoughness:.08, side:THREE.DoubleSide }), .7);
     var cellsM = mk(new THREE.BoxGeometry(W-.09,.009,D-.09),
                     [sideMat,sideMat,cellMat,sideMat,sideMat,sideMat], .0175);
-    var evaTop = mk(new THREE.BoxGeometry(W-.02,.013,D-.02), evaMat, .031);
-    var evaBot = mk(new THREE.BoxGeometry(W-.02,.013,D-.02), evaMat, .004);
+    var evaTop = mk(new THREE.BoxGeometry(W-.02,.02,D-.02), evaMat, .034);
+    var evaBot = mk(new THREE.BoxGeometry(W-.02,.02,D-.02), evaMat, .001);
     register(1,[cellsM,evaTop,evaBot],.0175,.30,[cellMat,sideMat,evaMat]);
 
     var backMat = G.panel.add(new THREE.MeshPhysicalMaterial({ color:0xFFFFFF, roughness:.66, metalness:.02, envMapIntensity:.9 }));
@@ -463,27 +473,27 @@ export function mountFilm(root, opts){
      6 · the six-scene timeline
      ========================================================= */
   var SCRIPTED = [
-    { n:"sun",      d:3.2,  cam:{ tx:-2.4, ty:3.0, tz:-2.0, th:.55, ph:1.02, r:7.8 },
+    { n:"sun",      d:1.1,  cam:{ tx:-2.4, ty:3.0, tz:-2.0, th:.55, ph:1.02, r:7.8 },
       vis:{ sun:1 } },
-    { n:"panelIn",  d:3.6,  cam:{ tx:0, ty:.1, tz:0, th:.72, ph:1.06, r:5.6 },
+    { n:"panelIn",  d:1.4,  cam:{ tx:0, ty:.1, tz:0, th:.72, ph:1.06, r:5.6 },
       vis:{ sun:.75, beam:1, panel:1, cells:1 }, cap:0 },
-    { n:"expand",   d:1.3,  cam:{ tx:0, ty:.1, tz:0, th:.50, ph:1.10, r:5.9 },
+    { n:"expand",   d:.55,  cam:{ tx:0, ty:.1, tz:0, th:.50, ph:1.10, r:5.9 },
       vis:{ sun:.4, beam:.35, panel:1, cells:.5 } },
-    { n:"step", i:0, d:2.3 }, { n:"step", i:1, d:2.3 },
-    { n:"step", i:2, d:2.3 }, { n:"step", i:3, d:2.4 },
-    { n:"collapse", d:1.7,  cam:{ tx:0, ty:.1, tz:0, th:.58, ph:1.06, r:5.4 },
+    { n:"step", i:0, d:1.05 }, { n:"step", i:1, d:1.05 },
+    { n:"step", i:2, d:1.05 }, { n:"step", i:3, d:1.05 },
+    { n:"collapse", d:.65,  cam:{ tx:0, ty:.1, tz:0, th:.58, ph:1.06, r:5.4 },
       vis:{ sun:.4, beam:.5, panel:1, cells:.8 } },
-    { n:"flow1",    d:2.9,  cam:{ tx:2.6, ty:0, tz:0, th:.42, ph:1.14, r:9.4 },
+    { n:"flow1",    d:1.1,  cam:{ tx:2.6, ty:0, tz:0, th:.42, ph:1.14, r:9.4 },
       vis:{ sun:.35, beam:.5, panel:1, cells:1, flow:1 }, cap:1 },
-    { n:"flow2",    d:3.1,  cam:{ tx:5.2, ty:.1, tz:-.6, th:.40, ph:1.16, r:11.0 },
+    { n:"flow2",    d:1.2,  cam:{ tx:5.2, ty:.1, tz:-.6, th:.40, ph:1.16, r:11.0 },
       vis:{ sun:.3, panel:1, cells:.7, flow:1, house:1 }, cap:2, light:1 },
-    { n:"eco",      d:3.9,  cam:{ tx:1.2, ty:.4, tz:-.4, th:.34, ph:1.06, r:23 },
+    { n:"eco",      d:1.3,  cam:{ tx:1.2, ty:.4, tz:-.4, th:.34, ph:1.06, r:23 },
       vis:{ sun:.35, panel:1, cells:.5, flow:.8, house:1, eco:1 }, cap:3, light:1 },
-    { n:"journey",  d:4.0,  cam:{ tx:1.2, ty:.5, tz:-.4, th:.52, ph:1.14, r:25 },
+    { n:"journey",  d:1.2,  cam:{ tx:1.2, ty:.5, tz:-.4, th:.52, ph:1.14, r:25 },
       vis:{ sun:.35, panel:1, cells:.5, flow:.8, house:1, eco:1 }, light:1, rail:1 },
-    { n:"finale",   d:3.4,  cam:{ tx:.4, ty:.2, tz:0, th:.62, ph:1.10, r:12 },
+    { n:"finale",   d:1.1,  cam:{ tx:.4, ty:.2, tz:0, th:.62, ph:1.10, r:12 },
       vis:{ sun:.4, panel:1, cells:.8, flow:.5, house:.7, eco:.45 }, cap:4, light:.7, rail:1 },
-    { n:"outro",    d:1.3,  cam:{ tx:0, ty:.1, tz:0, th:.58, ph:1.06, r:5.6 },
+    { n:"outro",    d:.4,   cam:{ tx:0, ty:.1, tz:0, th:.58, ph:1.06, r:5.6 },
       vis:{ sun:.35, panel:1, cells:.6 } }
   ];
   var SHOT = [
@@ -697,7 +707,7 @@ export function mountFilm(root, opts){
           var tx = p.n === "expand" ? easeInOut(prog)
                  : p.n === "step" ? 1
                  : p.n === "collapse" ? 1-easeInOut(prog) : 0;
-          explode = damp(explode, tx, 9, dt);
+          explode = damp(explode, tx, 14, dt);
 
           if (p.n === "panelIn"){
             var e = easeOut(Math.min(1, prog*1.25));
@@ -706,9 +716,9 @@ export function mountFilm(root, opts){
             panel.rotation.x = (1-e)*.38;
             panel.position.y = (1-e)*1.3;
           } else {
-            panel.rotation.x = damp(panel.rotation.x,0,3,dt);
-            panel.rotation.z = damp(panel.rotation.z,0,3,dt);
-            panel.position.y = damp(panel.position.y,0,3,dt);
+            panel.rotation.x = damp(panel.rotation.x,0,7,dt);
+            panel.rotation.z = damp(panel.rotation.z,0,7,dt);
+            panel.position.y = damp(panel.position.y,0,7,dt);
             if (p.n === "eco" || p.n === "journey" || p.n === "finale" || p.n === "outro")
               panel.rotation.y += .12*dt;
           }
@@ -730,10 +740,10 @@ export function mountFilm(root, opts){
 
         /* --- group visibility --- */
         for (var key in vis){
-          vis[key] = damp(vis[key], visT[key], 2.6, dt);
+          vis[key] = damp(vis[key], visT[key], 6.2, dt);
           if (G[key]) G[key].apply(vis[key]);
         }
-        lightV = damp(lightV, lightT, 2.2, dt);
+        lightV = damp(lightV, lightT, 5.3, dt);
         if (G._light) G._light.intensity = lightV * 2.6;
         if (G._win) G._win.opacity = Math.max(vis.house, vis.eco) * (.25 + .75*lightV);
         if (G._rays) G._rays.rotation.z += .035*dt;
@@ -764,8 +774,8 @@ export function mountFilm(root, opts){
             if (off == null){ off = L.meshes[m].position.y - L.baseY; L.meshes[m].userData.off = off; }
             L.meshes[m].position.y = L.y + off;
           }
-          L.target = (focusIdx < 0) ? 1 : (focused ? 1 : .26);
-          L.op = damp(L.op, L.target, 6, dt);
+          L.target = (focusIdx < 0) ? 1 : (focused ? 1 : .48);   // owner 2026-09-21: layers must not blend
+          L.op = damp(L.op, L.target, 12, dt);
           for (var k2=0;k2<L.mats.length;k2++) L.mats[k2].userData.dim = L.op;
         }
         for (var gi=0; gi<G.panel.mats.length; gi++){
@@ -775,13 +785,14 @@ export function mountFilm(root, opts){
         }
 
         /* --- camera --- */
-        cam.th = damp(cam.th, camT.th+user.th, 2.3, dt);
-        cam.ph = damp(cam.ph, camT.ph+user.ph, 2.3, dt);
-        cam.r  = damp(cam.r,  camT.r*user.zoom, 1.9, dt);
-        cam.tx = damp(cam.tx, camT.tx, 1.9, dt);
-        cam.tz = damp(cam.tz, camT.tz, 1.9, dt);
+        // Rates ×2.4 with the timeline (owner 2026-09-21), so a 1 s scene still arrives.
+        cam.th = damp(cam.th, camT.th+user.th, 5.5, dt);
+        cam.ph = damp(cam.ph, camT.ph+user.ph, 5.5, dt);
+        cam.r  = damp(cam.r,  camT.r*user.zoom, 4.6, dt);
+        cam.tx = damp(cam.tx, camT.tx, 4.6, dt);
+        cam.tz = damp(cam.tz, camT.tz, 4.6, dt);
         var focusY = focusIdx >= 0 ? parts[focusIdx].y*(mobile?.86:1)*.85 : 0;
-        cam.ty = damp(cam.ty, camT.ty + focusY, 2.4, dt);
+        cam.ty = damp(cam.ty, camT.ty + focusY, 5.8, dt);
         var ph = Math.max(.22, Math.min(2.4, cam.ph));
         camera.position.set(
           cam.tx + cam.r*Math.sin(ph)*Math.sin(cam.th),

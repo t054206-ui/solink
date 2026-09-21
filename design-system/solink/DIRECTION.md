@@ -90,9 +90,14 @@ What the site adds is only the frame: three.js r128 (the UMD build the file
 was written against) vendored at `public/vendor/three-r128.min.js`; a root
 element the film is scoped to; teardown so React can unmount it; the film's
 language button kept in step with the site's locale; the curtain in the
-film's ivory; and the hand-off when the film ends, which is the site's rule
-(a signed-out visitor lands on `/signup`, everyone else where they were).
-Plays on every page load by the owner's instruction, same switch as before.
+film's ivory; and the fade when the film ends, which leaves the visitor on
+the homepage (owner, 2026-09-21 evening). Plays on every page load by the
+owner's instruction, same switch as before.
+
+Two edits the owner asked for the same evening, both inside the film and
+marked in place: clearer, more reflective glass and a lighter, more defined
+solar-film sheet (with unfocused layers dimming less, so layers never blend),
+and the timeline cut to 14.2 s with every scene kept.
 
 If the owner sends a new version of the file, regenerate `film.ts` and
 `film.css` from it the way `film.ts`'s header describes. Do not edit the film

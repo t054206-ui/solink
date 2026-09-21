@@ -952,6 +952,30 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
+## 2026-09-21, evening — two edits to the film, at the owner's request
+
+"Only these two updates, without changing anything else." Both are inside
+`film.ts`, each marked `owner 2026-09-21` in place:
+
+1. **Glass and solar film.** Glass: tint `0xE4F0FB`, roughness .02,
+   reflectivity 1, envMapIntensity 3.2, base opacity .34 → .52. The two EVA
+   encapsulant sheets (what the owner calls the solar film): cream `0xFBF6E6`
+   → cool near-white `0xF3F8FF`, roughness .5 → .18, clearcoat .9, base
+   opacity .55 → .7, thickness 13 mm → 20 mm in the model's units. Layers not
+   in focus dim to .48 instead of .26 so they stay legible beside the one
+   being explained.
+2. **Fifteen seconds.** The timeline's 14 scenes total 14.2 s (was 37.7 s),
+   plus 0.4 s hold and the file's 0.26 s autoplay delay: 14.9 s from page load
+   to the fade. Every scene, caption, camera move and visibility cue is kept;
+   the damping rates for camera, visibility, house light, layer opacity and
+   the exploded offsets are scaled by about 2.4 so each scene still reaches
+   its composition in the time it now has.
+
+And one change outside the film: **the ending goes to the homepage**, as the
+brief says, not to sign-up. `IntroFilm.tsx` no longer pushes a route; the
+film fades and the visitor is on the page they opened. Sign-up remains one
+click away in the nav and the hero.
+
 ## 2026-09-21, later — the opening is the owner's file, verbatim
 
 "I want it to be exactly the same as in the video. No less, no more." The
