@@ -1295,6 +1295,38 @@ guest" and made visible, "not too much visible but visible".
   `auth.googleFailed`; `auth.browse` renamed in both languages.
 - `DIRECTION.md` auth section and `CLAUDE.md` updated. tsc and eslint clean.
 
+## Later still — Google sign-in switched on, with the owner
+
+The owner asked for Google to be set up rather than described. Done in the
+owner's Chrome through the Claude in Chrome extension, with the owner
+signing in to Google and pasting the client secret themselves (Claude does
+not type passwords or secrets). Record, for whoever touches this next:
+
+- Google Cloud project **Solink**, id `triple-method-509315-n8`, under the
+  owner's school organisation (joincoded.com), created for this. OAuth
+  consent screen "Solink", user type External, support and developer contact
+  = the owner's address, **published to production** (Supabase asks only for
+  openid, email and profile, so no verification). Branding: home page
+  `https://solink-nu.vercel.app`, privacy `/privacy`, terms `/terms`;
+  authorised domains `bgwvztckesuwlydwcfkj.supabase.co` and
+  `solink-nu.vercel.app`.
+- OAuth client "Solink web (Supabase Auth)", type Web application, redirect
+  URI `https://bgwvztckesuwlydwcfkj.supabase.co/auth/v1/callback`. The
+  client ID is in Supabase; the secret is in Supabase only. Google shows a
+  secret once; if it is ever lost, add a new secret on the client in the
+  Clients page rather than a new client.
+- Supabase: Google provider enabled; redirect allow-list has
+  `https://solink-nu.vercel.app/**`, `http://localhost:3412/**` (a
+  collaborator's port) and now `http://localhost:3311/**`. Confirmed with
+  `GET /auth/v1/settings` → `external.google: true`.
+- The site's server-side check caches that answer for five minutes, so the
+  live button turned on by itself shortly after; no deploy was needed.
+- Two Google pages that look relevant and are not: Supabase's "OAuth Server"
+  (makes Supabase an identity provider for other apps) and Google's
+  "Data Access" scopes page. Neither needed touching.
+- A custom domain later means three edits: Google authorised domains,
+  Supabase redirect list, Supabase Site URL.
+
 ## What to do next, in priority order
 
 1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.

@@ -26,9 +26,12 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
   page it opened on. Replay button in the footer and on the sign-in aside.
 - **Auth**: `/login` and `/signup` on the Studio palette with confirm-password
   and eye toggles, bilingual via `auth.*`. **Continue with Google** (Supabase
-  OAuth, back through `/auth/callback`) sits under the primary button; it says
-  so plainly until the owner enables the provider (decision 20). "Continue as
-  a guest" under the form leads to `/`. Sign out is in the app sidebar footer
+  OAuth, back through `/auth/callback`) sits under the primary button and is
+  **live**: the provider was enabled in Supabase on 2026-09-21 (decision 20,
+  Google Cloud project `Solink`, `triple-method-509315-n8`). The pages still
+  read Supabase's public settings and would disable the button, with a plain
+  sentence, if the provider were ever switched off. "Continue as a guest"
+  under the form leads to `/`. Sign out is in the app sidebar footer
   (desktop) and top bar (phones).
 - **Marketplace** runs on the real catalogue: three LONGi Hi-MO 7 modules in
   `solar_products` with the manufacturer's renders as images. Supabase-mode
