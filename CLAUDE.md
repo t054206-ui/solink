@@ -50,10 +50,14 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
   2026-09-21): public, bilingual, drafted from how the code behaves, and
   marked on the page as an unreviewed draft. Operator, contact address and
   governing law are placeholders (`LEGAL_OPERATOR`, `LEGAL_CONTACT`,
-  `GOVERNING_LAW`; decision 19). Structure in `src/lib/content/legal.ts`,
-  copy under `legal.*`, `privacy.*`, `terms.*` in the dictionary. A lawyer's
-  review is pending; do not describe them as binding. The sign-up form links
-  to both.
+  `GOVERNING_LAW`) filled from `LEGAL_VALUES` in `src/lib/content/legal.ts`
+  on the owner's word (the Solink team, `t054206@coded.edu.kw`, Kuwait).
+  Copy under `legal.*`, `privacy.*`, `terms.*`. Reviewed against the code and
+  Kuwaiti law by Claude (`docs/LEGAL-NOTES.md`); a licensed lawyer's review is
+  still pending. **Consent** is an explicit checkbox at sign-up recorded on
+  the user (`user_metadata.consent`, versioned by `LEGAL_UPDATED`); accounts
+  without it are sent to `/consent` by `proxy.ts`. Bump `LEGAL_UPDATED` when
+  the documents change and everyone is asked again.
 - **Roof Planner** at `/designer` (2026-09-21): panels from the catalogue plus
   walkway/planter/seating/pergola modules at typed sizes, setback and walkway
   clearances, a photo underlay with hand tracing, three deterministic

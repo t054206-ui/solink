@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasCurrentConsent } from "@/lib/legal/consent";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/analysis", "/calculator", "/marketplace", "/compare",
   "/recommend", "/designer", "/purchase", "/passport", "/monitoring", "/maintenance", "/incidents",
@@ -34,6 +35,17 @@ export async function proxy(request: NextRequest) {
   if (!user && isProtected) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/login";
+    redirect.searchParams.set("next", path);
+    return NextResponse.redirect(redirect);
+  }
+  // Signed in, but has not accepted the current terms and privacy policy
+  // (an account from before the documents existed, or a Google sign-in that
+  // skipped the sign-up form): read and accept first. One screen, once per
+  // version of the documents.
+  if (user && isProtected && !hasCurrentConsent(user.user_metadata)) {
+    const redirect = request.nextUrl.clone();
+    redirect.pathname = "/consent";
+    redirect.search = "";
     redirect.searchParams.set("next", path);
     return NextResponse.redirect(redirect);
   }

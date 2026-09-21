@@ -1417,6 +1417,43 @@ is recorded so the real one can start from it:
   and any registration or complaint route they impose; and whether the
   consent line on sign-up ("agree to the Terms") is the right mechanism.
 
+## Later — the four "for a lawyer" items, done as far as they can be
+
+The owner asked for the four open legal items to be done here.
+
+- **The three values**: the owner answered a three-part question (operator =
+  the Solink team, unincorporated; contact = `t054206@coded.edu.kw`; law =
+  Kuwait, courts of Kuwait). They live in `LEGAL_VALUES`
+  (`src/lib/content/legal.ts`); `LegalPage`'s `Tokens` renders them per
+  language, the contact as a mailto link, and falls back to the placeholder
+  marker for any null. The `LEGAL_*`/`GOVERNING_LAW` placeholder keys stay in
+  the registry for that fallback.
+- **Which Kuwaiti rules apply**: researched and written up in
+  `docs/LEGAL-NOTES.md` with sources. Short version: Solink is not a CITRA
+  licensee, so the Data Privacy Protection Regulation (26/2024, which
+  replaced 42/2021 and narrowed it to licensees) does not bind it; the
+  baseline is the Electronic Transactions Law 20/2014 (consent + stated
+  purpose before collection; access, correction, deletion). No regulator,
+  registration or DPO for Solink. The policy now names the law, names the
+  countries data goes to (India for storage, United States for AI and maps),
+  and says consent is given at sign-up and withdrawn by deletion.
+- **Consent step, not a notice**: `ConsentCheckbox` (in `ConsentForm.tsx`)
+  replaces the passive sentence on sign-up. Unticked by default; both the
+  create-account and Google buttons are disabled until ticked; the tick is
+  written to `user_metadata.consent` via sign-up metadata, or via
+  `/auth/callback?consent=1` for Google. `hasCurrentConsent()` in
+  `src/lib/legal/consent.ts` checks the version (= `LEGAL_UPDATED`).
+  `proxy.ts` sends any signed-in user without a current record to
+  `/consent` (new page in the auth group, same room as sign-in, with a
+  sign-out for those who decline); `/auth/callback` does the same for a
+  Google sign-in that never saw the form. **The owner's own account has no
+  record yet and will see `/consent` once on the next visit.**
+- **Is a consent line the right mechanism**: answered by replacing it with
+  the checkbox above, which meets Law 20/2014's "affirmative conduct" and the
+  stricter explicit standard.
+- Banner on the legal pages updated: values set, reviewed against the law,
+  still not reviewed by a licensed lawyer.
+
 ## What to do next, in priority order
 
 1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.

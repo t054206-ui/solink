@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { ArrowRight, ListTree } from "lucide-react";
 import { Placeholder } from "@/components/ui/Placeholder";
-import { useT } from "@/lib/i18n/provider";
-import { LEGAL, LEGAL_TOKENS, LEGAL_UPDATED, type LegalDoc, type LegalToken } from "@/lib/content/legal";
+import { useLocale } from "@/lib/i18n/provider";
+import { LEGAL, LEGAL_TOKENS, LEGAL_UPDATED, LEGAL_VALUES, type LegalDoc, type LegalToken } from "@/lib/content/legal";
+import type { Locale } from "@/lib/i18n/dictionary";
 
 /**
  * One page component for /privacy and /terms.
@@ -18,7 +19,7 @@ import { LEGAL, LEGAL_TOKENS, LEGAL_UPDATED, type LegalDoc, type LegalToken } fr
  * the real thing. The draft notice above the text uses the same dashed style.
  */
 export function LegalPage({ doc }: { doc: LegalDoc }) {
-  const t = useT();
+  const { t, locale } = useLocale();
   const d = LEGAL[doc];
   const other = LEGAL[doc === "privacy" ? "terms" : "privacy"];
 
@@ -64,7 +65,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
                 <div className="mt-4 space-y-4">
                   {s.body.map((k) => (
                     <p key={k} className="text-[15px] leading-relaxed text-fg-secondary">
-                      <Tokens text={t(k)} />
+                      <Tokens text={t(k)} locale={locale} />
                     </p>
                   ))}
                 </div>
@@ -86,10 +87,11 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
 }
 
 /**
- * Replaces {operator}, {contact} and {law} in a paragraph with the product's
- * placeholder marker. Any other braces are left as written.
+ * Replaces {operator}, {contact} and {law} in a paragraph with the owner's
+ * value for the current language, or with the product's placeholder marker
+ * while a value is still null. The contact address becomes a mailto link.
  */
-function Tokens({ text }: { text: string }) {
+function Tokens({ text, locale }: { text: string; locale: Locale }) {
   const parts = text.split(/(\{(?:operator|contact|law)\})/g);
   return (
     <>
@@ -97,7 +99,11 @@ function Tokens({ text }: { text: string }) {
         const m = /^\{(operator|contact|law)\}$/.exec(part);
         if (!m) return <span key={i}>{part}</span>;
         const token = m[1] as LegalToken;
-        return <Placeholder key={i} k={LEGAL_TOKENS[token]} className="mx-0.5" />;
+        const v = LEGAL_VALUES[token];
+        if (!v) return <Placeholder key={i} k={LEGAL_TOKENS[token]} className="mx-0.5" />;
+        const value = locale === "ar" ? v.ar : v.en;
+        if (token === "contact") return <a key={i} href={`mailto:${value}`} className="text-fg underline underline-offset-2" dir="ltr">{value}</a>;
+        return <span key={i} className="text-fg">{value}</span>;
       })}
     </>
   );

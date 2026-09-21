@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n/provider";
 import { Field, Input } from "@/components/ui/Form";
 import { PasswordInput } from "./PasswordInput";
+import { ConsentCheckbox } from "./ConsentForm";
+import { newConsent } from "@/lib/legal/consent";
 
 /**
  * Email + password auth via Supabase (browser client, anon key only), and
@@ -15,6 +17,11 @@ import { PasswordInput } from "./PasswordInput";
  * Sign-up asks for a name, an email, a password and the password again; the
  * second copy is checked here before anything is sent. Sign-in asks for email
  * and password. Both password fields carry the eye toggle.
+ *
+ * Sign-up requires one explicit tick: terms, privacy policy, and data stored and
+ * processed outside Kuwait. Both buttons stay disabled until it is ticked, and
+ * the tick is recorded on the user (metadata `consent`, versioned by the date
+ * of the documents). See lib/legal/consent.ts.
  *
  * "Continue with Google" calls signInWithOAuth and comes back through
  * /auth/callback, which exchanges the code for a session and forwards to
@@ -54,6 +61,7 @@ export function AuthForm({
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(confirmed && mode === "login" ? t("auth.confirmed") : null);
   const [busy, setBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   const mismatch = mode === "signup" && confirm.length > 0 && confirm !== password;
 
@@ -61,6 +69,7 @@ export function AuthForm({
     e.preventDefault();
     setError(null); setFieldError(null); setInfo(null);
     if (mode === "signup" && password !== confirm) { setFieldError(t("auth.mismatch")); return; }
+    if (mode === "signup" && !agreed) { setError(t("auth.consentRequired")); return; }
     setBusy(true);
     const supabase = createClient();
     if (!supabase) { setError("Supabase is not configured."); setBusy(false); return; }
@@ -70,7 +79,7 @@ export function AuthForm({
       // the same code serves localhost, previews and production.
       const { error } = await supabase.auth.signUp({
         email, password,
-        options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/login?confirmed=1&next=${encodeURIComponent(nextPath)}` },
+        options: { data: { full_name: name.trim(), consent: newConsent() }, emailRedirectTo: `${window.location.origin}/login?confirmed=1&next=${encodeURIComponent(nextPath)}` },
       });
       if (error) setError(error.message); else setInfo(t("auth.checkEmail"));
     } else {
@@ -82,12 +91,15 @@ export function AuthForm({
 
   async function google() {
     setError(null); setFieldError(null); setInfo(null);
+    if (mode === "signup" && !agreed) { setError(t("auth.consentRequired")); return; }
     setBusy(true);
     const supabase = createClient();
     if (!supabase) { setError("Supabase is not configured."); setBusy(false); return; }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` },
+      // The callback records consent only when the box was ticked here; a
+      // sign-in that turns out to be a new account is sent to /consent instead.
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}${mode === "signup" && agreed ? "&consent=1" : ""}` },
     });
     // On success the browser is already leaving for Google; only the failure
     // path reaches the next line.
@@ -127,12 +139,14 @@ export function AuthForm({
         )}
       </div>
 
+      {!login && <div className="rise" style={{ animationDelay: "200ms" }}><ConsentCheckbox id="consent-signup" checked={agreed} onChange={setAgreed} /></div>}
+
       {error && <p role="alert" className="rounded-[var(--radius)] bg-critical-soft px-3 py-2 text-[13px] text-critical-fg">{error}</p>}
       {info && <p role="status" className="rounded-[var(--radius)] bg-good-soft px-3 py-2 text-[13px] text-good-fg">{info}</p>}
 
       <button
         type="submit"
-        disabled={busy}
+        disabled={busy || (!login && !agreed)}
         className="press rise inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand text-[14.5px] font-medium text-brand-fg hover:bg-brand-hover disabled:bg-inset disabled:text-fg-muted"
         style={{ animationDelay: "220ms" }}
       >
@@ -150,7 +164,7 @@ export function AuthForm({
         <button
           type="button"
           onClick={google}
-          disabled={busy || !googleEnabled}
+          disabled={busy || !googleEnabled || (!login && !agreed)}
           aria-describedby={googleEnabled ? undefined : "google-unavailable"}
           className="press inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-full border border-border-strong bg-elevated text-[14.5px] font-medium text-fg hover:bg-inset disabled:border-border disabled:bg-inset disabled:text-fg-muted"
         >
@@ -161,16 +175,6 @@ export function AuthForm({
           <p id="google-unavailable" className="text-center text-[12px] leading-relaxed text-fg-muted">{t("auth.googleUnavailable")}</p>
         )}
       </div>
-
-      {!login && (
-        <p className="rise text-center text-[12px] leading-relaxed text-fg-muted" style={{ animationDelay: "300ms" }}>
-          {t("auth.agreePrefix")}{" "}
-          <Link href="/terms" className="text-fg underline underline-offset-2">{t("auth.agreeTerms")}</Link>{" "}
-          {t("auth.agreeMiddle")}{" "}
-          <Link href="/privacy" className="text-fg underline underline-offset-2">{t("auth.agreePrivacy")}</Link>
-          {t("auth.agreeSuffix")}
-        </p>
-      )}
 
       <div className="rise flex flex-col items-center gap-3 text-center text-[13px] text-fg-muted" style={{ animationDelay: "330ms" }}>
         <p>

@@ -14,7 +14,8 @@ import type { PlaceholderKey } from "@/lib/config/placeholders";
  * The copy lives in the dictionary, both languages, like every other page.
  * This file is the structure: which keys make up each section, in order.
  * Three things only the owner can supply are written as {operator},
- * {contact} and {law} inside the copy and rendered as placeholders.
+ * {contact} and {law} inside the copy; LEGAL_VALUES fills them, and a null
+ * there falls back to the placeholder marker.
  */
 export type LegalDoc = "privacy" | "terms";
 
@@ -43,6 +44,23 @@ export const LEGAL_TOKENS = {
 } as const satisfies Record<string, PlaceholderKey>;
 
 export type LegalToken = keyof typeof LEGAL_TOKENS;
+
+/**
+ * The owner's answers, 2026-09-21. A null keeps the placeholder marker on the
+ * page; a value replaces it in both languages. Operator and law are written
+ * per language; the contact address is one string rendered as a mailto link.
+ */
+export const LEGAL_VALUES: Record<LegalToken, { en: string; ar: string } | null> = {
+  operator: {
+    en: "the Solink team (Maria Alshammari, Noura Alsubaiei, Zahraa Almumen and Lolwah Alansari), an unincorporated project team in Kuwait",
+    ar: "فريق سولينك (ماريا الشمري، نورة السبيعي، زهراء المؤمن ولولوة الأنصاري)، فريق مشروع غير مسجَّل كشركة في الكويت",
+  },
+  contact: { en: "t054206@coded.edu.kw", ar: "t054206@coded.edu.kw" },
+  law: {
+    en: "the laws of the State of Kuwait, with the courts of Kuwait having jurisdiction",
+    ar: "قوانين دولة الكويت، وتختص محاكم الكويت بالنظر في النزاعات",
+  },
+};
 
 export const LEGAL: Record<LegalDoc, LegalDocument> = {
   privacy: {
