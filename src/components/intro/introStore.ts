@@ -12,7 +12,7 @@ import { useSyncExternalStore } from "react";
  *
  * Two things carry the state, and they have to agree:
  *
- *  - `localStorage["solink:intro-seen"]`, so the sequence plays once per
+ *  - `localStorage["solink:intro-seen-v2"]`, so the sequence plays once per
  *    browser rather than in front of someone who has already watched it;
  *  - `data-intro="pending"` on the root element, set by public/bootstrap.js
  *    before first paint. That attribute drives the curtain in globals.css, so
@@ -23,7 +23,9 @@ import { useSyncExternalStore } from "react";
  * standing behind it would be all there was to reveal.
  */
 
-const KEY = "solink:intro-seen";
+// Bump the suffix when the opening changes enough that people who saw the
+// old one should see the new one once. bootstrap.js reads the same key.
+const KEY = "solink:intro-seen-v2";
 const EVENT = "solink:intro";
 const ATTR = "data-intro";
 

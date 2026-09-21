@@ -19,7 +19,7 @@
        The timeout is a dead man's switch: without it, a browser that never gets
        as far as running React would hold the curtain up for ever. */
     if (
-      localStorage.getItem("solink:intro-seen") !== "1" &&
+      localStorage.getItem("solink:intro-seen-v2") !== "1" &&
       !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)
     ) {
       d.setAttribute("data-intro", "pending");
