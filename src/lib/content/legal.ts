@@ -8,7 +8,8 @@ import type { PlaceholderKey } from "@/lib/config/placeholders";
  * asks for, what the schema stores, what row-level security lets each role
  * read, which services are called and with what. Nothing describes a feature
  * as live that is not. Neither document has been reviewed by a lawyer or
- * approved by the operator, and the pages say so above the text.
+ * approved by the operator, and the pages say so above the text. A clause-by-clause
+ * review against the code was done on 2026-09-21 (Session 7); the lawyer's is still due.
  *
  * The copy lives in the dictionary, both languages, like every other page.
  * This file is the structure: which keys make up each section, in order.
@@ -51,11 +52,11 @@ export const LEGAL: Record<LegalDoc, LegalDocument> = {
     sections: [
       { id: "who", title: "privacy.who.t", body: ["privacy.who.1", "privacy.who.2"] },
       { id: "collect", title: "privacy.collect.t", body: ["privacy.collect.1", "privacy.collect.2", "privacy.collect.3", "privacy.collect.4", "privacy.collect.5"] },
-      { id: "why", title: "privacy.why.t", body: ["privacy.why.1", "privacy.why.2"] },
-      { id: "share", title: "privacy.share.t", body: ["privacy.share.1", "privacy.share.2", "privacy.share.3"] },
+      { id: "why", title: "privacy.why.t", body: ["privacy.why.1", "privacy.why.2", "privacy.why.3"] },
+      { id: "share", title: "privacy.share.t", body: ["privacy.share.1", "privacy.share.2", "privacy.share.3", "privacy.share.4"] },
       { id: "processors", title: "privacy.processors.t", body: ["privacy.processors.1", "privacy.processors.2", "privacy.processors.3"] },
       { id: "browser", title: "privacy.browser.t", body: ["privacy.browser.1", "privacy.browser.2"] },
-      { id: "ai", title: "privacy.ai.t", body: ["privacy.ai.1", "privacy.ai.2"] },
+      { id: "ai", title: "privacy.ai.t", body: ["privacy.ai.1", "privacy.ai.2", "privacy.ai.3"] },
       { id: "retain", title: "privacy.retain.t", body: ["privacy.retain.1"] },
       { id: "rights", title: "privacy.rights.t", body: ["privacy.rights.1", "privacy.rights.2"] },
       { id: "security", title: "privacy.security.t", body: ["privacy.security.1"] },
@@ -75,12 +76,14 @@ export const LEGAL: Record<LegalDoc, LegalDocument> = {
       { id: "ai", title: "terms.ai.t", body: ["terms.ai.1"] },
       { id: "marketplace", title: "terms.marketplace.t", body: ["terms.marketplace.1", "terms.marketplace.2"] },
       { id: "content", title: "terms.content.t", body: ["terms.content.1"] },
+      { id: "ip", title: "terms.ip.t", body: ["terms.ip.1"] },
       { id: "acceptable", title: "terms.acceptable.t", body: ["terms.acceptable.1"] },
       { id: "availability", title: "terms.availability.t", body: ["terms.availability.1"] },
       { id: "liability", title: "terms.liability.t", body: ["terms.liability.1"] },
       { id: "termination", title: "terms.termination.t", body: ["terms.termination.1"] },
       { id: "law", title: "terms.law.t", body: ["terms.law.1"] },
       { id: "changes", title: "terms.changes.t", body: ["terms.changes.1"] },
+      { id: "general", title: "terms.general.t", body: ["terms.general.1"] },
       { id: "contact", title: "terms.contact.t", body: ["terms.contact.1"] },
     ],
   },

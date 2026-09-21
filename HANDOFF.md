@@ -1380,6 +1380,43 @@ no account, so the planner was checked on a demo-mode production build
 then `next start -p 3322`), which runs beside the dev server without the dev
 lock.
 
+## Night — a review pass over the privacy policy and terms
+
+The owner asked for "the lawyer's pass" to be done here. Claude is not a
+lawyer and said so; what was done is what a first legal review does, and it
+is recorded so the real one can start from it:
+
+- Every clause re-checked against the code. One over-promise found and
+  fixed: uploaded files are **not** deleted automatically with an account
+  (there is no storage cascade and no delete-account action), so retention
+  now says the operator removes them as part of the same request. Confirmed
+  true: no analytics or trackers anywhere in `src`, HTTPS by the host,
+  notifications in-app only, deletion on request only.
+- Added to the privacy policy: the legal basis (you asked for the service;
+  optional features only when used), data stored outside Kuwait and
+  processors mostly outside the GCC stated plainly, "what you share with a
+  company you hire is theirs", no automated decisions with legal effect, a
+  fuller rights list (copy in a usable format, correction, deletion,
+  objection) with escalation to the operator, breach notice "without undue
+  delay", eligibility (adults with legal capacity, company staff), and a
+  languages clause (both versions mean the same; a difference is a mistake to
+  fix, no version is declared authoritative because that is the owner's call).
+- Added to the terms: legal capacity and authorised persons for
+  organisation accounts, an intellectual-property clause (Solink's content
+  is the operator's, specs are the manufacturers', use for your own roof,
+  no resale or scraping), a General clause (severability, no waiver,
+  assignment, entire agreement), notices to the account email, and disputes
+  to the courts of the governing law unless consumer law gives another forum.
+- The draft banner now says a clause-by-clause review was done and by whom,
+  and still says no licensed lawyer has reviewed it. `LEGAL_UPDATED` stays
+  2026-09-21. Arabic updated for every changed and new string; 323 keys per
+  language, identical sets.
+- What a Kuwaiti lawyer still has to decide: the three placeholders; whether
+  storing personal data in India and processing in the US needs a consent
+  step at sign-up rather than a notice; the applicable data-protection rules
+  and any registration or complaint route they impose; and whether the
+  consent line on sign-up ("agree to the Terms") is the right mechanism.
+
 ## What to do next, in priority order
 
 1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.
