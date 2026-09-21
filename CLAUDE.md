@@ -11,9 +11,9 @@ of it. **Session 2 supersedes Session 1 on anything visual.**
 The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
 "Session 6 closing state", then "Session 7"):
 
-- `main` at `1e0d3a4` is deployed to https://solink-nu.vercel.app by Vercel on
-  push. Session 7's legal pages are in the working tree, uncommitted, for
-  the owner's review. Git-triggered deploys are healthy. v1 is recoverable with
+- `main` at `03e1081` is deployed to https://solink-nu.vercel.app by Vercel on
+  push (Session 7, pushed on the owner's word 2026-09-21, on top of Lolwah's
+  server-side site analysis `2e52d1d`). Git-triggered deploys are healthy. v1 is recoverable with
   `git checkout v1-superseded`.
 - **Direction "Studio"** is recorded in `design-system/solink/DIRECTION.md`;
   read it before touching anything visual.

@@ -1182,8 +1182,10 @@ Picked up Session 6's closing "What to do next". Items 1, 2 and 5 are the
 owner's. Item 4 stayed blocked: nrel.gov, docs.nrel.gov and osti.gov were
 unreachable from this network again, both by curl (DNS fails) and by the
 WebFetch tool. Item 3, privacy policy and terms, was the top actionable item
-and is what this session built. **Nothing is committed or pushed**: the change
-sits in the working tree for the owner to read first.
+and is what this session built. Pushed as `03e1081` on the owner's word at the
+end of the session, rebased onto two collaborator commits that arrived
+meanwhile (`d508220` lint config, `2e52d1d` server-side solar site analysis by
+Lolwah, no overlapping files).
 
 ## What was built
 
