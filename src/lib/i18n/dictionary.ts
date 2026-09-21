@@ -21,7 +21,7 @@ const en = {
 
   "nav.home": "Home",
   "nav.journey": "How it works",
-  "nav.marketplace": "Panels",
+  "nav.marketplace": "Marketplace",
   "nav.guide": "Guide",
   "nav.signin": "Sign in",
   "nav.open": "Open Solink",
@@ -288,7 +288,7 @@ const ar: Dict = {
 
   "nav.home": "الرئيسية",
   "nav.journey": "شلون يشتغل",
-  "nav.marketplace": "الألواح",
+  "nav.marketplace": "المتجر",
   "nav.guide": "الدليل",
   "nav.signin": "تسجيل دخول",
   "nav.open": "افتح سولينك",
