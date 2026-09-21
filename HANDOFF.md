@@ -957,7 +957,7 @@ in the opening; the earlier ink version measured the same when hidden.
 Owner: "make the color of glass more dark and all parts clearer darker since
 background is light". Glass `0x8FB3D6` at .66, film `0xE3BE78` at .84, cells
 `#2458A8`/`#123670`, backsheet `0xB9A98C`, frame `0x7F8B99`, unfocused layers
-dim only to .68. Same places in `film.ts`, same markers.
+dim only to .88 (a see-through dark layer over a light stage reads pale, which was most of the problem), the sun and beam drop to .22/.16 while a layer is explained instead of .4/.3, and tone-mapping exposure is 1.0 instead of 1.12. Same places in `film.ts`, same markers.
 
 ## 2026-09-21, night — twenty seconds, and one tone per layer
 

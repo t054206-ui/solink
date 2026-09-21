@@ -122,7 +122,7 @@ export function mountFilm(root, opts){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isTouch ? 1.6 : 2));
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
+    renderer.toneMappingExposure = 1.0;   // owner 2026-09-21: a touch less wash
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -568,7 +568,7 @@ export function mountFilm(root, opts){
       focusIdx = p.i; showLayer(p.i);
       var s = SHOT[p.i];
       setCam({ tx:0, ty:0, tz:0, th:s.th, ph:s.ph, r:s.r });
-      setVis({ sun:.4, beam:.3, panel:1, cells:.35 });
+      setVis({ sun:.22, beam:.16, panel:1, cells:.35 });   // owner 2026-09-21: the glow behind the panel washed the layers out
     } else {
       focusIdx = -1;
       setCam(p.cam); setVis(p.vis);
@@ -782,7 +782,7 @@ export function mountFilm(root, opts){
             if (off == null){ off = L.meshes[m].position.y - L.baseY; L.meshes[m].userData.off = off; }
             L.meshes[m].position.y = L.y + off;
           }
-          L.target = (focusIdx < 0) ? 1 : (focused ? 1 : .68);   // owner 2026-09-21: layers must not blend
+          L.target = (focusIdx < 0) ? 1 : (focused ? 1 : .88);   // near-solid: a see-through dark layer goes pale on a light stage   // owner 2026-09-21: layers must not blend
           L.op = damp(L.op, L.target, 9, dt);
           for (var k2=0;k2<L.mats.length;k2++) L.mats[k2].userData.dim = L.op;
         }
