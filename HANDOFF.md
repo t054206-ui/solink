@@ -952,6 +952,39 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
+## 2026-09-21, late — the Marketplace on the real catalogue
+
+The owner (or Lolwah) had run the LONGi import: `solar_products` holds the
+three Hi-MO 7 modules (`is_demo = false`) next to the three demo rows from
+Session 3. The path `listProducts()` → `/marketplace` → `MarketplaceGrid` →
+`ProductCard` → `getProduct()` → `/marketplace/[id]` → `SourceReferences`
+already worked; four things were wrong or missing and were fixed, nothing else
+touched:
+
+- **Demo rows leaked into Supabase mode.** `listProducts` now adds
+  `.eq("is_demo", false)` in its Supabase branch. `getProduct` still resolves a
+  demo id (old systems/passports may point at one) and the page labels it.
+- **Prices rounded to whole dinars.** `PriceCell` formats a fractional amount
+  with three decimals: 47.500 KWD, not 48 KWD.
+- **Cards said nothing about Kuwait.** `ProductCard` adds one line under the
+  price: supplier, "listed by retailer, not independently verified", and the
+  date the price was observed, all from `source.*`.
+- **The explainer card still showed the "no real dataset" placeholder** above
+  three real products. It now states the count, the manufacturers and the
+  Kuwait suppliers from the data, and keeps the placeholder for demo mode.
+
+**Verified without a session.** `/marketplace` is behind sign-in and this
+session has no credentials, so the components were rendered with
+`react-dom/server` (via `npx tsx`, nothing installed) against the live rows
+fetched with the public key and the same row mapping: three cards, LONGi
+Green Energy Technology from the `manufacturers` join, models, 585/615/620 W,
+21.7/22.8/23 %, 45.000/47.500/47.500 KWD, Unverified, supplier line; the grid
+counts "3 products"; `SourceReferences` renders all six rows with the real
+LONGi and Alwan Solar URLs, the observed date and the conflict note;
+`SpecTable` renders the electrical rows and the `additional` specs;
+`rankPanels` + `MatchCard` produce "Select this panel" → `/designer?panel=<real
+id>` and "View sources". tsc, eslint and `next build` pass. Not pushed.
+
 ## 2026-09-21, later that night — every layer darker
 
 Owner: "make the color of glass more dark and all parts clearer darker since

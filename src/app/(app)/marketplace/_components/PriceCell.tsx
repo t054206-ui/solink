@@ -20,7 +20,7 @@ export function PriceCell({ product, field = "price", compact = false }: { produ
   if (real !== null) {
     return (
       <span className="inline-flex flex-wrap items-center gap-1.5">
-        <span className="tabular font-semibold text-fg">{formatMoney(real, product.currency)}</span>
+        <span className="tabular font-semibold text-fg">{formatMoney(real, product.currency, Number.isInteger(real) ? 0 : 3)}</span>
         <DataBadge cls="source" compact={compact} source={compact ? undefined : product.source.data_source} />
       </span>
     );

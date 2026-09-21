@@ -29,7 +29,10 @@ export async function listProducts(opts: { category?: Product["category"]; inclu
     return { data, mode };
   }
   const c = (await supa())!;
-  let q = c.from("solar_products").select("*, manufacturers(name)").order("created_at", { ascending: false });
+  // The catalogue people browse is the real one. Demo rows live in the same
+  // table (seeded for demo mode) and stay out of every Supabase-mode listing;
+  // getProduct still resolves one by id, so an old reference renders, labelled.
+  let q = c.from("solar_products").select("*, manufacturers(name)").eq("is_demo", false).order("created_at", { ascending: false });
   if (opts.category) q = q.eq("category", opts.category);
   if (!opts.includeArchived) q = q.eq("is_archived", false);
   const { data, error } = await q;

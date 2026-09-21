@@ -7,7 +7,7 @@ import { DemoBanner } from "@/components/ui/DemoBanner";
 import { InfoTip } from "@/components/help/InfoTip";
 import { DEMO_PRODUCT_BANNER } from "@/lib/demo/data";
 import type { Product } from "@/lib/types";
-import { specText } from "@/lib/utils";
+import { formatDate, specText } from "@/lib/utils";
 import { CATEGORY_SINGULAR, keySpecs } from "./product-helpers";
 import { CompareToggle } from "./CompareToggle";
 import { PriceCell } from "./PriceCell";
@@ -53,6 +53,14 @@ export function ProductCard({ product: p }: { product: Product }) {
         )}
         <div className="mt-auto flex flex-col gap-3 pt-1">
           <div className="text-[13px]"><span className="mr-1.5 text-fg-muted">Price</span><PriceCell product={p} compact /></div>
+          {(p.source.kuwait_supplier || p.source.kuwait_availability) && (
+            <p className="text-[12px] leading-snug text-fg-muted">
+              {p.source.kuwait_supplier ? <>Kuwait supplier: <span className="text-fg-secondary">{p.source.kuwait_supplier}</span></> : null}
+              {p.source.kuwait_availability === "listed_by_retailer" ? <>{p.source.kuwait_supplier ? " · " : ""}Listed by retailer, not independently verified</> : null}
+              {p.source.kuwait_availability === "unavailable" ? <>{p.source.kuwait_supplier ? " · " : ""}Not available in Kuwait per the source</> : null}
+              {p.source.kuwait_price_observed_at ? <> · price observed {formatDate(p.source.kuwait_price_observed_at)}</> : null}
+            </p>
+          )}
           <div className="flex items-center justify-between gap-2">
             <CompareToggle id={p.id} />
             <Link href={href} className="inline-flex h-8 items-center gap-1 rounded-[10px] px-2.5 text-[13px] font-medium text-fg-secondary hover:bg-inset hover:text-fg">Details <ArrowRight className="size-3.5" aria-hidden /></Link>

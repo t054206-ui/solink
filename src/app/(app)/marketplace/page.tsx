@@ -28,6 +28,12 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
   const counts: Partial<Record<ProductCategory | "all", number>> = { all: all.length };
   for (const p of all) counts[p.category] = (counts[p.category] ?? 0) + 1;
   const products = category ? all.filter((p) => p.category === category) : all;
+  // Real records, and where they came from, for the explainer card. In demo
+  // mode there are none and the placeholder says so; once real products are
+  // in the catalogue the placeholder would be a lie.
+  const real = all.filter((p) => !p.is_demo);
+  const manufacturers = Array.from(new Set(real.map((p) => p.manufacturer_name))).sort();
+  const suppliers = Array.from(new Set(real.map((p) => p.source.kuwait_supplier).filter((s): s is string => Boolean(s)))).sort();
 
   return (
     <div className="pb-28">
@@ -47,7 +53,15 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
           action={<Button href="/admin/products/import" variant="outline" size="sm"><Upload className="size-3.5" aria-hidden /> Import products</Button>}
         />
         <CardBody className="grid gap-3 md:grid-cols-[1fr_auto] md:items-start">
-          <PlaceholderNote k="REAL_SOLAR_PANEL_DATA_SOURCE" />
+          {real.length === 0 ? (
+            <PlaceholderNote k="REAL_SOLAR_PANEL_DATA_SOURCE" />
+          ) : (
+            <p className="text-[13px] leading-relaxed text-fg-secondary">
+              <span className="font-medium text-fg">{real.length} real {real.length === 1 ? "product" : "products"}</span> from {manufacturers.join(", ")}
+              {suppliers.length > 0 ? <>, with Kuwait prices and availability from {suppliers.join(", ")}</> : null}. Specifications come from the
+              manufacturer&apos;s datasheet where one was found; every record lists its own sources, and a record is marked Verified only after a Solink admin reviews it.
+            </p>
+          )}
           <div className="flex flex-wrap gap-1.5 text-[12.5px] text-fg-muted md:max-w-xs md:flex-col">
             <span>Labels you will see:</span>
             <span className="flex flex-wrap gap-1.5"><DataBadge cls="source" compact /><DataBadge cls="calculated" compact /><DataBadge cls="demo" compact /><DataBadge cls="unavailable" compact /></span>
