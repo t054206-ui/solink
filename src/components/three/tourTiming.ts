@@ -10,8 +10,8 @@ import { LAYER_COUNT } from "./panelLayers";
  * two cannot drift. Kept free of three.js so the opening can import it
  * without pulling the renderer into the initial bundle.
  *
- * Seconds. `delay` is silence before the module enters; the hero has none,
- * the opening spends it on the sun.
+ * Seconds. `delay` is silence before the module enters; the hero has none.
+ * (The opening is the owner's own film now and does not use this scene.)
  */
 export interface TourTiming {
   delay: number;
@@ -27,8 +27,6 @@ export interface TourTiming {
 /** The hero: Session 4's numbers, 10.6 s in total. */
 export const HERO_TIMING: TourTiming = { delay: 0, enter: 0.8, hold: 0.6, step: 1.45, travel: 1.05, read: 1.0, close: 1.3 };
 
-/** The opening: the owner's reference video's pace. 15.5 s from first frame to closed module. */
-export const INTRO_TIMING: TourTiming = { delay: 1.4, enter: 0.8, hold: 0.8, step: 2.4, travel: 0.9, read: 0.8, close: 1.2 };
 
 export interface TourSchedule {
   start: number;
@@ -67,4 +65,3 @@ export interface TourPose {
 }
 
 export const HERO_POSE: TourPose = { tiltFrom: 20, tiltTo: 52, azimuthFrom: -34, azimuthTo: -6 };
-export const INTRO_POSE: TourPose = { tiltFrom: 5, tiltTo: 14, azimuthFrom: -40, azimuthTo: -24 };

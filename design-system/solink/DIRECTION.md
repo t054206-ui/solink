@@ -75,40 +75,28 @@ serif italic accents.
 - The exploded stack is 820 mm deep. A real laminate is 10 mm. It is a diagram,
   and the line under the object says so.
 
-## The opening — /, every visit (2026-09-21, the owner's reference video)
+## The opening — the owner's film, verbatim (2026-09-21)
 
-The owner rejected two of Claude's openings and sent a 40-second screen
-recording of the one they want. This is that one, in the Studio tokens, at
-about 29 seconds. Light stage, the sun top-right with its wash, the module
-**lying nearly flat, low and to the right**, seen from a little above, so the
-caption owns the middle of the screen. One shared clock (`tourTiming.ts`) for
-scene and captions; a pose (`INTRO_POSE`) that keeps the module flat so the
-layers lift straight up.
+After three attempts by Claude, the owner sent the actual artifact: an HTML
+file, "Solink intro" (`solink-intro.html`, from another Claude chat), whose
+40-second film they had approved on video. **The site now runs that file's
+own script and stylesheet, unchanged**, from `src/components/intro/film/`.
+Its palette (ivory, warm, sage, sky), its fonts (Archivo with the width axis,
+IBM Plex Sans Arabic), its copy in both languages, its six-scene timeline,
+its camera, its house and ecosystem are the file's. It is the one place on the
+site whose visual language is not Studio, on purpose.
 
-| Beat | Seconds | On screen |
-| --- | --- | --- |
-| Sunlight | 0 – 3.0 | "It starts with sunlight." The module arrives, flat. |
-| Inside | 3.0 – 14.3 | Five layers lift off, 2.4 s apart. Each gets a tag on a leader line that follows the part (the scene projects each part's near edge every frame), a two-line caption (name, one short line), and its dot in the bottom-left rail. Tags stay until the module closes. |
-| Energy | 14.3 – 17.5 | The module closes. "From sunlight to energy." |
-| Home | 17.5 – 20.8 | "From energy to your home." A line-drawn house beside the module, current flowing into it. |
-| Ecosystem | 20.8 – 25.0 | The module slides to the lower right. "One platform connecting the solar ecosystem. Vendors list. We connect. You choose." Three names around the stage: Vendors, Solink, Consumers. Five pills light up: Discover, Compare, Buy, Install, Maintain. |
-| Beginning | 25.0 – 28.5 | "Buying solar is only the beginning. Discover. Compare. Buy. Maintain." Then the wipe. |
+What the site adds is only the frame: three.js r128 (the UMD build the file
+was written against) vendored at `public/vendor/three-r128.min.js`; a root
+element the film is scoped to; teardown so React can unmount it; the film's
+language button kept in step with the site's locale; the curtain in the
+film's ivory; and the hand-off when the film ends, which is the site's rule
+(a signed-out visitor lands on `/signup`, everyone else where they were).
+Plays on every page load by the owner's instruction, same switch as before.
 
-Header: the mark, the language button, "Skip intro". Dock: the layer rail and
-the disclaimer. A progress hairline in panel blue along the top. Sun amber only
-on the sun and the tags' dots. Nothing is clicked; Escape or Skip cuts it short.
-
-Where the wipe lands is the point: a visitor without an account is on the
-sign-up page when the overlay lifts (the route is pushed under the curtain); a
-signed-in visitor, a replay, or someone already on a sign-in page is returned
-to where they were. **Plays on every page load** by the owner's instruction;
-`INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in `public/bootstrap.js`
-switch it to once per tab or once per browser, together.
-
-Departures from the video, on purpose: five layers rather than four, because
-the module has a junction box and the site never hides a part; no "drag to
-look around", because dragging cancels the sequence; the rail is not
-clickable. "Replay the intro" lives in the footer and on the sign-in aside.
+If the owner sends a new version of the file, regenerate `film.ts` and
+`film.css` from it the way `film.ts`'s header describes. Do not edit the film
+by hand and do not redesign it.
 
 ## Sign in and sign up — /login, /signup
 

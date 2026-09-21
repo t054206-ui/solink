@@ -952,7 +952,40 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
-## 2026-09-21 — the opening is the owner's reference video
+## 2026-09-21, later — the opening is the owner's file, verbatim
+
+"I want it to be exactly the same as in the video. No less, no more." The
+owner then sent the file itself, `solink-intro.html` (1061 lines; the script
+is 840 of them). It is now the opening, as written:
+
+- `src/components/intro/film/film.ts`: the artifact's script, wrapped as
+  `mountFilm(root, opts)`. Edits are listed in its header and are only what a
+  SPA needs: root-scoped lookups, `opts.THREE` instead of a global, recorded
+  window listeners and `API.dispose()`, `opts.onLanguage`, `opts.onComplete`,
+  demo wiring removed. `/* eslint-disable */` and `// @ts-nocheck`, because it
+  is vendored ES5 and must stay diffable against the owner's file.
+- `film.css`: the artifact's stylesheet, every selector prefixed
+  `#solink-film`, the body background moved to `.film-bg`.
+- `IntroFilm.tsx`: renders the artifact's markup once, loads three r128 from
+  `/vendor/three-r128.min.js` (603 KB, MIT, downloaded from cdnjs), loads the
+  artifact's Google Fonts link (Archivo with `wdth`; the site's Archivo has no
+  width axis), mounts the film, and on `onComplete` does the site's hand-off.
+- Removed: `IntroSequence.tsx`, the `.intro-*` styles, `INTRO_TIMING`,
+  `INTRO_POSE`, the `intro.*` copy except `intro.replay`. `PanelScene` keeps
+  `pose`, `cameraPosition`, `onProject` and `timing`; the hero uses defaults.
+
+**Verified** on the dev server at 1440 × 900: three r128 present, the film's
+own captions, four rail buttons, seven tags, the progress bar, the sun's rays,
+the layers lifting with dimming, "Backsheet — Protects the panel from the
+back." at 38 %. No console errors. See the next entry for the ending.
+
+**Ending, by design.** The artifact ends by fading its overlay and leaving the
+panel drifting as a background for a demo host page. Here the site is the
+host: when the film calls `onComplete`, the sign-up route is pushed under the
+curtain, the whole film root fades over 0.8 s, and it unmounts. The animation
+is the file's; only what follows it is the site's.
+
+## 2026-09-21 — the opening is the owner's reference video (superseded the same day)
 
 The owner did not like either of Claude's openings and sent a WhatsApp
 screen recording (40 s, 1024 × 576) of the one they want: an HTML artifact

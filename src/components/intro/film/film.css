@@ -1,0 +1,126 @@
+/* The opening, verbatim: the stylesheet of the owner's artifact "Solink intro"
+   (solink-intro.html, 2026-09-21), scoped under #solink-film so it can live
+   inside the site without touching the site's own classes. Values are the
+   file's; only the selectors gained a prefix, the demo host rules were
+   dropped, and the body background became .film-bg. */
+#solink-film{
+  position:fixed; inset:0; z-index:100; box-sizing:border-box;
+  --ivory:#FBF7F0; --ivory-2:#F5EFE4; --white:#FFF;
+  --sun:#F2C14E; --warm:#E08B3E; --sage:#6E9A72; --sky:#CFE3F2;
+  --ink:#241F19; --ink-2:#5F584E; --ink-3:#8C8478; --line:#EAE1D2;
+  --shadow-s:0 1px 2px rgba(60,44,20,.05), 0 4px 12px -6px rgba(60,44,20,.10);
+  color-scheme:light;
+  color:var(--ink);
+  font-family:Archivo,"Helvetica Neue",Arial,sans-serif; font-variation-settings:"wdth" 100;
+  font-size:16px; line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+  transition:opacity .8s ease;
+}
+#solink-film.is-leaving{ opacity:0; pointer-events:none; }
+#solink-film *,#solink-film *::before,#solink-film *::after{ box-sizing:inherit; }
+#solink-film[dir="rtl"]{ font-family:"IBM Plex Sans Arabic",Archivo,sans-serif; }
+body.intro-running{ overflow:hidden; }
+#solink-film canvas{ display:block; }
+#solink-film :focus-visible{ outline:2px solid var(--warm); outline-offset:2px; border-radius:8px; }
+#solink-film .film-bg{ position:fixed; inset:0; z-index:-1; background:var(--ivory); }
+
+/* ===== the persistent 3D stage ===== */
+#solink-film #stage{
+  position:fixed; inset:0; z-index:0; pointer-events:none; touch-action:pan-y;
+  transition:opacity .8s ease, filter .8s ease;
+}
+#solink-film #stage.grab{ pointer-events:auto; cursor:grab; }
+#solink-film #stage.grab.dragging{ cursor:grabbing; }
+#solink-film #stage.soft{ filter:blur(3px); opacity:.5; }
+#solink-film .sunwash{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(60% 45% at 78% 6%, rgba(242,193,78,.26), rgba(242,193,78,0) 70%),
+    radial-gradient(80% 60% at 20% 96%, rgba(207,227,242,.40), rgba(207,227,242,0) 70%);
+}
+
+/* ===== intro overlay ===== */
+#solink-film #intro{
+  position:fixed; inset:0; z-index:5; pointer-events:none;
+  display:grid; grid-template-rows:auto 1fr auto;
+  opacity:0; visibility:hidden; transition:opacity .8s ease, visibility .8s;
+}
+#solink-film #intro.on{ opacity:1; visibility:visible; }
+#solink-film #intro .bar,#solink-film #intro .dock{ pointer-events:auto; }
+#solink-film .bar{ display:flex; align-items:center; justify-content:space-between; gap:14px;
+      padding:20px clamp(16px,4vw,40px) 0; }
+#solink-film .wordmark{ display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:19px;
+           font-variation-settings:"wdth" 112; letter-spacing:-.03em; }
+#solink-film .wordmark i{ width:10px; height:10px; border-radius:50%; font-style:normal;
+             background:radial-gradient(circle at 32% 30%, #FFE7A6, var(--sun));
+             box-shadow:0 0 0 4px rgba(242,193,78,.22); }
+#solink-film .ghost{ appearance:none; border:1px solid var(--line); background:var(--white); color:var(--ink-2);
+        font:inherit; font-size:13px; font-weight:500; padding:9px 15px; border-radius:999px; cursor:pointer;
+        transition:border-color .2s, color .2s, box-shadow .2s; }
+#solink-film .ghost:hover{ color:var(--ink); border-color:#DCCFB6; box-shadow:var(--shadow-s); }
+
+#solink-film .cine{
+  position:absolute; inset-inline:0; bottom:clamp(96px,17vh,168px); z-index:6;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  padding:0 clamp(20px,6vw,60px); pointer-events:none; text-align:center;
+}
+#solink-film .caption{ opacity:0; transform:translateY(14px); filter:blur(6px);
+          transition:opacity .75s ease, transform .75s cubic-bezier(.2,.7,.2,1), filter .75s ease; }
+#solink-film .caption.on{ opacity:1; transform:none; filter:none; }
+#solink-film .caption h2{
+  font-size:clamp(23px,3.4vw,42px); font-weight:700; font-variation-settings:"wdth" 116;
+  letter-spacing:-.035em; line-height:1.08; max-width:18ch; margin:0 auto;
+  text-shadow:0 2px 26px rgba(255,252,244,.9), 0 1px 3px rgba(255,250,240,.9);
+}
+#solink-film .caption p{ margin:12px auto 0; max-width:40ch; font-size:clamp(14px,1.6vw,17px);
+            line-height:1.5; color:var(--ink-2); }
+#solink-film .caption.story h2{ font-size:clamp(26px,4.4vw,54px); max-width:16ch; }
+
+#solink-film .journey{ display:flex; flex-wrap:wrap; justify-content:center; gap:7px; margin-top:22px;
+          opacity:0; transition:opacity .6s ease; }
+#solink-film .journey.on{ opacity:1; }
+#solink-film .jstep{ display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.72);
+        backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:999px;
+        padding:8px 15px; font-size:13px; font-weight:600; color:var(--ink-3); box-shadow:var(--shadow-s);
+        transition:color .45s ease, background .45s ease, transform .45s cubic-bezier(.2,.7,.2,1); }
+#solink-film .jstep.on{ color:var(--ink); background:#fff; transform:translateY(-2px); }
+#solink-film .jstep::after{ content:""; width:5px; height:5px; border-radius:50%; background:var(--line);
+               transition:background .45s ease; order:-1; }
+#solink-film .jstep.on::after{ background:var(--sun); }
+
+#solink-film .tag{ position:fixed; z-index:6; left:0; top:0; pointer-events:none; display:flex; align-items:center; gap:8px;
+      font-size:12.5px; font-weight:600; white-space:nowrap; opacity:0; transition:opacity .35s ease;
+      text-shadow:0 1px 10px rgba(255,251,242,.95); }
+#solink-film .tag i{ width:26px; height:1px; background:linear-gradient(90deg,rgba(224,139,62,0),var(--warm));
+        display:block; font-style:normal; }
+#solink-film .tag.eco{ font-size:13px; font-weight:700; }
+#solink-film .tag.eco span{ background:rgba(255,255,255,.82); backdrop-filter:blur(6px); padding:7px 14px;
+               border-radius:999px; box-shadow:var(--shadow-s); }
+#solink-film[dir="rtl"] .tag{ flex-direction:row-reverse; }
+
+#solink-film .dock{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+       padding:0 clamp(16px,4vw,40px) clamp(14px,3vh,24px); }
+#solink-film .rail{ display:flex; align-items:center; gap:6px; }
+#solink-film .rail button{ appearance:none; border:0; background:transparent; cursor:pointer; font:inherit;
+              padding:9px 4px; font-size:12.5px; font-weight:500; color:var(--ink-3);
+              display:flex; align-items:center; gap:7px; transition:color .25s; }
+#solink-film .rail button .dot{ width:5px; height:5px; border-radius:50%; background:currentColor;
+                   transition:transform .3s cubic-bezier(.2,.7,.2,1), background .25s; }
+#solink-film .rail button:hover{ color:var(--ink-2); }
+#solink-film .rail button[aria-current="true"]{ color:var(--ink); }
+#solink-film .rail button[aria-current="true"] .dot{ background:var(--warm); transform:scale(1.8); }
+#solink-film .rail .name{ display:none; }
+@media (min-width:880px){ #solink-film .rail .name{ display:inline; } #solink-film .rail{ gap:14px; } }
+
+#solink-film .progress{ position:fixed; left:0; top:0; height:2px; z-index:7; width:0%;
+           background:linear-gradient(90deg,var(--sun),var(--warm)); transition:opacity .5s ease; }
+#solink-film[dir="rtl"] .progress{ left:auto; right:0; }
+
+@media (max-width:640px){
+  #solink-film .cine{ bottom:clamp(84px,14vh,130px); }
+  #solink-film .journey{ margin-top:16px; gap:5px; }
+  #solink-film .jstep{ padding:7px 12px; font-size:12px; }
+}
+@media (prefers-reduced-motion:reduce){
+  #solink-film #intro,#solink-film .caption,#solink-film .tag,#solink-film .jstep{ transition-duration:.01ms !important; }
+}

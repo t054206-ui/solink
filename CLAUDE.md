@@ -17,11 +17,13 @@ The current position, as of 2026-09-20:
   owner's reference sites and is recorded in `design-system/solink/DIRECTION.md`
   — read that file before touching anything visual. HANDOFF.md Session 3 has
   the full account.
-- **The opening** (Session 6): "From sunlight to your home", 12 s, full bleed
-  before the site, lands a signed-out visitor on `/signup`. **Plays on every
-  page load** by the owner's instruction (2026-09-21); `INTRO_FREQUENCY` in
-  `introStore.ts` and `FREQUENCY` in `public/bootstrap.js` switch it to once
-  per tab or once per browser, and must be changed together.
+- **The opening is the owner's own film**, the artifact `solink-intro.html`
+  they sent on 2026-09-21, run verbatim from `src/components/intro/film/`
+  (`film.ts`, `film.css`) on three.js r128 vendored in `public/vendor/`. Do
+  not redesign or hand-edit it; regenerate from a new file if one arrives. It
+  lands a signed-out visitor on `/signup` and **plays on every page load**;
+  `INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in `public/bootstrap.js`
+  switch that, together.
   `src/components/intro/*`, curtain attribute in `public/bootstrap.js`,
   mounted in the root layout. Replay in the footer and on the sign-in aside.
 - **Auth** (Session 6): `/login` and `/signup` redesigned on the Studio palette;
