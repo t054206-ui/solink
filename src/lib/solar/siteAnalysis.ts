@@ -323,12 +323,18 @@ function normaliseSolar(result: Awaited<ReturnType<typeof getBuildingInsights>>)
     maxSunshineHoursPerYear: num(sp.maxSunshineHoursPerYear),
     carbonOffsetFactorKgPerMwh: num(sp.carbonOffsetFactorKgPerMwh),
     panelCapacityWatts: num(sp.panelCapacityWatts),
-    roofSegments: (sp.roofSegmentStats ?? []).map((s) => ({
-      pitchDegrees: num(s.pitchDegrees),
-      azimuthDegrees: num(s.azimuthDegrees),
-      areaM2: num(s.stats?.areaMeters2),
-      sunshineMedianHoursPerYear: medianQuantile(s.stats?.sunshineQuantiles),
-    })),
+    // Sorted largest first. Google does not document an order for
+    // roofSegmentStats, and both the UI and the analysis speak about "the
+    // largest segment", so the order is established here rather than assumed.
+    // Segments with no recorded area sort last; nothing is dropped.
+    roofSegments: (sp.roofSegmentStats ?? [])
+      .map((s) => ({
+        pitchDegrees: num(s.pitchDegrees),
+        azimuthDegrees: num(s.azimuthDegrees),
+        areaM2: num(s.stats?.areaMeters2),
+        sunshineMedianHoursPerYear: medianQuantile(s.stats?.sunshineQuantiles),
+      }))
+      .sort((a, b) => (b.areaM2 ?? -Infinity) - (a.areaM2 ?? -Infinity)),
     bestConfigPanelsCount: num(best?.panelsCount),
     bestConfigYearlyEnergyDcKwh: num(best?.yearlyEnergyDcKwh),
   };
@@ -409,7 +415,10 @@ export const SiteAnalysisSchema = z.object({
   }),
   systemConsiderations: z.array(z.string()).max(8),
   limitations: z.array(z.string()).max(10),
-  reasoning: z.string().min(1).max(2500),
+  // Generous because a model counts items reliably and characters poorly. The
+  // prompt asks for 5000; this leaves room for an overshoot rather than
+  // throwing away an otherwise sound analysis.
+  reasoning: z.string().min(1).max(6000),
   dataCompleteness: z.object({
     level: z.enum(["high", "medium", "low"]),
     missing: z.array(z.string()).max(12),
@@ -419,18 +428,25 @@ export const SiteAnalysisSchema = z.object({
 
 export type SiteAnalysis = z.infer<typeof SiteAnalysisSchema>;
 
-/** The shape description handed to Claude, matching SiteAnalysisSchema exactly. */
+/**
+ * The shape description handed to Claude, matching SiteAnalysisSchema exactly.
+ *
+ * The size limits are stated here because the schema enforces them. An answer
+ * that overruns is rejected and the run is recorded as failed, so the model has
+ * to know the bounds it is being held to rather than discovering them by
+ * failing.
+ */
 export const SITE_ANALYSIS_SHAPE = `{
-  "feasibility": {"verdict":"promising|mixed|poor|insufficient_data","summary":string},
-  "roofAssessment": {"findings":string[],"limitations":string[]},
-  "solarPotential": {"findings":string[],"apiProvidedValues":string[],"calculatedValues":string[]},
-  "weatherConsiderations": {"findings":string[]},
-  "energy": {"annualEnergyDcKwh":number|null,"basis":string},
-  "systemConsiderations": string[],
-  "limitations": string[],
-  "reasoning": string,
-  "dataCompleteness": {"level":"high|medium|low","missing":string[]},
-  "sourceReferences": string[]
+  "feasibility": {"verdict":"promising|mixed|poor|insufficient_data","summary":string (max 600 characters)},
+  "roofAssessment": {"findings":string[] (max 8 items),"limitations":string[] (max 8 items)},
+  "solarPotential": {"findings":string[] (max 8 items),"apiProvidedValues":string[] (max 12 items),"calculatedValues":string[] (max 12 items)},
+  "weatherConsiderations": {"findings":string[] (max 8 items)},
+  "energy": {"annualEnergyDcKwh":number|null,"basis":string (max 400 characters)},
+  "systemConsiderations": string[] (max 8 items),
+  "limitations": string[] (max 10 items),
+  "reasoning": string (max 5000 characters),
+  "dataCompleteness": {"level":"high|medium|low","missing":string[] (max 12 items)},
+  "sourceReferences": string[] (max 6 items)
 }`;
 
 /** The rules Claude is held to. Kept beside the schema so the two stay in step. */
