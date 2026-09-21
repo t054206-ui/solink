@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { AgentDrawer } from "./AgentDrawer";
 import { SkipLink } from "./SkipLink";
+import { SignOutButton } from "./SignOutButton";
 import type { Role } from "@/lib/roles";
 
 export interface ShellUser { email: string | null; isDemo: boolean; role: Role }
@@ -69,7 +70,10 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
         <aside className="sticky top-0 hidden h-dvh w-[var(--sidebar-width)] shrink-0 flex-col border-r border-border bg-elevated lg:flex">
           <div className="flex h-[var(--header-height)] shrink-0 items-center border-b border-border px-3"><Logo href="/dashboard" /></div>
           <div className="flex-1 overflow-y-auto">{nav}</div>
-          <div className="border-t border-border px-3 py-2 text-[11.5px] text-fg-muted truncate">{user.isDemo ? "Demo homeowner (not signed in)" : user.email}</div>
+          <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2 text-[11.5px] text-fg-muted">
+            <span className="min-w-0 truncate">{user.isDemo ? "Demo homeowner (not signed in)" : user.email}</span>
+            {!user.isDemo && <SignOutButton compact />}
+          </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -95,6 +99,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
                 <Bell className="size-4"  aria-hidden />{unreadCount > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-[var(--bg)]" />}
               </Link>
               <ThemeToggle />
+              {!user.isDemo && <SignOutButton compact className="lg:hidden" />}
             </div>
           </header>
           <main id="main" className="flex-1 px-3 py-4 sm:px-4 lg:px-5 pb-24 lg:pb-8">
