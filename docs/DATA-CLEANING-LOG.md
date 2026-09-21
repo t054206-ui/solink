@@ -127,3 +127,13 @@ and stored exactly as published, with `kuwait_price_observed_at`. **No currency
 was converted.** Installation, maintenance and cleaning costs remain
 `unavailable`: no Kuwait source publishes them, and an unsourced figure would
 flow straight into payback and total-cost figures.
+
+### I-001 — Product images for the three LONGi Hi-MO 7 records (2026-09-21)
+
+| | |
+|---|---|
+| **Field** | `images` on LR7-72HGD-585M, -615M, -620M |
+| **Stored** | Two official LONGi renders, front and back, linked from the manufacturer's Hi-MO 7 product page: `https://static.longi.com/Images_412x612_11869e6bbf.png`, `https://static.longi.com/Hi_MO_7_back_01421a4e84.png` |
+| **Source URL** | `https://www.longi.com/en/products/modules/hi-mo-7/` (recorded in `source.field_sources.images`) |
+| **Rejected** | The Kuwait retailer's listing photo (`alwansolar.com/cdn/shop/files/HVFCSSDAQ1053*.png`), which shows a 6 × 22 = 132-cell module with a LONGi logo pasted on. The datasheet gives 144 cells (6 × 24); the front render shows 144. Same disagreement as C-003. |
+| **Caveat** | The renders are the manufacturer's for the LR7-72HGD series as a whole, not photographs of a specific power bin. Recorded in `source.image_note` on each row. The images are linked from LONGi's CDN, not copied; if LONGi moves them the card falls back to "No image provided". |

@@ -22,7 +22,7 @@ export function ProductCard({ product: p }: { product: Product }) {
       <div className="relative aspect-[16/9] bg-inset">
         {p.images[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.images[0]} alt={`${p.manufacturer_name} ${p.model}`} className="size-full object-cover" />
+          <img src={p.images[0]} alt={`${p.manufacturer_name} ${p.model}`} className="size-full object-contain p-4" />
         ) : (
           <div className="grid size-full place-items-center text-[12px] text-fg-muted"><span className="inline-flex items-center gap-1.5"><ImageOff className="size-3.5" aria-hidden /> No image provided</span></div>
         )}
