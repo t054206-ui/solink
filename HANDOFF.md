@@ -952,6 +952,17 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
+## 2026-09-21, night — twenty seconds, and one tone per layer
+
+Owner: "make the intro 20 seconds and the parts of the panel more clear".
+Inside `film.ts`: scene durations now total 19.2 s (+0.4 s hold +0.26 s delay
+= 19.9 s from load), damping rates at ×1.8 of the file's originals. Colours:
+glass cool blue-white `0xD6E9FB` at .56; solar film warm light `0xFFF0CC` at
+.74; cell texture brighter blues (`#2C63B8`/`#1A4590`) with clearer busbars;
+backsheet warm sand `0xE6DFD0` instead of white; frame darker aluminium
+`0xB8C1CB`; unfocused layers dim to .55. The idea: one hue per layer, so no
+two neighbours share a colour.
+
 ## 2026-09-21, evening — two edits to the film, at the owner's request
 
 "Only these two updates, without changing anything else." Both are inside

@@ -23,7 +23,7 @@ The current position, as of 2026-09-20:
   not redesign or hand-edit it; regenerate from a new file if one arrives. It
   lands a signed-out visitor on `/signup` and **plays on every page load**;
   `INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in `public/bootstrap.js`
-  switch that, together. Since 2026-09-21 evening it runs 14.9 s and ends on
+  switch that, together. Since 2026-09-21 night it runs 19.9 s and ends on
   the homepage, not sign-up; the two material and timing edits the owner asked
   for are marked `owner 2026-09-21` inside `film.ts`.
   `src/components/intro/*`, curtain attribute in `public/bootstrap.js`,
