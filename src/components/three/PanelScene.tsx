@@ -6,7 +6,7 @@ import { ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
 import { LAYER_COUNT, PANEL_LAYERS } from "./panelLayers";
-import { HERO_TIMING, schedule, type TourSchedule, type TourTiming } from "./tourTiming";
+import { HERO_POSE, HERO_TIMING, schedule, type TourPose, type TourSchedule, type TourTiming } from "./tourTiming";
 
 /** Live angles, written every frame and read by the HTML readout, not by React. */
 export interface AngleRef {
@@ -89,6 +89,9 @@ interface RigProps {
   autoSpin: boolean;
   autoplay: boolean;
   timing: TourTiming;
+  pose: TourPose;
+  /** Each frame, the screen position (canvas px) of each part's near edge, in PANEL_LAYERS order: [x0, y0, x1, y1, …]. For tags on leader lines. */
+  onProject?: (pts: Float32Array) => void;
   onInteract: () => void;
   initialTilt: number;
   draggable: boolean;
@@ -105,7 +108,7 @@ interface RigProps {
  * mutable state local to the component that mutates it is both legal and
  * simpler to follow.
  */
-function PanelRig({ onTick, onStep, autoSpin, autoplay, timing, onInteract, initialTilt, draggable, tourKey }: RigProps) {
+function PanelRig({ onTick, onStep, autoSpin, autoplay, timing, pose, onProject, onInteract, initialTilt, draggable, tourKey }: RigProps) {
   const group = useRef<THREE.Group>(null);
   const s = useMemo(() => schedule(timing), [timing]);
   const angles = useRef<AngleRef>({ tilt: initialTilt, azimuth: -28 });
@@ -113,7 +116,9 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, timing, onInteract, init
   const clock = useRef({ key: -1, t: 0, life: 0, cancelled: false });
   const shown = useRef(-1);
   const texture = useMemo(() => makeCellTexture(), []);
-  const { gl } = useThree();
+  const { gl, camera, size } = useThree();
+  // Scratch space for the projection, allocated once: the frame loop must not.
+  const scratch = useRef({ v: new THREE.Vector3(), pts: new Float32Array(LAYER_COUNT * 2) });
 
   const glass = useRef<THREE.Mesh>(null);
   const cells = useRef<THREE.Mesh>(null);
@@ -250,8 +255,8 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, timing, onInteract, init
     if (running) {
       // Turning toward the viewer as it opens: at 52° the separation between
       // the parts is visible, at 20° they overlap into one line.
-      tg.tilt = 20 + 32 * THREE.MathUtils.smootherstep(t, s.start + s.enter * 0.5, s.openAt);
-      tg.azimuth = -34 + 28 * THREE.MathUtils.smootherstep(t, s.openAt, s.closeAt);
+      tg.tilt = pose.tiltFrom + (pose.tiltTo - pose.tiltFrom) * THREE.MathUtils.smootherstep(t, s.start + s.enter * 0.5, s.openAt);
+      tg.azimuth = pose.azimuthFrom + (pose.azimuthTo - pose.azimuthFrom) * THREE.MathUtils.smootherstep(t, s.openAt, s.closeAt);
     } else if (autoSpin) {
       // Idle motion is a slow sway rather than a spin. A full rotation would
       // keep turning the panel away from the viewer, and the owner asked for
@@ -267,6 +272,21 @@ function PanelRig({ onTick, onStep, autoSpin, autoplay, timing, onInteract, init
     g.rotation.x = -Math.PI / 2 + a.tilt / DEG;
     g.rotation.y = a.azimuth / DEG;
     onTick(a);
+
+    // Where each part's near edge is on screen, for tags that follow the
+    // parts. The matrices are last frame's, which nobody can see.
+    if (onProject) {
+      const { v, pts } = scratch.current;
+      for (let i = 0; i < LAYER_COUNT; i++) {
+        const part = parts.current[i]?.current;
+        if (!part) continue;
+        v.set(PANEL_W / 2 + 0.06, 0, 0);
+        part.localToWorld(v).project(camera);
+        pts[i * 2] = ((v.x + 1) / 2) * size.width;
+        pts[i * 2 + 1] = ((1 - v.y) / 2) * size.height;
+      }
+      onProject(pts);
+    }
 
     // React hears about the caption only when it changes, which is five times
     // in ten seconds rather than sixty times a second.
@@ -414,6 +434,9 @@ export default function PanelScene({
   autoplay = true,
   stage = "light",
   timing = HERO_TIMING,
+  pose = HERO_POSE,
+  cameraPosition = CAMERA_POS,
+  onProject,
 }: {
   onTick: (a: AngleRef) => void;
   onStep: (i: number) => void;
@@ -430,6 +453,12 @@ export default function PanelScene({
   stage?: "light" | "dark";
   /** The tour's clock. The hero uses the default; the opening runs a faster one with a delay for the sun. */
   timing?: TourTiming;
+  /** How the module is held while it comes apart. The hero turns it to the viewer; the opening lays it flat. */
+  pose?: TourPose;
+  /** The opening looks down on the flat module from a little higher. See the note on CAMERA_POS before moving it closer. */
+  cameraPosition?: [number, number, number];
+  /** Screen positions of the parts each frame, for tags. See RigProps. */
+  onProject?: (pts: Float32Array) => void;
   /** Phones: half the shadow map, half the pixels, same sequence. */
   economy?: boolean;
   /** Scrolled past. A hero that keeps drawing sixty frames a second into a
@@ -442,7 +471,7 @@ export default function PanelScene({
       shadows
       frameloop={paused ? "never" : "always"}
       dpr={economy ? [1, 1.5] : [1, 2]}
-      camera={{ position: CAMERA_POS, fov: CAMERA_FOV }}
+      camera={{ position: cameraPosition, fov: CAMERA_FOV }}
       gl={{ antialias: true, alpha: true }}
       className="panel-canvas"
       style={draggable ? { touchAction: "none" } : undefined}
@@ -469,6 +498,8 @@ export default function PanelScene({
         autoSpin={autoSpin}
         autoplay={autoplay}
         timing={timing}
+        pose={pose}
+        onProject={onProject}
         onInteract={onInteract}
         initialTilt={initialTilt}
         draggable={draggable}

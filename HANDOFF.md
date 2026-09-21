@@ -952,6 +952,36 @@ clocks cap their step, so the twelve-second story took about seven minutes and
 was verified beat by beat through the DOM and screenshots. It is not a defect
 in the opening; the earlier ink version measured the same when hidden.
 
+## 2026-09-21 — the opening is the owner's reference video
+
+The owner did not like either of Claude's openings and sent a WhatsApp
+screen recording (40 s, 1024 × 576) of the one they want: an HTML artifact
+called "Solink intro" from another Claude chat, whose script never reached
+this session. Frames were read with a local range-serving HTTP server and a
+canvas page (`swift` is broken on this machine: module redefinition; JXA
+cannot bridge AVURLAsset; `qlmanage` cannot seek; Python's http.server has
+no Range support, so `<video>` could not seek until a Range handler was
+written). The story, beat by beat, is in `DIRECTION.md`.
+
+What changed to match it: `PanelScene` gained `pose` (how the module is held:
+`INTRO_POSE` lays it flat so layers lift straight up), `cameraPosition` (a
+little higher for the opening) and `onProject` (each part's near-edge screen
+position every frame, for tags on leader lines that follow the parts).
+`INTRO_TIMING` slowed to the video's pace (2.4 s a layer). `IntroSequence`
+draws two-line captions, the tags, the house, the three ecosystem names and
+five pills. Copy: `intro.*` rewritten, both languages. About 29 s.
+
+**Verified** on the running dev server at 1440 × 900: sunlight, the flat
+module arriving, five layers lifting with tags following them (positions read
+from the DOM), the rail, the close, and the hand-off to `/signup`. The later
+beats were not screenshotted at speed: the Browser pane throttled
+requestAnimationFrame to 1–2 fps for most of the session and only ran at full
+speed in bursts.
+
+**Dev server note.** A `next dev` from another session (pid 81335, started
+2026-09-20 22:05) holds the project's dev lock on port 3311; a second one on
+3412 refuses to start. Test against 3311 or stop that process first.
+
 ## 2026-09-21 — the opening plays every time
 
 The owner could not see the new opening (their browser remembered the old one)

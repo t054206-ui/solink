@@ -75,37 +75,40 @@ serif italic accents.
 - The exploded stack is 820 mm deep. A real laminate is 10 mm. It is a diagram,
   and the line under the object says so.
 
-## The opening — /, first visit (2026-09-20, owner's third and fourth briefs for the panel)
+## The opening — /, every visit (2026-09-21, the owner's reference video)
 
-**From sunlight to your home, in twelve seconds, before the site.** Light
-stage, the page's own bone, so the module stays the only dark mass. Five beats,
-one clock, shared with the 3D scene through `tourTiming.ts` so caption and
-geometry cannot drift:
+The owner rejected two of Claude's openings and sent a 40-second screen
+recording of the one they want. This is that one, in the Studio tokens, at
+about 29 seconds. Light stage, the sun top-right with its wash, the module
+**lying nearly flat, low and to the right**, seen from a little above, so the
+caption owns the middle of the screen. One shared clock (`tourTiming.ts`) for
+scene and captions; a pose (`INTRO_POSE`) that keeps the module flat so the
+layers lift straight up.
 
-| Beat | Seconds | What happens |
+| Beat | Seconds | On screen |
 | --- | --- | --- |
-| Sun | 0 – 2.0 | The sun rises top-right, a wash of its light reaches the middle of the stage. "It starts with the sun over your roof." |
-| Panel | 2.0 – 3.5 | The module arrives from below and catches the light. "A solar panel turns that light into electricity." |
-| Inside | 3.5 – 8.15 | The five parts separate one at a time, 0.85 s apart, one line each; a rail in the dock lights the part being explained. |
-| Home | 8.15 – 10.6 | The module closes and settles up and back; a line-drawn house appears beneath it with the current flowing down into it. The site headline. |
-| Journey | 10.6 – 12.3 | The ten steps light up in a cascade. Then the overlay wipes upward. |
+| Sunlight | 0 – 3.0 | "It starts with sunlight." The module arrives, flat. |
+| Inside | 3.0 – 14.3 | Five layers lift off, 2.4 s apart. Each gets a tag on a leader line that follows the part (the scene projects each part's near edge every frame), a two-line caption (name, one short line), and its dot in the bottom-left rail. Tags stay until the module closes. |
+| Energy | 14.3 – 17.5 | The module closes. "From sunlight to energy." |
+| Home | 17.5 – 20.8 | "From energy to your home." A line-drawn house beside the module, current flowing into it. |
+| Ecosystem | 20.8 – 25.0 | The module slides to the lower right. "One platform connecting the solar ecosystem. Vendors list. We connect. You choose." Three names around the stage: Vendors, Solink, Consumers. Five pills light up: Discover, Compare, Buy, Install, Maintain. |
+| Beginning | 25.0 – 28.5 | "Buying solar is only the beginning. Discover. Compare. Buy. Maintain." Then the wipe. |
 
-A progress hairline in panel blue runs along the top. The sun is the only
-thing in sun amber, because it is the sun. Nothing is clicked; Escape or Skip
-cuts it short.
+Header: the mark, the language button, "Skip intro". Dock: the layer rail and
+the disclaimer. A progress hairline in panel blue along the top. Sun amber only
+on the sun and the tags' dots. Nothing is clicked; Escape or Skip cuts it short.
 
-**Where the wipe lands is the point.** A first-time visitor without an account
-is on the sign-up page when the overlay lifts: the route is pushed while the
-curtain is still up. A signed-in visitor, a replay, or someone already on a
-sign-in page is returned to where they were. The hero declines its own copy of
-the take-apart for the rest of that page load, so nobody watches it twice.
+Where the wipe lands is the point: a visitor without an account is on the
+sign-up page when the overlay lifts (the route is pushed under the curtain); a
+signed-in visitor, a replay, or someone already on a sign-in page is returned
+to where they were. **Plays on every page load** by the owner's instruction;
+`INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in `public/bootstrap.js`
+switch it to once per tab or once per browser, together.
 
-The owner supplied this story as an HTML mock (ivory stage, sun, beam, house,
-journey pills, layer rail) and asked for it shorter; the mock's palette was
-translated to the Studio tokens and its six scenes compressed to five beats.
-
-"Replay the intro" lives in the footer's bottom bar and on the sign-in aside.
-Not shown, and not offered, under `prefers-reduced-motion`.
+Departures from the video, on purpose: five layers rather than four, because
+the module has a junction box and the site never hides a part; no "drag to
+look around", because dragging cancels the sequence; the rail is not
+clickable. "Replay the intro" lives in the footer and on the sign-in aside.
 
 ## Sign in and sign up — /login, /signup
 
