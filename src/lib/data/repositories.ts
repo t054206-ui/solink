@@ -8,6 +8,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode, type DataMode } from "./mode";
 import * as demo from "@/lib/demo/data";
+import type { SiteAnalysisRow } from "@/lib/solar/siteAnalysis";
 import type {
   Product, ProviderCompany, SolarSystem, SolarPassport, ProductionRecord, MaintenanceCase, Incident,
   AiAlert, MonthlyReport, SolarProfile, Appointment, Notification, Manufacturer,
@@ -194,6 +195,28 @@ export async function listAppointments(): Promise<Result<Appointment[]>> {
   const { data, error } = await c.from("appointments").select("*").order("scheduled_at");
   if (error) throw error;
   return { data: (data ?? []) as Appointment[], mode };
+}
+
+/**
+ * The signed-in user's most recent site analyses, newest first.
+ *
+ * RLS does the scoping: `ai_analyses owner` restricts every row to
+ * `user_id = auth.uid()`, so this cannot return someone else's run and the
+ * query does not filter by user itself. Runs that failed are included — the
+ * caller decides what to show, and a failed run is still a run that happened.
+ */
+export async function listSiteAnalyses(limit = 5): Promise<Result<SiteAnalysisRow[]>> {
+  const mode = getDataMode();
+  if (mode === "demo") return { data: [], mode };
+  const c = (await supa())!;
+  const { data, error } = await c
+    .from("ai_analyses")
+    .select("id, kind, input_summary, output, model, created_at")
+    .eq("kind", "site_analysis")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return { data: (data ?? []) as SiteAnalysisRow[], mode };
 }
 
 export async function listNotifications(): Promise<Result<Notification[]>> {
