@@ -8,54 +8,41 @@
 Session 3 describes the site as it is; Sessions 4, 5 and 6 are additions on top
 of it. **Session 2 supersedes Session 1 on anything visual.**
 
-The current position, as of 2026-09-20:
+The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
+"Session 6 closing state"):
 
-- The rebuild is on `main` and deployed to https://solink-nu.vercel.app
-  (owner's instruction "push and deploy", 2026-09-20). v1 is recoverable with
+- `main` at `552357e` is deployed to https://solink-nu.vercel.app by Vercel on
+  push. Git-triggered deploys are healthy. v1 is recoverable with
   `git checkout v1-superseded`.
-- **The visual rebuild happened.** Direction "Studio" was chosen from the
-  owner's reference sites and is recorded in `design-system/solink/DIRECTION.md`
-  — read that file before touching anything visual. HANDOFF.md Session 3 has
-  the full account.
+- **Direction "Studio"** is recorded in `design-system/solink/DIRECTION.md`;
+  read it before touching anything visual.
 - **The opening is the owner's own film**, the artifact `solink-intro.html`
-  they sent on 2026-09-21, run verbatim from `src/components/intro/film/`
-  (`film.ts`, `film.css`) on three.js r128 vendored in `public/vendor/`. Do
-  not redesign or hand-edit it; regenerate from a new file if one arrives. It
-  lands a signed-out visitor on `/signup` and **plays on every page load**;
-  `INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in `public/bootstrap.js`
-  switch that, together. Since 2026-09-21 night it runs 19.9 s and ends on
-  the homepage, not sign-up; the two material and timing edits the owner asked
-  for are marked `owner 2026-09-21` inside `film.ts`.
-  `src/components/intro/*`, curtain attribute in `public/bootstrap.js`,
-  mounted in the root layout. Replay in the footer and on the sign-in aside.
-- **Auth** (Session 6): `/login` and `/signup` redesigned on the Studio palette;
-  sign-up has full name, email, password, confirm password; both password
-  fields have the eye toggle (`PasswordInput`). Bilingual via `auth.*` keys.
-- Built and approved by the owner: landing page with a draggable 3D panel,
-  role-aware dashboard (`/dashboard?as=…`), English/Kuwaiti Arabic toggle with
-  RTL, roof photo/video reader, and `/about`.
-- Light theme is the default. Roles are homeowner (includes landlord),
-  manufacturer, company, admin.
-- Supabase is connected: project `bgwvztckesuwlydwcfkj`, migrations 0001–0006
-  applied. Both local and production run in Supabase mode (public vars set on Vercel via
-  the logged-in CLI). Sign-up is live and Supabase Auth URLs are configured; the owner's account is
-  admin; still needed: service-role key, an SMTP sender, and a domain.
-- Platform settings entered with sources (all on the owner's yes): tariff by
-  MEW sector, CO₂ factor, peak sun hours (5.58, GHI, Kuwait City), performance
-  ratio (0.86). Still null: degradation rate, TCO period, alert thresholds,
-  end-of-life criteria. Never enter a platform number without the owner's yes;
-  the record of what was entered and why is in `docs/DECISIONS-NEEDED.md`.
-- The profile carries an MEW tariff sector (`solar_profiles.tariff_category`,
-  migration 0006, applied). The tariff setting accepts per-sector rates in
-  `by_category`; `src/lib/solar/tariff.ts` decides which applies and says so
-  in words when none does. Still placeholders: team roles/bios/photos, team
-  description.
-- Nothing is pushed or deployed without the owner's word. Session 5 pushed and
-  deployed on "push and deploy" (2026-09-20 evening). **Production serves
-  Session 5's `627bfa1` via a CLI deploy; `main` itself does not build** until
-  the intro sequence another session is adding gets its three `intro.*`
-  dictionary keys. See HANDOFF Session 5, "What to do next" item 2.
-- `git checkout v1-superseded` still recovers v1.
+  (2026-09-21), run verbatim from `src/components/intro/film/` on three.js r128
+  vendored in `public/vendor/`. Do not redesign or modernise it; the owner's
+  requested edits are marked `owner 2026-09-21` in `film.ts`. It plays on every
+  page load (`INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in
+  `public/bootstrap.js`, change together), runs about 20 s, and ends on the
+  page it opened on. Replay button in the footer and on the sign-in aside.
+- **Auth**: `/login` and `/signup` on the Studio palette with confirm-password
+  and eye toggles, bilingual via `auth.*`. Sign out is in the app sidebar
+  footer (desktop) and top bar (phones).
+- **Marketplace** runs on the real catalogue: three LONGi Hi-MO 7 modules in
+  `solar_products` with the manufacturer's renders as images. Supabase-mode
+  listings exclude demo rows. Behind sign-in. Import pattern and provenance:
+  `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
+- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0006 applied, both
+  environments in Supabase mode, sign-up live, the owner's account is admin.
+  Still needed: service-role key, SMTP sender, domain.
+- Platform settings entered with sources on the owner's yes: tariff by MEW
+  sector, CO₂ factor, peak sun hours 5.58 (GHI, Kuwait City), performance
+  ratio 0.86. Never enter a platform number without the owner's yes;
+  `docs/DECISIONS-NEEDED.md` records what was entered and why.
+- Roles: homeowner (includes landlord), manufacturer, company, admin. Light
+  theme default. Still placeholders: team roles/bios/photos, team description,
+  privacy policy and terms.
+- Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch
+  before you work; coordinate before touching the intro or the import.
+- Nothing is pushed or deployed without the owner's word.
 
 ## Working conventions
 

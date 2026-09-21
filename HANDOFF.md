@@ -4,7 +4,10 @@ _Session 1 built the platform. Session 2 rejected three designs. **Session 3 reb
 interface, connected Supabase and took sign-up live — read Session 3 first; it is the
 state of the site now.** Session 4 added the hero panel's take-apart sequence.
 Session 5 added the tariff sector, sourced two settings for the owner's yes, and
-fixed the hero labels; its "What to do next" is the current list._
+fixed the hero labels. Session 6 ran two days: the opening film, sign in and sign
+up, the Marketplace on the real catalogue. **Start with the last section of this
+file, "Session 6 closing state", which is the current position and the current
+to-do list.**_
 Folder: `~/Desktop/solink` (Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
 
 Solink is a solar-energy platform for Kuwait and the GCC. It connects homeowners,
@@ -1108,3 +1111,62 @@ does not want thirteen seconds of sun each time, Skip or no Skip.
 3. Session 5's list still stands: PVWatts manual read, Google Solar, tilt
    model, privacy policy and terms (now more pressing: accounts are the front
    door), About placeholders, catalogue, the other 56 pages.
+
+
+---
+---
+
+# SESSION 6 CLOSING STATE — 2026-09-21 evening (read this first)
+
+Everything below the Session 6 heading above happened in one long session over
+2026-09-20 and 21, with the owner present and directing. This section is the
+consolidated position so Session 7 does not have to reconcile the addenda.
+
+## Where things stand
+
+| | |
+| --- | --- |
+| Production | https://solink-nu.vercel.app serves `main` at `552357e`, built by Vercel from the push. Git-triggered deploys are healthy again. |
+| Repository | `main` clean, local = remote. Collaborators: `t040262-cmyk` (Session 4 and the first intro attempt), `Lolwah AlAnsari` (the LONGi import, recommendation matcher, SourceReferences). Coordinate before touching the intro or the catalogue import. |
+| Opening | The owner's own artifact `solink-intro.html`, run verbatim from `src/components/intro/film/` on vendored three.js r128. Edits the owner asked for are marked `owner 2026-09-21` inside `film.ts`: 19.2 s of scenes (19.9 s from load), clearer glass and solar film, one tone per layer, layers darker, unfocused layers near-solid, sun pulled back during layer shots. **Plays on every page load** (`INTRO_FREQUENCY` in `introStore.ts` + `FREQUENCY` in `public/bootstrap.js`, change together). Ends on the page it opened on. Replay button in the footer and on the sign-in aside. |
+| Auth | `/login`, `/signup` on the Studio palette, confirm-password, eye toggles, bilingual. **Sign out**: button at the bottom of the app sidebar (desktop) and in the top bar (phones), `SignOutButton.tsx`. |
+| Marketplace | Live on the real catalogue: three LONGi Hi-MO 7 modules from Supabase (`is_demo = false`), demo rows excluded in Supabase mode, prices in fils, Kuwait supplier line on cards, truthful explainer card, manufacturer's front/back renders as images (provenance in `source.field_sources.images` and `source.image_note`, log entry I-001). Nav label is "Marketplace". Behind sign-in. |
+| Database | Migrations 0001–0006 applied. Platform settings entered (tariff by sector, CO₂, peak sun hours 5.58, performance ratio 0.86). Three real products with images. Demo rows still present for demo mode. No schema change since 0006. |
+| Docs | `DIRECTION.md` (opening and auth sections current), `docs/DECISIONS-NEEDED.md` (what was entered and why), `docs/DATA-CLEANING-LOG.md` (Lolwah's import log + I-001), `CLAUDE.md` (current position rewritten at close). |
+| Checks | `npx tsc --noEmit && npx eslint src && npm run build` clean at `552357e`. |
+
+## Things Session 7 should know
+
+- **The Browser pane throttles animation when hidden** (1–2 fps). Timing tests
+  of the opening are only meaningful with the pane visible; otherwise verify
+  through the DOM. Media playback is also paused when hidden.
+- **A second `next dev` refuses to start** while another session's dev server
+  holds the project lock (pid 81335 on port 3311 as of 2026-09-21). Test
+  against 3311 or stop it.
+- **`/marketplace` and the rest of the app are behind sign-in.** Without the
+  owner's credentials, verify server components with `react-dom/server` via
+  `npx tsx` against live rows fetched with the public key (the pattern is in
+  the Marketplace entry above). Never create accounts or enter passwords.
+- `swift` is broken on this Mac (module redefinition); JXA cannot bridge
+  AVFoundation; Python's http.server lacks Range support. A Range-serving
+  server plus a `<video>`/canvas page is what worked for reading a video.
+- nrel.gov, docs.nrel.gov and osti.gov are unreachable from this network.
+- The film is vendored ES5. Do not modernise it; edit in place with a marker
+  or regenerate from a new file the owner sends.
+
+## What to do next, in priority order
+
+1. **Owner's call on intro frequency.** "always" is right for reviewing, wrong
+   for daily use. Recommend `"session"`.
+2. **Kuwaiti review of the Arabic**: the film's own strings are the owner's;
+   the site's `auth.*` and everything before it are Claude's drafts.
+3. **Privacy policy and terms**: none exist, and accounts are now the front
+   door.
+4. **PVWatts manual §System Losses**: confirm the 14 % against the primary
+   source from a network that reaches nrel.gov.
+5. **Email sender, service-role key, domain**: owner.
+6. **Google Solar** (untestable without a key), **tilt → output** (inputs now
+   exist in the Global Solar Atlas numbers), **About placeholders**, **more
+   catalogue** (Lolwah's import pattern: `supabase/imports/`, one log entry per
+   conflict), **the other 56 pages**.
+7. Session 4 leftovers on the hero: click-to-hold a part, leader lines.
