@@ -54,6 +54,11 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
   copy under `legal.*`, `privacy.*`, `terms.*` in the dictionary. A lawyer's
   review is pending; do not describe them as binding. The sign-up form links
   to both.
+- **Roof Planner** at `/designer` (2026-09-21): panels from the catalogue plus
+  walkway/planter/seating/pergola modules at typed sizes, setback and walkway
+  clearances, a photo underlay with hand tracing, three deterministic
+  "Get inspired" layouts, panel weight and a `ROOF_LOAD_CAPACITY` placeholder
+  (decision 21). Geometry in `src/app/(app)/designer/geometry.ts`.
 - Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch
   before you work; coordinate before touching the intro or the import.
 - Nothing is pushed or deployed without the owner's word.

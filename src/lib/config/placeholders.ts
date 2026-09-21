@@ -39,6 +39,9 @@ export const PLACEHOLDERS = {
   LEGAL_OPERATOR: "[PLACEHOLDER: LEGAL OPERATOR / ENTITY]",
   LEGAL_CONTACT: "[PLACEHOLDER: PRIVACY / LEGAL CONTACT]",
   GOVERNING_LAW: "[PLACEHOLDER: GOVERNING LAW]",
+  // Roof planner: what the roof structure can carry is a per-building fact
+  // from a structural engineer, never a default.
+  ROOF_LOAD_CAPACITY: "[PLACEHOLDER: ROOF STRUCTURAL LOAD CAPACITY]",
 } as const;
 
 export type PlaceholderKey = keyof typeof PLACEHOLDERS;
@@ -72,6 +75,7 @@ export const PLACEHOLDER_NOTES: Record<PlaceholderKey, string> = {
   LEGAL_OPERATOR: "The person or company that operates Solink and is responsible for users' data has not been named.",
   LEGAL_CONTACT: "No address for privacy and legal requests (a copy of data, a correction, deletion) has been chosen. Depends on the email provider decision.",
   GOVERNING_LAW: "The governing law and jurisdiction for the privacy policy and terms have not been decided. A lawyer's review of both documents is pending.",
+  ROOF_LOAD_CAPACITY: "The permissible load of this roof (kg/m² or kN/m²) has not been provided. It comes from the building's structural drawings or a structural engineer, per roof; Solink never assumes one.",
 };
 
 export function placeholder(key: PlaceholderKey): string {

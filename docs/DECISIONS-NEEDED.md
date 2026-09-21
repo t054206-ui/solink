@@ -1,7 +1,7 @@
 # Solink — Decisions needed from the project owner
 
 Solink is built so that none of these block the platform; each is a labeled placeholder
-until decided. Nothing has been assumed silently. Decisions 19 and 20 were added 2026-09-21 (Session 7).
+until decided. Nothing has been assumed silently. Decisions 19 to 21 were added 2026-09-21 (Session 7).
 
 | # | Decision | Placeholder | Where it lands once decided |
 |---|---|---|---|
@@ -25,6 +25,7 @@ until decided. Nothing has been assumed silently. Decisions 19 and 20 were added
 | 18 | ~~**GitHub remote**~~ **Done.** https://github.com/t054206-ui/solink, `main` deploys to Vercel. | — | done |
 | 19 | **Legal operator, contact address and governing law** for the privacy policy and terms. `/privacy` and `/terms` were drafted 2026-09-21 from how the code actually behaves (what sign-up asks, what the schema stores, what each role can read under RLS, which services are called and with what). **Not yet reviewed by a lawyer.** Both pages carry a draft notice until these three values are supplied and the review is done; the sign-up form links to both. | `[PLACEHOLDER: LEGAL OPERATOR / ENTITY]`, `[PLACEHOLDER: PRIVACY / LEGAL CONTACT]`, `[PLACEHOLDER: GOVERNING LAW]` | `src/lib/config/placeholders.ts` (`LEGAL_OPERATOR`, `LEGAL_CONTACT`, `GOVERNING_LAW`); the copy in `dictionary.ts` reads them through `{operator}`, `{contact}`, `{law}` and needs no edit |
 | 20 | ~~**Google sign-in provider**~~ **Done 2026-09-21, with the owner at the keyboard.** Google Cloud project `Solink` (id `triple-method-509315-n8`, organisation joincoded.com, owner's account), OAuth consent screen "Solink" (External, published to production, non-sensitive scopes only so no verification), web OAuth client "Solink web (Supabase Auth)" with redirect URI `https://bgwvztckesuwlydwcfkj.supabase.co/auth/v1/callback`. Branding: home page, `/privacy`, `/terms`, authorised domain `solink-nu.vercel.app`. Supabase → Authentication → Providers → Google enabled with the client ID; the owner pasted the client secret themselves. Redirect allow-list gained `http://localhost:3311/**`. `GET /auth/v1/settings` now returns `external.google: true`. Still to do when a real domain arrives: add it to Google's authorised domains and Supabase's redirect list. | — | Supabase Auth settings; Google Cloud project `Solink` |
+| 21 | **Roof structural load capacity**, per roof. The Roof Planner (`/designer`, 2026-09-21) shows the panels' total weight and load per m² from the manufacturer's weight spec, and beside them the permissible load of the roof as a placeholder, because that figure belongs to one building: it comes from its structural drawings or a structural engineer (kN/m² or kg/m²). Once a source exists, add a nullable `roof_load_capacity_kg_m2` plus a source note to `solar_profiles` (additive migration), read it in the planner, and compare. Never a platform default. | `[PLACEHOLDER: ROOF STRUCTURAL LOAD CAPACITY]` | `solar_profiles` (new column), `src/lib/config/placeholders.ts` (`ROOF_LOAD_CAPACITY`) |
 
 ## Entries made on the owner's yes (2026-09-20, Session 5)
 

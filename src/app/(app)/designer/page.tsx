@@ -24,6 +24,7 @@ export default async function DesignerPage({ searchParams }: { searchParams: Pro
     length_m: specNum(p.specs.length_mm) !== null ? (specNum(p.specs.length_mm) as number) / 1000 : null,
     width_m: specNum(p.specs.width_mm) !== null ? (specNum(p.specs.width_mm) as number) / 1000 : null,
     rated_power_w: specNum(p.specs.rated_power_w),
+    weight_kg: specNum(p.specs.weight_kg),
     price: specNum(p.price),
     currency: p.currency,
     installation_cost: specNum(p.installation_cost),
@@ -34,8 +35,8 @@ export default async function DesignerPage({ searchParams }: { searchParams: Pro
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
       <PageHeader
         eyebrow="Choose"
-        title="Build It Yourself Solar Designer"
-        description="Lay real panels on a scaled drawing of your roof, avoid obstacles, and see how many fit. Panel counts, areas and capacity are pure geometry from the manufacturer's dimensions; production and cost need data that has not been provided yet."
+        title="Roof Planner and Solar Designer"
+        description="Lay real panels, walkways, planters and seating on a scaled drawing of your roof, or over a photo of it, and see what fits. Counts, areas, coverage and panel weight are pure geometry from the manufacturer's dimensions and the sizes you type; production, cost and what the roof can carry need data that has not been provided yet."
       />
       <DesignerCanvas
         mode={mode}

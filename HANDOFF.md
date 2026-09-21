@@ -1327,6 +1327,59 @@ not type passwords or secrets). Record, for whoever touches this next:
 - A custom domain later means three edits: Google authorised domains,
   Supabase redirect list, Supabase Site URL.
 
+## Night — the Solar Designer became a roof planner
+
+The owner pasted a brief for an "AI Roof Planner & Design Assistant" (IKEA-style
+configurator: blank canvas or photo, drag-and-drop modular blocks, live
+constraints, "Get inspired", itemised summary) and said pull then push. Most of
+it already existed in `/designer` (scaled canvas, drag with snapping, rotate,
+overlap and edge checks, auto-fill, AI placement, save). Added on top, all in
+`src/app/(app)/designer/`:
+
+- **Modules** (`modules.ts`, `PlacedModule` in `designTypes.ts`): walkway,
+  planter, seating, pergola, custom. Generic blocks at the size the homeowner
+  types, labelled `user`, described on the page as "not products". They drag,
+  snap, rotate (swap w/h), nudge, undo like panels; panels cannot sit on them.
+  One undo stack holds both layers (`Snapshot`).
+- **Clearances**: `setback_m` and `walkway_m` on `RoofSpec` (defaults 0.5 and
+  0.6, editable, `user` badge). The setback is drawn dashed; a panel inside it
+  is a soft "Clearance" warning, not red. `detectProblems` now covers
+  panel/module/obstacle/edge in every combination.
+- **Photo underlay**: a JPEG/PNG/WEBP is stretched to the typed roof
+  rectangle (`<image preserveAspectRatio="none">`, clipped), opacity slider,
+  and a **tracing mode** that turns a drag into an obstacle at the current
+  label. "Read photo" posts the file to the existing `/api/ai/inspect-roof`
+  (which cannot measure, by design) and lists what it saw with a "Trace it"
+  button per item and "Use as shading notes". Without the Claude key it shows
+  the unavailable state and `CLAUDE_API_KEY` placeholder, as everywhere else.
+- **Get inspired** (`inspire()` in `geometry.ts`): three deterministic
+  layouts, labelled `calculated`, each with notes on what it gives up: most
+  panels (dense rows inside the setback); easy to clean (a walkway after every
+  second row, drawn as walkway modules); panels and a terrace (a "Leisure
+  zone" seating block along the far edge at a user-set share of the depth,
+  walkway between). `fillRows` is the shared row filler; `autoFillGrid` now
+  uses the roof's own setback and skips modules.
+- **Structure card**: total panel weight = count × `weight_kg` (the LONGi
+  rows carry 33.5 kg; demo rows may not), load over the panel's own footprint,
+  and the roof's permissible load as the new `ROOF_LOAD_CAPACITY` placeholder
+  (decision 21: per building, from an engineer, never a default). Mounting and
+  ballast stated as not in the catalogue.
+- **Coverage** metric (panel area ÷ roof minus obstacles) and an itemised
+  **Components** card: panels with per-unit size, power and weight; modules
+  grouped by kind with the sizes typed; obstacles; roof, setback, walkway.
+- Saved designs carry `modules` and the extra summary fields (optional, so
+  older rows load). `saveDesignAction` stores modules inside `summary`.
+  `purchase` is untouched and type-checks.
+- Not done from the brief: a 3D view (the SVG plan is the mockup), and true
+  edge-snapping to features detected in the photo (the model returns no
+  coordinates, so tracing is by hand; that is the honest version).
+
+Testing note: `/designer` is behind sign-in in Supabase mode and Claude holds
+no account, so the planner was checked on a demo-mode production build
+(`NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run build`,
+then `next start -p 3322`), which runs beside the dev server without the dev
+lock.
+
 ## What to do next, in priority order
 
 1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.
