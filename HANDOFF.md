@@ -1481,7 +1481,15 @@ was simply printing the whole registry.
   thresholds warn 10 % / alert 20 % on a rolling 30-day total; end-of-life
   criteria (80 % of nameplate over a year, safety defects, repair > 50 % of
   replacement, expired warranty plus fault). Each has its reasoning and the
-  SQL ready. They are policy choices, so they wait for the yes.
+  SQL ready. They are policy choices, so they waited for the yes.
+- **The owner said yes to all three** later on 2026-09-22 and the SQL ran
+  against the live project (`platform_settings` rows `tco_period_years`,
+  `production_alert_thresholds`, `end_of_life_criteria`, each with the
+  decision recorded in `source`). Decisions 11, 13 and 14 closed. The
+  Savings Calculator and Long-term Performance pages now prefill the 25-year
+  horizon as a platform value; the thresholds and criteria are stored for the
+  monitoring and replacement pages, which still say what they cannot assess
+  until production data exists.
 
 ## What to do next, in priority order
 

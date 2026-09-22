@@ -43,8 +43,9 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
 - Platform settings entered with sources on the owner's yes: tariff by MEW
   sector, CO₂ factor, peak sun hours 5.58 (GHI, Kuwait City), performance
   ratio 0.86. Never enter a platform number without the owner's yes;
-  `docs/DECISIONS-NEEDED.md` records what was entered and why, and holds
-  three proposals (TCO period, alert thresholds, end-of-life) awaiting it.
+  `docs/DECISIONS-NEEDED.md` records what was entered and why. TCO period
+  (25 y), alert thresholds (10 %/20 %, 30-day) and end-of-life criteria were
+  entered 2026-09-22 on the owner's yes.
   Degradation comes from each panel's datasheet warranty curve
   (`src/lib/solar/degradation.ts`); there is no platform default. The admin
   dashboard's decisions card checks live state (`placeholderStatus.ts`).

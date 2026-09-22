@@ -15,10 +15,10 @@ until decided. Nothing has been assumed silently. Decisions 19 to 21 were added 
 | 8 | **Email / notification provider** | `[PLACEHOLDER: EMAIL / NOTIFICATION PROVIDER]` | `notifications.delivery`; a server job to deliver |
 | 9 | **Solar monitoring hardware / inverter API** (which vendors) | `[PLACEHOLDER: SOLAR MONITORING HARDWARE/API]` | ingestion job → `production_records`; `solar_systems.monitoring_source` |
 | 10 | **Panel-level monitoring provider** | `[PLACEHOLDER: PANEL-LEVEL MONITORING DATA SOURCE]` | `panel_production_records` |
-| 11 | **Production alert thresholds** | `[PLACEHOLDER: PRODUCTION ALERT THRESHOLDS]` | platform setting `production_alert_thresholds` |
+| 11 | ~~**Production alert thresholds**~~ **Entered 2026-09-22 on the owner's yes**: warn at 10 % below expected, alert at 20 %, on a rolling 30-day total against the expected curve. A policy choice, to be tuned once real production data exists. | — | `platform_settings.production_alert_thresholds` |
 | 12 | **Expected degradation rate.** **Partly resolved 2026-09-22**: where the panel is known, Solink now uses the manufacturer's performance-warranty curve from the datasheet (`src/lib/solar/degradation.ts`; the LONGi Hi-MO 7 rows carry 1 % in year one, then 0.4 %/year, 87.4 % guaranteed at year 30), labelled source, on the Long-term Performance page from the passport snapshot. Still open: a platform-wide default for panels whose datasheet states nothing. Recommendation: none; leave unavailable rather than assume. | `[PLACEHOLDER: EXPECTED PANEL DEGRADATION RATE]` | per product spec (`specs.additional.annual_degradation_year_2_30_pct`); platform setting only if the owner wants a default |
-| 13 | **TCO period** (years) | `[PLACEHOLDER: TCO PERIOD]` | platform setting `tco_period_years` |
-| 14 | **End-of-life criteria** | `[PLACEHOLDER: END-OF-LIFE CRITERIA]` | platform setting `end_of_life_criteria` |
+| 13 | ~~**TCO period**~~ **Entered 2026-09-22 on the owner's yes**: 25 years, the conventional residential PV analysis life, within the panels' 30-year performance warranty. | — | `platform_settings.tco_period_years` |
+| 14 | ~~**End-of-life criteria**~~ **Entered 2026-09-22 on the owner's yes**: any one of output below 80 % of nameplate over a full calendar year; a safety defect on inspection (glass breakage, backsheet cracking or burn marks, junction-box damage, hot spots); a repair quoted above 50 % of replacement; product warranty expired plus a fault. The installer confirms every flag. | — | `platform_settings.end_of_life_criteria` |
 | 15 | **Admin permission structure** (roles, who can verify products) | `[PLACEHOLDER: ADMIN AUTHENTICATION / PERMISSIONS]` | `user_profiles.role`, RLS `is_admin()` |
 | 16 | **Maintenance / installation prices** — entered by providers or platform | `[PLACEHOLDER: MAINTENANCE PRICE]`, `[PLACEHOLDER: INSTALLATION PRICE]` | `provider_prices`, product cost fields |
 | 17 | **Nearby-system comparison** data-sharing & privacy design | `[PLACEHOLDER: ANONYMIZED NEARBY SYSTEM DATA]` | `area_aggregates` |
@@ -87,11 +87,12 @@ update platform_settings set
 where key = 'electricity_tariff_per_kwh';
 ```
 
-## Proposed entries awaiting the owner's yes (2026-09-22, Session 7)
+## Entries made on the owner's yes (2026-09-22, Session 7)
 
-Three platform values are policy choices rather than facts, so no source can
-settle them. Claude proposes the values below with the reasoning; **none has
-been entered.** Say yes to any of them and the SQL runs as written.
+Three platform values are policy choices rather than facts, so no source could
+settle them. Claude proposed the values below with the reasoning; **the owner
+said yes to all three on 2026-09-22 and the SQL ran as written**, kept here as
+the record of exactly what was entered and why.
 
 ### TCO analysis period (decision 13)
 
