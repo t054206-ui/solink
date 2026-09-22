@@ -1,23 +1,20 @@
 import { z } from "zod";
-import { askClaudeJson } from "@/lib/ai/claude";
 import { getDataMode } from "@/lib/data/mode";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
-import {
-  buildAnalysisSystemPrompt,
-  collectSiteData,
-  isAnalysisConfigured,
-  SITE_ANALYSIS_SHAPE,
-  SiteAnalysisSchema,
-  type SiteAnalysis,
-  type StageName,
-} from "@/lib/solar/siteAnalysis";
+import { analyseSiteConditions, ANALYSIS_ENGINE } from "@/lib/solar/analysisEngine";
+import { collectSiteData, RuleEngineAnalysisSchema, type StageName } from "@/lib/solar/siteAnalysis";
 
 /**
  * Site analysis: address in, saved analysis out. Everything runs here.
  *
- *   auth → geocode → Google Solar → WeatherAPI → normalise → Claude → Supabase
+ *   auth → rate limit → geocode → Google Solar (optional) → WeatherAPI
+ *        → normalise → Solink rule engine → Supabase
+ *
+ * No model is called. The analysis is produced by the deterministic rules in
+ * `analysisEngine.ts`, so the route cannot fail for want of AI credit and
+ * needs no CLAUDE_API_KEY. Google Solar is optional: when it is not configured
+ * the roof stays unavailable and the run continues.
  *
  * Every key stays on the server; the browser sends an address and receives an
  * analysis. Every run leaves a row in `ai_analyses`, including the ones that
@@ -87,8 +84,9 @@ export async function POST(req: Request) {
     return error ? null : (data.id as string);
   }
 
-  // Steps 3 to 6. Geocoding is the only fatal provider: without coordinates
-  // there is nothing to ask the others.
+  // Steps 3 to 5. Geocoding is the only fatal provider: without coordinates
+  // there is nothing to ask the others. A missing Google Solar key or an empty
+  // WeatherAPI response is recorded as unavailable and the run continues.
   const collected = await collectSiteData(address);
   if (!collected.ok) {
     await record(
@@ -118,54 +116,25 @@ export async function POST(req: Request) {
     },
   };
 
-  // Step 7. Without a key there is no analysis, and a run that produced no
-  // analysis is a failed run, recorded as one.
-  if (!isAnalysisConfigured()) {
-    await record(inputSummary, {
-      status: "failed",
-      stage: "analysis",
-      reason: "not_configured",
-      error: "The AI analysis service is not connected.",
-      completed_at: new Date().toISOString(),
-    }, null);
-    return fail(503, {
-      ok: false,
-      stage: "analysis",
-      reason: "not_configured",
-      message: `The data was collected, but the analysis service is not connected. ${PLACEHOLDERS.CLAUDE_API_KEY}`,
-    });
-  }
+  // Step 6. The rules. Local, deterministic, no network and no key.
+  const analysis = analyseSiteConditions(site);
 
-  const ai = await askClaudeJson<SiteAnalysis>({
-    system: buildAnalysisSystemPrompt(site),
-    prompt:
-      "Analyse this roof for rooftop solar using only the DATA block. Report what the providers supplied, what you worked out, and what was unavailable.",
-    schemaDescription: SITE_ANALYSIS_SHAPE,
-    maxTokens: 3000,
-  });
-
-  if (!ai.ok) {
-    await record(inputSummary, {
-      status: "failed",
-      stage: "analysis",
-      reason: ai.reason,
-      error: ai.message,
-      completed_at: new Date().toISOString(),
-    }, null);
-    return fail(502, { ok: false, stage: "analysis", reason: ai.reason, message: "The analysis could not be generated. The collected data was saved, so you can try again." });
-  }
-
-  // Claude answered, but an answer of the wrong shape is not an analysis.
-  const validated = SiteAnalysisSchema.safeParse(ai.data);
+  // Step 7. The engine is held to the same contract the stored rows are read
+  // through: a result of the wrong shape is a failed run, not a saved one.
+  const validated = RuleEngineAnalysisSchema.safeParse(analysis);
   if (!validated.success) {
-    await record(inputSummary, {
-      status: "failed",
-      stage: "analysis",
-      reason: "invalid_structure",
-      error: validated.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ").slice(0, 900),
-      completed_at: new Date().toISOString(),
-    }, ai.model);
-    return fail(502, {
+    await record(
+      inputSummary,
+      {
+        status: "failed",
+        stage: "analysis",
+        reason: "invalid_structure",
+        error: validated.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ").slice(0, 900),
+        completed_at: new Date().toISOString(),
+      },
+      ANALYSIS_ENGINE.id,
+    );
+    return fail(500, {
       ok: false,
       stage: "analysis",
       reason: "invalid_structure",
@@ -178,7 +147,7 @@ export async function POST(req: Request) {
   const id = await record(
     inputSummary,
     { status: "completed", stage: "analysis", analysis: validated.data, sources: site.sources, unavailable: site.unavailable, completed_at: completedAt },
-    ai.model,
+    ANALYSIS_ENGINE.id,
   );
 
   if (!id) {
@@ -186,7 +155,7 @@ export async function POST(req: Request) {
       ok: false,
       stage: "persistence",
       reason: "error",
-      message: "The analysis was generated but could not be saved. Nothing has been stored; please try again.",
+      message: "The analysis was completed but could not be saved. Nothing has been stored; please try again.",
     });
   }
 
@@ -195,7 +164,7 @@ export async function POST(req: Request) {
     id,
     startedAt,
     completedAt,
-    model: ai.model,
+    model: ANALYSIS_ENGINE.id,
     location: site.location,
     solar: site.solar,
     weather: site.weather,
