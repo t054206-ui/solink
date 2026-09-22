@@ -38,7 +38,7 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   `solar_products` with the manufacturer's renders as images. Supabase-mode
   listings exclude demo rows. Behind sign-in. Import pattern and provenance:
   `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
-- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0008 applied, both
+- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0008 and 0010 applied (0009 pending the owner's commit), both
   environments in Supabase mode, sign-up live, the owner's account is admin.
   Still needed: service-role key, SMTP sender, domain.
 - Platform settings entered with sources on the owner's yes: tariff by MEW

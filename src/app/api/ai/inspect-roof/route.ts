@@ -1,6 +1,7 @@
 import { askClaudeJson, isClaudeConfigured } from "@/lib/ai/claude";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { HouseType, RoofOrientation } from "@/lib/types";
+import { requireUser } from "@/lib/api/auth";
 
 export type Confidence = "low" | "medium" | "high";
 
@@ -47,6 +48,8 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
  * this works before Supabase exists.
  */
 export async function POST(req: Request) {
+  const gate = await requireUser();
+  if ("response" in gate) return gate.response;
   if (!isClaudeConfigured()) {
     return Response.json(
       { ok: false, reason: "not_configured", message: `Roof analysis is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` },

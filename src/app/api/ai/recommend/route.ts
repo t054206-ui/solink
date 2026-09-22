@@ -2,6 +2,7 @@ import { z } from "zod";
 import { askClaude, buildContextBlock, isClaudeConfigured } from "@/lib/ai/claude";
 import { buildUserContext } from "@/lib/ai/context";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
+import { requireUser } from "@/lib/api/auth";
 
 const Body = z.object({
   budget: z.number().nullable().optional(),
@@ -14,6 +15,8 @@ const Body = z.object({
 
 /** AI recommendation: explains trade-offs between the ACTUAL products in the catalog. */
 export async function POST(req: Request) {
+  const gate = await requireUser();
+  if ("response" in gate) return gate.response;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
   if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `AI recommendations are not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });

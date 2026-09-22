@@ -1,10 +1,13 @@
 import { z } from "zod";
 import { getWeatherBundle } from "@/lib/weather/weatherapi";
+import { requireUser } from "@/lib/api/auth";
 
 const Q = z.object({ lat: z.coerce.number().min(-90).max(90), lng: z.coerce.number().min(-180).max(180), days: z.coerce.number().int().min(1).max(7).default(3) });
 
 /** Weather + air quality for a coordinate. Server-side only (key never reaches the browser). */
 export async function GET(req: Request) {
+  const gate = await requireUser();
+  if ("response" in gate) return gate.response;
   const url = new URL(req.url);
   const parsed = Q.safeParse(Object.fromEntries(url.searchParams));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "lat and lng are required." }, { status: 400 });

@@ -1788,3 +1788,12 @@ Left as they were, deliberately: the dimmed SOON items (the owner's Session 7
 choice), the four honest empty-state pages, Arabic for the app area (a
 project of its own), a Content-Security-Policy (its own task), and the
 Supabase leaked-password toggle (owner's dashboard).
+
+## Security audit, 2026-09-22 — what changed
+
+Report: `docs/SECURITY-AUDIT-2026-09-22.md`. Migration 0010 (applied) closes
+a profile self-link escalation (high), provider FOR ALL policies on cases
+and appointments, installer delete on passports, and three integrity gaps.
+`src/lib/api/auth.ts` gates the AI, weather and geocode routes behind
+sign-in (401 in Supabase mode). Still open: CSP, rate limiting,
+leaked-password toggle, Supabase error text in some action results.

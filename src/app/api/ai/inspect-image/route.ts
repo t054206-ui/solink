@@ -1,5 +1,6 @@
 import { askClaudeJson, isClaudeConfigured } from "@/lib/ai/claude";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
+import { requireUser } from "@/lib/api/auth";
 
 export interface InspectionResult {
   image_quality: { rating: "good" | "fair" | "poor"; notes: string };
@@ -17,6 +18,8 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
  * This is NOT an engineering diagnosis and the prompt forbids certainty claims.
  */
 export async function POST(req: Request) {
+  const gate = await requireUser();
+  if ("response" in gate) return gate.response;
   if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `Image inspection is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });
   const form = await req.formData().catch(() => null);
   const file = form?.get("image");

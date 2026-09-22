@@ -2,6 +2,7 @@ import { z } from "zod";
 import { askClaude, buildContextBlock, isClaudeConfigured } from "@/lib/ai/claude";
 import { buildUserContext } from "@/lib/ai/context";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
+import { requireUser } from "@/lib/api/auth";
 
 const Body = z.object({
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(8000) })).min(1).max(40),
@@ -10,6 +11,8 @@ const Body = z.object({
 
 /** Central AI Solar Agent endpoint. Retrieves real user data, then asks Claude. */
 export async function POST(req: Request) {
+  const gate = await requireUser();
+  if ("response" in gate) return gate.response;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
   if (!isClaudeConfigured()) {
