@@ -1,0 +1,47 @@
+{
+  "_comment": [
+    "Claude Schedule routine that produces Solink's monthly solar reports.",
+    "Create it with the RemoteTrigger tool: {action: 'create', body: <this object minus the _comment and _setup keys>}.",
+    "Or make it by hand at https://claude.ai/code/routines with the same prompt.",
+    "The prompt below is automation/claude-schedule/monthly-report.prompt.md, inlined.",
+    "See docs/AUTOMATION.md before changing any of it."
+  ],
+  "_setup": {
+    "replace_before_creating": {
+      "SOLINK_BASE_URL": "https://solink-nu.vercel.app, or the deployment this routine should call",
+      "AUTOMATION_API_KEY_HERE": "the value of AUTOMATION_API_KEY on that deployment"
+    },
+    "environment_id": "Take the id from the environments the schedule skill lists for this account. env_012sWnvvj4fhNMQBnGaP2Guc was the Default environment on 2026-09-22; confirm it rather than trusting it.",
+    "schedule": "0 8 5 * * is 08:00 UTC on the 5th (11:00 Asia/Kuwait). Not the 1st: the sunlight archive Solink reads lags real time by several days, and running before it has caught up produces a month whose last days have no measured sunlight, which costs the report its ability to say whether a change in production was the weather or the system. Use 0 8 1 * * instead if the report is wanted immediately; it will still be produced and will say the sunlight is incomplete.",
+    "no_repository": "The routine calls three HTTP endpoints and needs no checkout. Leaving sources empty keeps it that way.",
+    "secret": "The key lives in this prompt, which is the routine's configuration. It opens the three monthly-report routes and nothing else, but those routes return one homeowner's records, so treat it as a credential: a long random value, rotated if the routines list is ever shared."
+  },
+
+  "name": "Solink — monthly solar report",
+  "cron_expression": "0 8 5 * *",
+  "enabled": true,
+  "job_config": {
+    "ccr": {
+      "environment_id": "env_012sWnvvj4fhNMQBnGaP2Guc",
+      "session_context": {
+        "model": "claude-sonnet-5",
+        "sources": [],
+        "allowed_tools": ["Bash"]
+      },
+      "events": [
+        {
+          "data": {
+            "uuid": "51059fa3-8d5c-41b0-879a-8e09a377b063",
+            "session_id": "",
+            "type": "user",
+            "parent_tool_use_id": null,
+            "message": {
+              "role": "user",
+              "content": "You are the scheduled runner for Solink's monthly solar report. Solink is a solar-energy platform for homeowners in Kuwait. Your job is to ask it to produce last month's report for every system that does not have one yet, and then say what happened. You do not write any part of a report yourself.\n\nConfiguration:\n- Base URL: SOLINK_BASE_URL\n- Every request carries the header `x-solink-automation-key: AUTOMATION_API_KEY_HERE`\n\nDo this, in order.\n\n1. WORK OUT THE MONTH. Run `date -u +%Y-%m` and subtract one month. That string, YYYY-MM, is the month you are reporting on. Do not guess it.\n\n2. ASK WHICH SYSTEMS NEED A REPORT.\n   GET {base}/api/automation/monthly-report?month={month}\n   The response is { ok, month, counts: { installed, outstanding }, systems: [ { system_id, user_id, name, already_reported } ] }.\n   If the status is 503, stop immediately and report that the automation is not configured, quoting the `error` field verbatim: it names the missing key. Do not retry and do not try any other route. If the status is 401, stop and report that the key in this routine is wrong or has been rotated.\n\n3. FOR EACH SYSTEM WHERE already_reported IS FALSE, one at a time:\n   a. Fetch the combined dataset, so this run's log contains what the report was built from:\n      GET {base}/api/automation/monthly-report/dataset?system={system_id}&month={month}\n      Note down, in one line: production.total_kwh, production.trend_pct, whether sunlight.month and sunlight.previous_month are present, sunlight.yield_change_pct, the maintenance counts, and how many missing_inputs there are. Do not draw conclusions from any of it. A month with missing inputs is normal and is not a reason to skip it.\n   b. Ask Solink to analyse, store and notify:\n      POST {base}/api/automation/monthly-report/generate\n      Content-Type: application/json\n      {\"system_id\": \"...\", \"month\": \"YYYY-MM\", \"trigger\": \"schedule\"}\n      This is the slow call, up to about two minutes. Allow for it (curl --max-time 240).\n      On a 5xx or a timeout, retry ONCE after 10 seconds. If it fails again, record the failure for that system and move on to the next one. One roof failing must not stop the rest of the month.\n\n4. REPORT BACK, as a short summary for a person:\n   - The month, and how many systems were installed, outstanding, and completed.\n   - One line per system: its name, whether it succeeded, the report_url, and any stage in run.steps whose state is not \"ok\", with that step's note verbatim. Skipped stages are expected (no Claude key, no sunlight archive, no tariff) and are information, not failures.\n   - One line per system that failed, with the error as returned.\n\nRULES FOR THE WHOLE RUN:\n- Call only the three routes above, on that base URL, and nothing else.\n- Never put the key in a URL, in a query string, or in anything you print. It goes in the header only.\n- Never write, rewrite, summarise or improve the text of a report. If a report came back without AI observations, that is Solink saying it had no Claude key or no usable reading, and it is the correct outcome. Report it; do not fill it in.\n- Never state a cause for a change in production. Solink decides whether the data supports saying anything about cause, and it refuses when both months do not have measured sunlight.\n- If nothing is outstanding, say so in one line and finish. That is a normal month, not an error."
+            }
+          }
+        }
+      ]
+    }
+  }
+}
