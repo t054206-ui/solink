@@ -11,7 +11,7 @@ import * as demo from "@/lib/demo/data";
 import type { SiteAnalysisRow } from "@/lib/solar/siteAnalysis";
 import type {
   Product, ProviderCompany, SolarSystem, SolarPassport, ProductionRecord, MaintenanceCase, Incident,
-  AiAlert, MonthlyReport, SolarProfile, Appointment, Notification, Manufacturer, ManufacturerSource, ManufacturerVersion, ProductDocument,
+  AiAlert, MonthlyReport, SolarProfile, Appointment, Notification, Manufacturer, ManufacturerSource, ManufacturerVersion, ProductDocument, ManufacturerRequest, ProductEventCount,
 } from "@/lib/types";
 
 export interface Result<T> { data: T; mode: DataMode }
@@ -123,6 +123,42 @@ export async function listManufacturerVersions(manufacturerId: string): Promise<
   const { data, error } = await c.from("manufacturer_versions").select("*").eq("manufacturer_id", manufacturerId).order("version", { ascending: false });
   if (error) throw error;
   return { data: (data ?? []) as ManufacturerVersion[], mode };
+}
+
+/**
+ * Requests addressed to manufacturers. RLS decides the scope: a manufacturer
+ * account sees its own company's requests, a homeowner sees the ones they
+ * sent, an admin sees all. The optional filter narrows further.
+ */
+export async function listManufacturerRequests(opts: { manufacturerId?: string } = {}): Promise<Result<ManufacturerRequest[]>> {
+  const mode = getDataMode();
+  if (mode === "demo") return { data: [], mode };
+  const c = (await supa())!;
+  let q = c.from("manufacturer_requests").select("*").order("created_at", { ascending: false });
+  if (opts.manufacturerId) q = q.eq("manufacturer_id", opts.manufacturerId);
+  const { data, error } = await q;
+  if (error) throw error;
+  return { data: (data ?? []) as ManufacturerRequest[], mode };
+}
+
+/**
+ * Recorded activity per product, counted in the database. Only what was
+ * written when a signed-in person opened, compared or used a product; demo
+ * mode records nothing, so it returns nothing.
+ */
+export async function countProductEvents(productIds: string[]): Promise<Result<ProductEventCount[]>> {
+  const mode = getDataMode();
+  if (mode === "demo" || productIds.length === 0) return { data: [], mode };
+  const c = (await supa())!;
+  const { data, error } = await c.from("product_events").select("product_id, kind").in("product_id", productIds);
+  if (error) throw error;
+  const by = new Map<string, ProductEventCount>();
+  for (const r of (data ?? []) as { product_id: string; kind: ProductEventCount["kind"] }[]) {
+    const k = `${r.product_id}|${r.kind}`;
+    const cur = by.get(k) ?? { product_id: r.product_id, kind: r.kind, count: 0 };
+    cur.count += 1; by.set(k, cur);
+  }
+  return { data: [...by.values()], mode };
 }
 
 /** Documents attached to the given products. Read is open under RLS; demo mode has none server-side. */

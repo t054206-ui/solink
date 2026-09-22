@@ -18,6 +18,7 @@ import { cn, specText } from "@/lib/utils";
 import { PriceCell } from "../../marketplace/_components/PriceCell";
 import { VerificationBadge } from "../../marketplace/_components/VerificationBadge";
 import { ManufacturerLink } from "../../marketplace/_components/ManufacturerLink";
+import { RecordProductEvent } from "../../marketplace/_components/RecordProductEvent";
 import { COMPARE_MAX, COMPARE_STORE_KEY, dimsSpec, getSpec, getSpecNum, realPrice } from "../../marketplace/_components/product-helpers";
 
 interface UserAssumptions { peakSunHours: string; performanceRatio: string; horizonYears: string }
@@ -112,9 +113,11 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
   if (!loaded) return <div className="skeleton h-64 rounded-[var(--radius-lg)]" aria-hidden />;
 
   const anyDemo = selected.some((p) => p.is_demo);
+  const realSelected = selected.filter((p) => !p.is_demo).map((p) => p.id);
 
   return (
     <div className="space-y-5">
+      {realSelected.length > 1 && <RecordProductEvent productIds={realSelected} kind="compare" />}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex-1 sm:max-w-md">
           <Field label={`Add a panel (${selected.length}/${COMPARE_MAX})`} help={full ? `Remove one to add another: up to ${COMPARE_MAX} at a time.` : addable.length === 0 ? "Every panel in the catalog is already selected." : undefined}>

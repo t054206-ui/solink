@@ -33,6 +33,9 @@ export async function createOrderAction(input: CreateOrderInput): Promise<{ ok: 
     payment_provider: null, notes: input.notes ?? null,
   }).select("id").single();
   if (error) return { ok: false, reason: "error", message: error.message };
+  // Activity for the manufacturers whose products were requested: one row per product, counts only.
+  const productIds = Array.from(new Set(input.items.map((i) => i.product_id).filter((id): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id))));
+  if (productIds.length) await r.c.from("product_events").insert(productIds.map((product_id) => ({ product_id, kind: "purchase_request", user_id: r.user.id })));
   return { ok: true, id: data.id as string };
 }
 

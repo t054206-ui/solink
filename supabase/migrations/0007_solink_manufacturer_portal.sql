@@ -1,5 +1,6 @@
 -- ============================================================================
--- Solink — Manufacturer portal (PROPOSED 2026-09-22, NOT YET APPLIED)
+-- Solink — Manufacturer portal (written 2026-09-22; APPLIED 2026-09-22 on the
+-- owner's instruction "do everything yourself", after 0008)
 --
 -- Written for the owner's yes. Everything the manufacturer portal does today
 -- runs on 0001–0006: own-product writes ("products manufacturer own"),

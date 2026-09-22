@@ -32,6 +32,7 @@ export function CompanyProfileForm({ me, productCount, mode }: { me: Manufacture
     name: start0.name, legal_name: start0.legal_name ?? "", description: start0.description ?? "",
     headquarters_country: start0.headquarters_country ?? "", headquarters_city: start0.headquarters_city ?? "",
     website: start0.website ?? "", logo_url: start0.logo_url ?? "", cover_image_url: start0.cover_image_url ?? "",
+    contact_email: start0.contact_email ?? "", phone: start0.phone ?? "",
   });
   const set = <K extends keyof CompanyProfileInput>(k: K, v: CompanyProfileInput[K]) => setF((p) => ({ ...p, [k]: v }));
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -61,6 +62,8 @@ export function CompanyProfileForm({ me, productCount, mode }: { me: Manufacture
             <Field label="Headquarters city"><Input value={f.headquarters_city ?? ""} onChange={(e) => set("headquarters_city", e.target.value)} maxLength={80} /></Field>
             <Field label="Official website" className="sm:col-span-2"><Input type="url" value={f.website ?? ""} onChange={(e) => set("website", e.target.value)} placeholder="https://" dir="ltr" /></Field>
             <Field label="Description" className="sm:col-span-2" help="What your company makes, in plain words. Solink's administrators may ask for a source for any claim."><Textarea value={f.description ?? ""} onChange={(e) => set("description", e.target.value)} maxLength={2000} /></Field>
+            <Field label="Contact email" help="A public business address for requests; your sign-in email stays private."><Input type="email" value={f.contact_email ?? ""} onChange={(e) => set("contact_email", e.target.value)} dir="ltr" /></Field>
+            <Field label="Phone"><Input type="tel" value={f.phone ?? ""} onChange={(e) => set("phone", e.target.value)} dir="ltr" /></Field>
             <Field label="Logo URL" help="Address of your logo as published on your website."><Input type="url" value={f.logo_url ?? ""} onChange={(e) => set("logo_url", e.target.value)} placeholder="https://" dir="ltr" /></Field>
             <Field label="Cover image URL"><Input type="url" value={f.cover_image_url ?? ""} onChange={(e) => set("cover_image_url", e.target.value)} placeholder="https://" dir="ltr" /></Field>
             {msg && <p role="status" className={`sm:col-span-2 ${msg.ok ? "text-[13px] text-good-fg" : "text-[13px] text-critical-fg"}`}>{msg.text}</p>}

@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
-import { SectionShell } from "../_components/SectionShell";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { EmptyState } from "@/components/ui/States";
+import { listManufacturerRequests } from "@/lib/data/repositories";
+import { getManufacturerAccess } from "../_lib/access";
+import { listOwnProducts } from "../_lib/data";
+import { RequestsPanel } from "../_components/RequestsPanel";
 
 export const metadata: Metadata = { title: "Requests" };
 
-export default function RequestsPage() {
+export default async function RequestsPage() {
+  const access = await getManufacturerAccess();
+  if (!access.manufacturer) return <EmptyState title="No manufacturer linked to your account" />;
+  const [{ data: requests }, { data: products }] = await Promise.all([
+    listManufacturerRequests({ manufacturerId: access.manufacturer.id }).catch(() => ({ data: [], mode: access.mode })),
+    listOwnProducts(access.manufacturer.id),
+  ]);
+  const open = requests.filter((r) => r.status === "new" || r.status === "reviewing" || r.status === "in_progress").length;
   return (
-    <SectionShell
-      title="Requests"
-      description="Product, availability, business, distributor and partnership inquiries addressed to your company, with a status from New to Closed. You see a requester's display name and governorate, never their address, email or phone."
-      emptyTitle="No requests yet"
-      emptyBody={<p>When customers or businesses send requests about your products, they will appear here.</p>}
-      needs={{ title: "MANUFACTURER REQUESTS", body: "The manufacturer_requests table and its row-level security are proposed in migration 0007 and not applied. Until then no request can be created or shown." }}
-    />
+    <>
+      <PageHeader eyebrow="Manufacturer" title="Requests" description={`Product, availability, business, distributor and partnership inquiries addressed to your company, sent from your Solink page. ${requests.length} on record, ${open} open. You see a requester's display name and governorate, never their address, email or phone.`} />
+      <RequestsPanel requests={requests} products={products} mode={access.mode} />
+    </>
   );
 }

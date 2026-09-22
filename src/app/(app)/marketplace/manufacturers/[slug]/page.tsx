@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { ManufacturerProfile } from "@/components/manufacturers/ManufacturerProfile";
+import { ManufacturerRequestForm } from "@/components/manufacturers/ManufacturerRequestForm";
 import { getManufacturer, listManufacturerSources, listProductDocuments, listProducts } from "@/lib/data/repositories";
 import { headquartersText } from "@/lib/manufacturers/helpers";
 
@@ -33,7 +34,7 @@ export default async function ManufacturerPage({ params }: Props) {
         description={<span>{m.manufacturer_type ?? "Manufacturer"}{hq ? ` · ${hq}` : ""}</span>}
         actions={<Button href={`/marketplace?manufacturer=${encodeURIComponent(m.slug)}`} variant="outline">Products in the marketplace</Button>}
       />
-      <ManufacturerProfile m={m} products={products} docs={docs} sources={sources} mode={mode} />
+      <ManufacturerProfile m={m} products={products} docs={docs} sources={sources} mode={mode} aside={!m.is_demo ? <ManufacturerRequestForm manufacturerId={m.id} manufacturerName={m.name} products={products.filter((p) => !p.is_archived)} mode={mode} archived={m.is_archived} /> : undefined} />
     </div>
   );
 }

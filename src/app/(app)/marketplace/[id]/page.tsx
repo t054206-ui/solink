@@ -17,6 +17,7 @@ import { PriceCell } from "../_components/PriceCell";
 import { CATEGORY_SINGULAR } from "../_components/product-helpers";
 import { VerificationBadge } from "../_components/VerificationBadge";
 import { ManufacturerLink } from "../_components/ManufacturerLink";
+import { RecordProductEvent } from "../_components/RecordProductEvent";
 import { CalculatedHelpers } from "./_components/CalculatedHelpers";
 import { ImageGallery } from "./_components/ImageGallery";
 import { SourceCard } from "./_components/SourceCard";
@@ -110,6 +111,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
       </div>
 
       <CompareTray />
+      {!p.is_demo && <RecordProductEvent productIds={[p.id]} kind="view" />}
     </div>
   );
 }

@@ -23,7 +23,7 @@ import { AvailabilityBadge } from "./AvailabilityBadge";
  * verification decisions. Missing facts read "Not provided"; unverified
  * availability reads exactly that.
  */
-export function ManufacturerProfile({ m, products, docs, sources, mode }: { m: Manufacturer; products: Product[]; docs: ProductDocument[]; sources: ManufacturerSource[]; mode: DataMode }) {
+export function ManufacturerProfile({ m, products, docs, sources, mode, aside }: { m: Manufacturer; products: Product[]; docs: ProductDocument[]; sources: ManufacturerSource[]; mode: DataMode; aside?: React.ReactNode }) {
   const active = products.filter((p) => !p.is_archived);
   const hq = headquartersText(m);
   const srcCls = m.is_demo ? "demo" : "source";
@@ -65,6 +65,7 @@ export function ManufacturerProfile({ m, products, docs, sources, mode }: { m: M
                 <Row k="Manufacturer type" v={m.manufacturer_type ?? notProvided} cls={m.manufacturer_type ? "user" : "unavailable"} clsLabel="Solink" />
                 <Row k="Headquarters" v={hq ?? notProvided} cls={hq ? srcCls : "unavailable"} />
                 <Row k="Website" v={m.website ? <a href={m.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-data underline underline-offset-2">{hostOf(m.website)} <ExternalLink className="size-3" aria-hidden /></a> : notProvided} cls={m.website ? srcCls : "unavailable"} />
+                {(m.contact_email || m.phone) && <Row k="Contact" v={<span className="flex flex-col items-end">{m.contact_email && <a href={`mailto:${m.contact_email}`} className="text-data underline underline-offset-2">{m.contact_email}</a>}{m.phone && <span dir="ltr">{m.phone}</span>}</span>} cls={srcCls} />}
                 <Row k={<>Market classification <InfoTip term="market_classification" /></>} v={m.market_regions.length ? m.market_regions.join(" / ") : notProvided} cls={m.market_regions.length ? "user" : "unavailable"} clsLabel="Solink" />
                 <Row k={<>Kuwait availability <InfoTip term="kuwait_availability" /></>} v={<AvailabilityBadge value={m.kuwait_available} region="kuwait" />} cls="user" clsLabel="Solink" />
                 <Row k="GCC availability" v={<AvailabilityBadge value={m.gcc_available} region="gcc" />} cls="user" clsLabel="Solink" />
@@ -95,6 +96,7 @@ export function ManufacturerProfile({ m, products, docs, sources, mode }: { m: M
         </div>
 
         <div className="space-y-6">
+          {aside}
           <Card>
             <CardHeader title={<><LibraryBig className="size-4 text-[var(--brand-strong)]" aria-hidden /> Documentation</>} subtitle="Datasheets, technical documents and images on record for this company's products, and its official website." />
             <CardBody>

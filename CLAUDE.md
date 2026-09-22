@@ -37,7 +37,7 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   `solar_products` with the manufacturer's renders as images. Supabase-mode
   listings exclude demo rows. Behind sign-in. Import pattern and provenance:
   `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
-- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0006 and 0008 applied (0007 proposed), both
+- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0008 applied, both
   environments in Supabase mode, sign-up live, the owner's account is admin.
   Still needed: service-role key, SMTP sender, domain.
 - Platform settings entered with sources on the owner's yes: tariff by MEW
@@ -84,10 +84,10 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   account cannot change its own standing (trigger). Never invent a logo, HQ
   city, availability or verification: decision 23.
 - **Manufacturer portal** at `/manufacturer/*`: own products, add/edit (never
-  self-verifies), datasheet links and uploads, company profile; performance,
-  requests, orders, reports and settings are honest empty states pending
-  `supabase/migrations/0007_*.sql`, which is written and **not applied**
-  (decision 22, partly superseded by 0008).
+  self-verifies), datasheet links and uploads, company profile with contact
+  details, Requests inbox (`manufacturer_requests`, sent from the public
+  profile), Product Performance and Reports from `product_events` (0007,
+  applied 2026-09-22). Orders and Settings remain honest empty states.
 - **Designer is simple by default**; "Show more options" reveals the rest.
   Blocks and obstacles resize; panels never do. `InfoTip` opens on hover.
 - Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch

@@ -6,10 +6,9 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { listManufacturers, listProducts } from "@/lib/data/repositories";
+import { listManufacturerRequests, listManufacturers, listProducts } from "@/lib/data/repositories";
 import { getManufacturerAccess } from "@/app/(app)/manufacturer/_lib/access";
-import { NotBuiltNote } from "@/components/ui/NotBuilt";
-import type { Product, SpecValue } from "@/lib/types";
+import type { ManufacturerRequest, Product, SpecValue } from "@/lib/types";
 import { InfoTip } from "@/components/help/InfoTip";
 
 /**
@@ -42,6 +41,8 @@ export default async function ManufacturerDashboard() {
     listManufacturers(),
     getManufacturerAccess(),
   ]);
+  const { data: requests } = access.manufacturer ? await listManufacturerRequests({ manufacturerId: access.manufacturer.id }).catch(() => ({ data: [] as ManufacturerRequest[], mode })) : { data: [] as ManufacturerRequest[] };
+  const openRequests = requests.filter((r) => r.status === "new" || r.status === "reviewing" || r.status === "in_progress").length;
   // Supabase mode: the company linked to the signed-in account. Demo mode: the labelled demo manufacturer.
   const me = access.manufacturer ?? manufacturers.find((m) => m.id === MINE) ?? manufacturers[0] ?? null;
   const mine = products.filter((p) => p.manufacturer_id === (me?.id ?? MINE));
@@ -160,9 +161,10 @@ export default async function ManufacturerDashboard() {
           </CardBody>
         </Card>
         <Card>
-          <CardHeader title="Requests" subtitle="Product, availability and business inquiries addressed to you." />
-          <CardBody>
-            <NotBuiltNote title="MANUFACTURER REQUESTS">No request can reach you yet: the table that would hold them is proposed in migration 0007 and has not been applied. When it is, new requests appear here and under Requests.</NotBuiltNote>
+          <CardHeader title="Requests" subtitle="Product, availability and business inquiries addressed to you, sent from your Solink page." action={<Link href="/manufacturer/requests" className="text-[12.5px] font-medium text-fg-secondary hover:text-fg">Open inbox</Link>} />
+          <CardBody className="flex flex-wrap items-center gap-3">
+            <span className="figure text-[26px] font-medium leading-none text-fg">{openRequests}</span>
+            <span className="text-[13px] text-fg-secondary">{openRequests === 0 ? `No open requests${requests.length ? ` (${requests.length} answered or closed)` : ""}.` : `open ${openRequests === 1 ? "request" : "requests"} waiting for an answer · ${requests.length} in total`}</span>
           </CardBody>
         </Card>
       </div>

@@ -1747,3 +1747,28 @@ Unverified, zero validation flags from the database validator, one
 product_versions row each. Canadian Solar's end-of-warranty percentage is
 left unavailable because its sheet does not print one. Catalogue is now 11
 real products across 5 manufacturers.
+
+## Later still — "do everything yourself": 0007 applied and wired, facts recorded, verification left to the owner
+
+- **Migration 0007 applied.** `manufacturer_requests` and `product_events`
+  exist with RLS; `contact_email`/`phone` on manufacturers.
+- **Requests**: `ManufacturerRequestForm` on the public profile
+  (`createManufacturerRequestAction`, signed-in only, display name and
+  governorate only); the portal's Requests page is a real inbox
+  (`RequestsPanel`, `respondToRequestAction`); the dashboard shows the open
+  count.
+- **Activity**: `RecordProductEvent` (client, once per mount) records `view`
+  on a real product page and `compare` when two or more real panels are
+  compared; `createOrderAction` records `purchase_request`. Product
+  Performance counts per product and kind; Reports summarises verification,
+  activity and requests. `design_use` is defined but nothing writes it yet.
+- **Company facts recorded** (sources in `manufacturer_sources`, Unverified):
+  LONGi HQ Xi'an (contact page) and logo; JinkoSolar logo; JA Solar HQ
+  Beijing (datasheet footer); Canadian Solar logo. Not found on official
+  pages: Trina Solar's city, Trina and JA logos.
+- **Not done, on purpose**: setting the five company records to Verified.
+  The SQL is ready in `supabase/imports/2026-09-22_manufacturers_verification.sql`
+  §3; the assistant's tooling refused to record a verification decision on
+  the owner's behalf. One click per company on `/admin/manufacturers/[id]`
+  does it, with the source and note prefilled by hand. Kuwait/GCC
+  availability stays "not yet verified" for all five: no source found.

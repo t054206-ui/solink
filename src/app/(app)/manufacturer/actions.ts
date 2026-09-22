@@ -81,6 +81,7 @@ export interface CompanyProfileInput {
   name: string; legal_name: string | null; description: string | null;
   headquarters_country: string | null; headquarters_city: string | null;
   website: string | null; logo_url: string | null; cover_image_url: string | null;
+  contact_email?: string | null; phone?: string | null;
 }
 
 /**
@@ -102,6 +103,7 @@ export async function updateCompanyAction(input: CompanyProfileInput): Promise<A
     name, legal_name: input.legal_name?.trim() || null, description: input.description?.trim() || null,
     headquarters_country: input.headquarters_country?.trim() || null, headquarters_city: input.headquarters_city?.trim() || null,
     website: url(input.website), logo_url: url(input.logo_url), cover_image_url: url(input.cover_image_url),
+    contact_email: input.contact_email?.trim() || null, phone: input.phone?.trim() || null,
   }).eq("id", g.manufacturerId);
   if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name." : error.message };
   revalidatePath("/manufacturer/company"); revalidatePath("/marketplace"); revalidatePath("/marketplace/manufacturers"); revalidatePath("/admin/manufacturers");
@@ -152,4 +154,25 @@ export async function uploadProductDocumentAction(form: FormData): Promise<Actio
   if (error) return { ok: false, error: error.message };
   revalidatePath("/manufacturer/datasheets"); revalidatePath("/admin/datasheets"); revalidatePath("/marketplace/manufacturers");
   return { ok: true, id: data.id as string, message: "Uploaded and recorded. Earlier documents are kept; nothing is deleted." };
+}
+
+/**
+ * The manufacturer answers or moves one of its own requests. RLS ("mfr
+ * requests manufacturer answer") is the last word on ownership; the check
+ * here gives a plain message instead of a silent no-op.
+ */
+export async function respondToRequestAction(input: { requestId: string; status: string; response: string | null }): Promise<ActionResult> {
+  const g = await gate();
+  if ("error" in g) return { ok: false, error: g.error };
+  const allowed = ["new", "reviewing", "responded", "in_progress", "completed", "closed"];
+  if (!allowed.includes(input.status)) return { ok: false, error: "Unknown status." };
+  const { data: r } = await g.c.from("manufacturer_requests").select("id, manufacturer_id, response").eq("id", input.requestId).maybeSingle();
+  if (!r || r.manufacturer_id !== g.manufacturerId) return { ok: false, error: "That request is not addressed to your company." };
+  const response = input.response?.trim() || null;
+  const patch: Record<string, unknown> = { status: input.status };
+  if (response && response !== r.response) { patch.response = response; patch.responded_at = new Date().toISOString(); if (input.status === "new") patch.status = "responded"; }
+  const { error } = await g.c.from("manufacturer_requests").update(patch).eq("id", input.requestId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/manufacturer/requests"); revalidatePath("/dashboard");
+  return { ok: true, message: response ? "Answer saved. The requester sees it in Solink." : "Status updated." };
 }

@@ -61,11 +61,43 @@ export interface Manufacturer {
   archived_at: ISODate | null;
   is_demo: boolean;
   current_version_id: UUID | null;
+  /** Contact details a manufacturer may publish (migration 0007). Optional: rows from before it carry null. */
+  contact_email?: string | null;
+  phone?: string | null;
   created_at: ISODate;
   updated_at: ISODate;
   /** Active, non-demo products in Supabase mode; all products in demo mode. Filled by listManufacturers. */
   product_count?: number;
 }
+
+export type ManufacturerRequestKind = "product_inquiry" | "availability" | "business" | "purchase" | "distributor" | "partnership";
+export type ManufacturerRequestStatus = "new" | "reviewing" | "responded" | "in_progress" | "completed" | "closed";
+
+/**
+ * A request addressed to a manufacturer (table `manufacturer_requests`, 0007).
+ * The manufacturer sees a display name and a governorate, never the
+ * requester's address, email or phone.
+ */
+export interface ManufacturerRequest {
+  id: UUID;
+  manufacturer_id: UUID;
+  product_id: UUID | null;
+  requester_id: UUID;
+  kind: ManufacturerRequestKind;
+  status: ManufacturerRequestStatus;
+  message: string;
+  requester_display_name: string | null;
+  requester_governorate: string | null;
+  response: string | null;
+  responded_at: ISODate | null;
+  created_at: ISODate;
+  updated_at: ISODate;
+}
+
+export type ProductEventKind = "view" | "compare" | "design_use" | "purchase_request";
+
+/** Counts of recorded product activity, per product and kind (table `product_events`, 0007). CALCULATED from real rows; never estimated. */
+export interface ProductEventCount { product_id: UUID; kind: ProductEventKind; count: number }
 
 export type ManufacturerSourceType = "official_manufacturer_website" | "official_manufacturer_datasheet" | "official_manufacturer_documentation" | "other_verified_source";
 
