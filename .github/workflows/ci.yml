@@ -1,0 +1,54 @@
+# Solink CI: the three checks the project has always run by hand
+# (docs/CLAUDE.md: "Check npx tsc --noEmit and npm run lint before finishing"),
+# now run by GitHub on every push to main and every pull request into it.
+#
+# No credentials. The build runs with no provider variables at all, which is
+# the app's demo mode: Supabase, Google Maps, WeatherAPI and Claude are each
+# absent, every surface that needs one renders its documented unavailable
+# state, and nothing is called over the network. That is exactly the state a
+# clean checkout builds in, so nothing has to be faked here.
+#
+# `ci/**` is included so a validation branch can be checked before it reaches
+# main.
+name: CI
+
+on:
+  push:
+    branches: [main, "ci/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Types, lint, build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          # Next 16 requires Node 20.9+. 22 is the current LTS line.
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # A clean checkout has no .next, so the route types tsconfig includes
+      # (.next/types) do not exist yet. Next generates them from the app
+      # directory; without this step the type check would run against a
+      # half-described app.
+      - name: Generate Next route types
+        run: npx next typegen
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
