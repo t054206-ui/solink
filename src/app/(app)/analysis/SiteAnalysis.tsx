@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ExternalLink, Loader2, MapPin, Satellite } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
@@ -9,6 +10,8 @@ import { ErrorState } from "@/components/ui/States";
 import { formatDate } from "@/lib/utils";
 import type {
   AnalysisSources,
+  EnvironmentAssessment,
+  EnvironmentLevel,
   NormalisedLocation,
   NormalisedSolar,
   NormalisedWeather,
@@ -20,7 +23,11 @@ import type {
  * Address in, analysis out.
  *
  * The work happens on the server: this form posts an address and renders what
- * comes back. No key, no provider call and no prompt exists in the browser.
+ * comes back. No key and no provider call exists in the browser.
+ *
+ * Since 2026-09-22 the analysis is produced by Solink's own rules rather than
+ * by a model, so nothing here credits an AI with it. What the page shows is
+ * unchanged: the same cards, in the same order.
  *
  * Stage labels are honest about where a run stopped. The server reports the
  * stage it failed at, and that is the stage named here, rather than a single
@@ -29,9 +36,9 @@ import type {
 
 const STAGES = [
   "Finding location…",
-  "Analysing roof and solar potential…",
-  "Checking weather conditions…",
-  "Generating solar analysis…",
+  "Checking weather and air quality…",
+  "Reading the forecast…",
+  "Applying Solink analysis rules…",
   "Saving analysis…",
 ] as const;
 
@@ -133,7 +140,7 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
               <Satellite className="size-4 text-[var(--brand-strong)]" aria-hidden="true" /> Analyse a specific address
             </>
           }
-          subtitle="Solink reads the roof from Google's Solar API and the current conditions from WeatherAPI, then explains what they mean. Every figure below comes from one of those two, or is named as a calculation."
+          subtitle="Solink finds the address with Google Maps, reads the conditions there from WeatherAPI, and applies its own analysis rules to what comes back. Every figure below comes from one of those two services, or is named as a Solink rule."
           action={<DataBadge cls="source" compact />}
         />
         <CardBody>
@@ -205,6 +212,96 @@ const VERDICT: Record<Analysis["feasibility"]["verdict"], string> = {
   insufficient_data: "Not enough data",
 };
 
+const LEVEL_LABEL: Record<EnvironmentLevel, string> = {
+  unavailable: "Unavailable",
+  low: "Low",
+  moderate: "Moderate",
+  high: "High",
+  extreme: "Extreme",
+};
+
+const LEVEL_TONE: Record<EnvironmentLevel, "neutral" | "good" | "warn" | "serious" | "critical"> = {
+  unavailable: "neutral",
+  low: "good",
+  moderate: "warn",
+  high: "serious",
+  extreme: "critical",
+};
+
+const STATUS_LABEL: Record<EnvironmentAssessment["overallStatus"], string> = {
+  unavailable: "Unavailable",
+  low: "Low",
+  moderate: "Moderate",
+  high: "High",
+  attention_required: "Attention required",
+};
+
+const STATUS_TONE: Record<EnvironmentAssessment["overallStatus"], "neutral" | "good" | "warn" | "serious" | "critical"> = {
+  unavailable: "neutral",
+  low: "good",
+  moderate: "warn",
+  high: "serious",
+  attention_required: "critical",
+};
+
+/**
+ * The environmental conditions the rules were applied to: one line per factor,
+ * each with the level Solink reached and the sentence explaining how.
+ * Rendered only when the stored analysis has it — rows saved before the rule
+ * engine existed do not, and are left as they were.
+ */
+function Environment({ env }: { env: EnvironmentAssessment }) {
+  const factors: { label: string; level: EnvironmentLevel; note: string }[] = [
+    { label: "Heat exposure", level: env.heat.level, note: env.heat.note },
+    { label: "Dust and soiling risk", level: env.dust.level, note: env.dust.note },
+    { label: "Air quality", level: env.airQuality.level, note: env.airQuality.note },
+    { label: "Wind exposure", level: env.wind.level, note: env.wind.note },
+  ];
+
+  return (
+    <section>
+      <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+        Environmental conditions <DataBadge cls="calculated" compact />
+      </h3>
+      <div className="mt-1.5 rounded-[10px] border border-border bg-inset p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="micro">Overall</span>
+          <Badge tone={STATUS_TONE[env.overallStatus]}>{STATUS_LABEL[env.overallStatus]}</Badge>
+        </div>
+        <p className="mt-1 text-[13px] leading-relaxed text-fg-secondary">{env.statusReason}</p>
+      </div>
+      <dl className="mt-2 text-[13px]">
+        {factors.map((f) => (
+          <div key={f.label} className="flex flex-col gap-1 border-t border-border/70 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <dt className="flex shrink-0 items-center gap-2 text-fg-muted sm:w-52">
+              {f.label} <Badge tone={LEVEL_TONE[f.level]}>{LEVEL_LABEL[f.level]}</Badge>
+            </dt>
+            <dd className="min-w-0 break-words leading-relaxed text-fg-secondary sm:text-right">{f.note}</dd>
+          </div>
+        ))}
+        <div className="flex flex-col gap-1 border-t border-border/70 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <dt className="flex shrink-0 items-center gap-2 text-fg-muted sm:w-52">
+            Forecast{" "}
+            <Badge tone={env.forecast.alerts.length > 0 ? "warn" : "neutral"}>
+              {env.forecast.alerts.length > 0 ? `${env.forecast.alerts.length} to watch` : `${env.forecast.daysAnalysed} days`}
+            </Badge>
+          </dt>
+          <dd className="min-w-0 break-words leading-relaxed text-fg-secondary sm:text-right">
+            {env.forecast.note}
+            {env.forecast.alerts.length > 0 && (
+              <ul className="mt-1 space-y-1">
+                {env.forecast.alerts.map((a) => (
+                  <li key={`${a.date}-${a.kind}`}>{a.detail}</li>
+                ))}
+              </ul>
+            )}
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
 function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
   const { analysis: a, solar, weather, location, sources } = result;
 
@@ -214,7 +311,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
         <CardHeader
           title="Analysis"
           subtitle={location.formattedAddress ?? location.address}
-          action={<DataBadge cls="ai" compact />}
+          action={<DataBadge cls="calculated" compact />}
         />
         <CardBody className="space-y-4">
           <div className="rounded-[10px] border border-border bg-inset p-3">
@@ -222,6 +319,8 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
             <div className="mt-0.5 text-[16px] font-semibold text-fg">{VERDICT[a.feasibility.verdict]}</div>
             <p className="mt-1 text-[13.5px] leading-relaxed text-fg-secondary">{a.feasibility.summary}</p>
           </div>
+
+          {a.environment && <Environment env={a.environment} />}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <section>
@@ -243,7 +342,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">System considerations</h3>
+              <h3 className="text-[14px] font-medium text-fg">Maintenance considerations</h3>
               <div className="mt-1.5">
                 <List items={a.systemConsiderations} />
               </div>
@@ -261,7 +360,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </section>
 
           <section>
-            <h3 className="text-[14px] font-medium text-fg">Reasoning</h3>
+            <h3 className="text-[14px] font-medium text-fg">How this was reached</h3>
             <p className="mt-1 whitespace-pre-wrap text-[13.5px] leading-relaxed text-fg-secondary">{a.reasoning}</p>
           </section>
 
@@ -326,11 +425,15 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
             <Row label="Maximum panels modelled" value={n(solar.maxArrayPanelsCount)} />
             <Row label="Modelled annual energy (DC)" value={n(solar.bestConfigYearlyEnergyDcKwh, " kWh", 0)} />
             <Row label="Imagery date" value={solar.imageryDate ? formatDate(solar.imageryDate) : "Unavailable"} />
+            <Row label="Condition now" value={weather.condition ?? "Unavailable"} />
             <Row label="Temperature now" value={n(weather.temperatureC, " °C", 1)} />
             <Row label="Cloud cover" value={n(weather.cloudCoverPct, " %", 0)} />
             <Row label="Humidity" value={n(weather.humidityPct, " %", 0)} />
             <Row label="Wind" value={n(weather.windKph, " km/h", 0)} />
-            <Row label="PM10 (airborne dust indicator)" value={n(weather.pm10, "", 1)} />
+            <Row label="PM10 (airborne dust indicator)" value={n(weather.pm10, " µg/m³", 1)} />
+            <Row label="PM2.5" value={n(weather.pm2_5, " µg/m³", 1)} />
+            <Row label="US EPA air-quality index" value={n(weather.usEpaIndex, "", 0)} />
+            <Row label="Forecast days returned" value={weather.forecast.length > 0 ? String(weather.forecast.length) : "Unavailable"} />
           </dl>
           {result.unavailable.length > 0 && (
             <p className="mt-3 text-[12.5px] leading-relaxed text-fg-muted">
@@ -345,13 +448,22 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
         <CardBody>
           <dl className="text-[13px]">
             <SourceRow label="Location" source={sources.geocoding} />
-            <SourceRow label="Roof and solar data" source={sources.googleSolar} />
+            <SourceRow label="Roof measurements (optional)" source={sources.googleSolar} />
             <SourceRow label="Weather" source={sources.weather} />
-            <Row label="Analysis" value={result.model ? `Generated by ${result.model} from the data above` : "Generated by the AI Solar Agent"} />
+            <Row
+              label="Analysis"
+              value={
+                a.environment
+                  ? `${a.environment.engine.label} ${a.environment.engine.version}, applied to the data above. No AI model was used.`
+                  : result.model
+                    ? `Generated by ${result.model} from the data above`
+                    : "Generated from the data above"
+              }
+            />
             <Row label="Saved" value={`${formatDate(result.completedAt)}${isSaved ? " (restored from your saved analyses)" : ""}`} />
           </dl>
           <p className="mt-3 text-[12px] leading-relaxed text-fg-muted">
-            The analysis is an interpretation of the provider data, not a survey. A roof still has to be inspected before anything is installed.
+            The analysis applies Solink&apos;s environmental rules to the provider data. It is not a survey, and it does not measure this building: a roof still has to be inspected before anything is installed.
           </p>
         </CardBody>
       </Card>

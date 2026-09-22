@@ -3,16 +3,20 @@ import { z } from "zod";
 import { geocode, type GeocodeHit } from "@/lib/maps/google";
 import { getBuildingInsights } from "@/lib/maps/google";
 import { getWeatherBundle } from "@/lib/weather/weatherapi";
-import { serverEnv } from "@/lib/config/env";
 
 /**
- * Site analysis: an address in, a normalised picture of that roof out.
+ * Site analysis: an address in, a normalised picture of that location out.
  *
  * The pipeline runs entirely on the server, in this order, and each step feeds
  * the next with real values:
  *
- *   address → Google Geocoding → Google Solar buildingInsights → WeatherAPI
- *           → normalise + validate → (caller hands this to Claude)
+ *   address → Google Geocoding → Google Solar buildingInsights (optional)
+ *           → WeatherAPI → normalise + validate
+ *           → (caller hands this to the Solink rule engine, analysisEngine.ts)
+ *
+ * No model is involved. The conclusions are produced by the deterministic
+ * rules in `analysisEngine.ts`, and every one of them names the value and the
+ * threshold it came from.
  *
  * Two rules shape the whole file:
  *
@@ -149,6 +153,13 @@ export interface NormalisedWeather {
   condition: string | null;
   pm2_5: number | null;
   pm10: number | null;
+  /**
+   * WeatherAPI's US EPA air-quality index, 1 (good) to 6 (hazardous), exactly
+   * as the provider returns it. Carried through because it is the one
+   * air-quality judgement in the data that comes from a published scale rather
+   * than from a Solink threshold.
+   */
+  usEpaIndex: number | null;
   forecast: {
     date: string;
     avgTempC: number | null;
@@ -156,6 +167,7 @@ export interface NormalisedWeather {
     minTempC: number | null;
     totalPrecipMm: number | null;
     avgHumidityPct: number | null;
+    maxWindKph: number | null;
     uvIndex: number | null;
     condition: string | null;
   }[];
@@ -254,6 +266,11 @@ export async function collectSiteData(address: string): Promise<SiteDataResult> 
     if (solar.bestConfigYearlyEnergyDcKwh === null) unavailable.push("modelled annual energy");
   }
   if (!weather.available) unavailable.push("weather conditions (WeatherAPI)");
+  else {
+    if (weather.pm10 === null) unavailable.push("airborne dust (PM10)");
+    if (weather.usEpaIndex === null && weather.pm2_5 === null) unavailable.push("air quality");
+    if (weather.forecast.length === 0) unavailable.push("forecast");
+  }
 
   return {
     ok: true,
@@ -372,6 +389,7 @@ function normaliseWeather(result: Awaited<ReturnType<typeof getWeatherBundle>>):
     condition: null,
     pm2_5: null,
     pm10: null,
+    usEpaIndex: null,
     forecast: [],
   };
   if (!result.ok) return { ...empty, unavailableReason: result.reason };
@@ -390,6 +408,7 @@ function normaliseWeather(result: Awaited<ReturnType<typeof getWeatherBundle>>):
     condition: c.condition ?? null,
     pm2_5: num(c.pm2_5),
     pm10: num(c.pm10),
+    usEpaIndex: num(c.us_epa_index),
     forecast: result.data.forecast.map((f) => ({
       date: f.date,
       avgTempC: num(f.avgtemp_c),
@@ -397,17 +416,87 @@ function normaliseWeather(result: Awaited<ReturnType<typeof getWeatherBundle>>):
       minTempC: num(f.mintemp_c),
       totalPrecipMm: num(f.totalprecip_mm),
       avgHumidityPct: num(f.avghumidity),
+      maxWindKph: num(f.maxwind_kph),
       uvIndex: num(f.uv),
       condition: f.condition ?? null,
     })),
   };
 }
 
-/* ------------------------------------------------------- Claude's structured output */
+/* ------------------------------------------------ the analysis, as it is stored */
 
 /**
- * What Claude must return. Validated before anything is stored, so a malformed
- * answer can never be saved as a successful analysis.
+ * The environmental assessment: the part of the analysis the Solink rule
+ * engine reasons about. Every level below is decided by a named threshold in
+ * `analysisEngine.ts` applied to a value WeatherAPI actually returned, and
+ * `unavailable` is a first-class answer rather than a zero.
+ *
+ * None of it describes the building. Roof area, pitch, orientation, panel
+ * count and production are not derivable from this data and stay unavailable.
+ */
+export const EnvironmentLevelSchema = z.enum(["unavailable", "low", "moderate", "high", "extreme"]);
+export type EnvironmentLevel = z.infer<typeof EnvironmentLevelSchema>;
+
+export const EnvironmentAssessmentSchema = z.object({
+  /** Which engine produced this, so a stored row can always be traced back. */
+  engine: z.object({ id: z.string().max(60), version: z.string().max(20), label: z.string().max(80) }),
+  /** The location's overall environmental standing for running panels. */
+  overallStatus: z.enum(["unavailable", "low", "moderate", "high", "attention_required"]),
+  statusReason: z.string().max(400),
+  heat: z.object({
+    level: EnvironmentLevelSchema,
+    temperatureC: z.number().nullable(),
+    note: z.string().max(400),
+  }),
+  dust: z.object({
+    level: EnvironmentLevelSchema,
+    pm10: z.number().nullable(),
+    condition: z.string().max(120).nullable(),
+    dustEventNow: z.boolean(),
+    dustEventForecast: z.boolean(),
+    note: z.string().max(400),
+  }),
+  airQuality: z.object({
+    level: EnvironmentLevelSchema,
+    pm2_5: z.number().nullable(),
+    pm10: z.number().nullable(),
+    usEpaIndex: z.number().nullable(),
+    note: z.string().max(400),
+  }),
+  wind: z.object({
+    level: EnvironmentLevelSchema,
+    windKph: z.number().nullable(),
+    note: z.string().max(400),
+  }),
+  forecast: z.object({
+    daysAnalysed: z.number().int().min(0).max(14),
+    alerts: z
+      .array(
+        z.object({
+          date: z.string().max(20),
+          kind: z.enum(["dust", "severe_dust", "heat", "wind"]),
+          detail: z.string().max(240),
+        }),
+      )
+      .max(28),
+    note: z.string().max(400),
+  }),
+  /** Maintenance advice that follows from the conditions above, nothing else. */
+  recommendations: z.array(z.string().max(300)).max(10),
+});
+
+export type EnvironmentAssessment = z.infer<typeof EnvironmentAssessmentSchema>;
+
+/**
+ * A completed analysis, validated before anything is stored so a malformed
+ * result can never be saved as a successful run.
+ *
+ * The shape is the one Session 8 wrote for the model's answer, kept so that
+ * rows saved then still read back and so the page did not have to be rebuilt.
+ * `environment` is optional here for exactly that reason: rows written before
+ * 2026-09-22 do not have it. Everything written from now on does, and the
+ * route validates new results against `RuleEngineAnalysisSchema` below, which
+ * requires it.
  */
 export const SiteAnalysisSchema = z.object({
   feasibility: z.object({
@@ -415,90 +504,42 @@ export const SiteAnalysisSchema = z.object({
     summary: z.string().min(1).max(600),
   }),
   roofAssessment: z.object({
-    findings: z.array(z.string()).max(8),
-    limitations: z.array(z.string()).max(8),
+    findings: z.array(z.string()).max(12),
+    limitations: z.array(z.string()).max(12),
   }),
   solarPotential: z.object({
-    findings: z.array(z.string()).max(8),
-    apiProvidedValues: z.array(z.string()).max(12),
-    calculatedValues: z.array(z.string()).max(12),
+    findings: z.array(z.string()).max(12),
+    /** Every figure taken straight from a provider, with the provider named. */
+    apiProvidedValues: z.array(z.string()).max(28),
+    /** Every conclusion Solink reached, with the rule and the numbers in it. */
+    calculatedValues: z.array(z.string()).max(28),
   }),
   weatherConsiderations: z.object({
-    findings: z.array(z.string()).max(8),
+    findings: z.array(z.string()).max(12),
   }),
   energy: z.object({
     annualEnergyDcKwh: z.number().nullable(),
     basis: z.string().max(400),
   }),
-  systemConsiderations: z.array(z.string()).max(8),
-  limitations: z.array(z.string()).max(10),
-  // Generous because a model counts items reliably and characters poorly. The
-  // prompt asks for 5000; this leaves room for an overshoot rather than
-  // throwing away an otherwise sound analysis.
+  systemConsiderations: z.array(z.string()).max(12),
+  limitations: z.array(z.string()).max(14),
   reasoning: z.string().min(1).max(6000),
   dataCompleteness: z.object({
     level: z.enum(["high", "medium", "low"]),
-    missing: z.array(z.string()).max(12),
+    missing: z.array(z.string()).max(16),
   }),
   sourceReferences: z.array(z.string()).max(6),
+  environment: EnvironmentAssessmentSchema.optional(),
 });
 
 export type SiteAnalysis = z.infer<typeof SiteAnalysisSchema>;
 
-/**
- * The shape description handed to Claude, matching SiteAnalysisSchema exactly.
- *
- * The size limits are stated here because the schema enforces them. An answer
- * that overruns is rejected and the run is recorded as failed, so the model has
- * to know the bounds it is being held to rather than discovering them by
- * failing.
- */
-export const SITE_ANALYSIS_SHAPE = `{
-  "feasibility": {"verdict":"promising|mixed|poor|insufficient_data","summary":string (max 600 characters)},
-  "roofAssessment": {"findings":string[] (max 8 items),"limitations":string[] (max 8 items)},
-  "solarPotential": {"findings":string[] (max 8 items),"apiProvidedValues":string[] (max 12 items),"calculatedValues":string[] (max 12 items)},
-  "weatherConsiderations": {"findings":string[] (max 8 items)},
-  "energy": {"annualEnergyDcKwh":number|null,"basis":string (max 400 characters)},
-  "systemConsiderations": string[] (max 8 items),
-  "limitations": string[] (max 10 items),
-  "reasoning": string (max 5000 characters),
-  "dataCompleteness": {"level":"high|medium|low","missing":string[] (max 12 items)},
-  "sourceReferences": string[] (max 6 items)
-}`;
+/** What the rule engine must produce: the same analysis, environment included. */
+export const RuleEngineAnalysisSchema = SiteAnalysisSchema.extend({
+  environment: EnvironmentAssessmentSchema,
+});
 
-/** The rules Claude is held to. Kept beside the schema so the two stay in step. */
-export function buildAnalysisSystemPrompt(site: NormalisedSite): string {
-  return [
-    "You are assessing a location in Kuwait for rooftop solar, for a homeowner.",
-    "",
-    "The DATA block below is everything available. It comes from Google's Geocoding API and WeatherAPI.",
-    "",
-    "What this assessment is: the location and the environmental conditions there, and what those conditions mean for running panels and keeping them clean.",
-    "What it is NOT: a survey of this building's roof, or an engineering estimate of what a system here would generate. Nothing in the data measures the building.",
-    "",
-    "Rules, all of them absolute:",
-    "- Use only the values in the DATA block. Do not add figures from general knowledge.",
-    "- There are no roof or building measurements. Never state, estimate or imply roof area, pitch, azimuth, orientation, panel count, panel placement, irradiance or annual production. Each is unavailable, and saying so is the correct answer.",
-    "- energy.annualEnergyDcKwh must be null unless the data itself contains a modelled figure. It does not when solar.available is false.",
-    "- solar.available false means no roof survey was carried out. It is not a roof measured at zero. Never describe it as zero area, zero panels or zero output.",
-    "- feasibility.verdict describes the LOCATION's environmental conditions for solar, not this building's roof. The first sentence of feasibility.summary must state that no roof measurements were available, so this is not a building-specific judgement.",
-    "- When location.approximate is true, Google resolved the address to a nearby street or area rather than the exact building. Say so, and describe the conditions as the area's.",
-    "- Put every number you took straight from a provider in solarPotential.apiProvidedValues, naming the provider.",
-    "- Put anything you worked out yourself in solarPotential.calculatedValues, with the arithmetic.",
-    "- List everything that was unavailable in dataCompleteness.missing and in limitations, roof measurements included.",
-    "- Weather here is a short current window, not a climate record. Do not present it as an annual pattern.",
-    "- Dust, sandstorms and air quality are worth real attention: they bear on soiling and cleaning. Treat them as observed conditions, not as a calculated loss figure.",
-    "- Write for a homeowner: plain sentences, no jargon without explanation, no marketing language.",
-    "- Do not recommend a specific product, price or installer. None are in the data.",
-    "",
-    `DATA:\n${JSON.stringify(site, null, 2)}`,
-  ].join("\n");
-}
-
-/** Whether the AI step can run at all. */
-export function isAnalysisConfigured(): boolean {
-  return Boolean(serverEnv().claudeApiKey);
-}
+export type RuleEngineAnalysis = z.infer<typeof RuleEngineAnalysisSchema>;
 
 /* ------------------------------------------------------------ stored shape */
 

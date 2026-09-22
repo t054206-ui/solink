@@ -61,6 +61,20 @@ export type IntegrationKey =
   | "notifications"
   | "realPanelData";
 
+/**
+ * What a service means for the Solar Site Analysis workflow
+ * (`/analysis` → `/api/analysis/site`), which since 2026-09-22 runs on
+ * Google Maps, WeatherAPI and Solink's own rules:
+ *
+ *  - required: the analysis cannot run without it
+ *  - optional: it adds roof measurements when present, and its absence leaves
+ *    them unavailable rather than stopping the run
+ *  - not_used: the analysis never calls it. Claude is in this group; it is
+ *    still required by the AI Solar Agent and the image inspections, which are
+ *    separate features.
+ */
+export type AnalysisRole = "required" | "optional" | "not_used";
+
 export interface IntegrationStatus {
   key: IntegrationKey;
   label: string;
@@ -68,21 +82,23 @@ export interface IntegrationStatus {
   /** Placeholder key from placeholders.ts when not connected */
   placeholder: string;
   envVars: string[];
+  /** Whether Solar Site Analysis needs this service. */
+  analysisRole: AnalysisRole;
 }
 
 /** Server-side snapshot of what is connected. Safe to pass to client (booleans only). */
 export function integrationStatus(): IntegrationStatus[] {
   const s = serverEnv();
   return [
-    { key: "supabase", label: "Supabase (database, auth, storage)", connected: isSupabaseConfigured(), placeholder: "SUPABASE_PROJECT", envVars: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"] },
-    { key: "claude", label: "Claude API (AI Solar Agent, image inspection)", connected: Boolean(s.claudeApiKey), placeholder: "CLAUDE_API_KEY", envVars: ["CLAUDE_API_KEY", "CLAUDE_MODEL"] },
-    { key: "weather", label: "WeatherAPI.com", connected: Boolean(s.weatherApiKey), placeholder: "WEATHER_API_KEY", envVars: ["WEATHER_API_KEY"] },
-    { key: "googleMaps", label: "Google Maps Platform", connected: Boolean(s.googleMapsApiKey), placeholder: "GOOGLE_MAPS_API_KEY", envVars: ["GOOGLE_MAPS_API_KEY", "NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY"] },
-    { key: "googleSolar", label: "Google Solar API (optional: roof measurements, not required for a site analysis)", connected: Boolean(s.googleSolarApiKey), placeholder: "GOOGLE_SOLAR_SITE_DATA_SOURCE", envVars: ["GOOGLE_SOLAR_API_KEY"] },
-    { key: "monitoringHardware", label: "Solar monitoring hardware / inverter API", connected: false, placeholder: "SOLAR_MONITORING_HARDWARE_API", envVars: [] },
-    { key: "panelLevelMonitoring", label: "Panel-level monitoring", connected: false, placeholder: "PANEL_LEVEL_MONITORING_DATA_SOURCE", envVars: [] },
-    { key: "payment", label: "Payment provider", connected: false, placeholder: "PAYMENT_PROVIDER", envVars: [] },
-    { key: "notifications", label: "Email / notification provider", connected: false, placeholder: "EMAIL_NOTIFICATION_PROVIDER", envVars: [] },
-    { key: "realPanelData", label: "Real solar-panel dataset", connected: false, placeholder: "REAL_SOLAR_PANEL_DATA_SOURCE", envVars: [] },
+    { key: "supabase", label: "Supabase (database, auth, storage)", connected: isSupabaseConfigured(), placeholder: "SUPABASE_PROJECT", envVars: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"], analysisRole: "required" },
+    { key: "claude", label: "Claude API (AI Solar Agent, image inspection)", connected: Boolean(s.claudeApiKey), placeholder: "CLAUDE_API_KEY", envVars: ["CLAUDE_API_KEY", "CLAUDE_MODEL"], analysisRole: "not_used" },
+    { key: "weather", label: "WeatherAPI.com", connected: Boolean(s.weatherApiKey), placeholder: "WEATHER_API_KEY", envVars: ["WEATHER_API_KEY"], analysisRole: "required" },
+    { key: "googleMaps", label: "Google Maps Platform", connected: Boolean(s.googleMapsApiKey), placeholder: "GOOGLE_MAPS_API_KEY", envVars: ["GOOGLE_MAPS_API_KEY", "NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY"], analysisRole: "required" },
+    { key: "googleSolar", label: "Google Solar API (optional: roof measurements, not required for a site analysis)", connected: Boolean(s.googleSolarApiKey), placeholder: "GOOGLE_SOLAR_SITE_DATA_SOURCE", envVars: ["GOOGLE_SOLAR_API_KEY"], analysisRole: "optional" },
+    { key: "monitoringHardware", label: "Solar monitoring hardware / inverter API", connected: false, placeholder: "SOLAR_MONITORING_HARDWARE_API", envVars: [], analysisRole: "not_used" },
+    { key: "panelLevelMonitoring", label: "Panel-level monitoring", connected: false, placeholder: "PANEL_LEVEL_MONITORING_DATA_SOURCE", envVars: [], analysisRole: "not_used" },
+    { key: "payment", label: "Payment provider", connected: false, placeholder: "PAYMENT_PROVIDER", envVars: [], analysisRole: "not_used" },
+    { key: "notifications", label: "Email / notification provider", connected: false, placeholder: "EMAIL_NOTIFICATION_PROVIDER", envVars: [], analysisRole: "not_used" },
+    { key: "realPanelData", label: "Real solar-panel dataset", connected: false, placeholder: "REAL_SOLAR_PANEL_DATA_SOURCE", envVars: [], analysisRole: "not_used" },
   ];
 }

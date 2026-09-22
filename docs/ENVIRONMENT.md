@@ -8,11 +8,11 @@ Nothing under `NEXT_PUBLIC_` may be secret.
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server | auth, RLS-scoped data access | **Demo mode**: no accounts; labeled demo data; edits persist per-browser only |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | imports, hardware ingestion, admin jobs | admin/import server actions return "requires Supabase" |
-| `CLAUDE_API_KEY` (or `ANTHROPIC_API_KEY`), `CLAUDE_MODEL` | server | AI Solar Agent, image inspection, recommendations, monitoring assessment, placement, explanations | every AI surface shows `[PLACEHOLDER: CLAUDE API KEY]` and an unavailable state — no fake AI answers |
-| `WEATHER_API_KEY` | server | WeatherAPI.com current/forecast/air-quality | weather cards show `[PLACEHOLDER: WEATHER API KEY]`; no substitute provider |
-| `GOOGLE_MAPS_API_KEY` | server | Geocoding / reverse geocoding (`/api/geocode`) | address search unavailable; manual coordinates allowed (labeled user-provided) |
+| `CLAUDE_API_KEY` (or `ANTHROPIC_API_KEY`), `CLAUDE_MODEL` | server | AI Solar Agent, image inspection, recommendations, monitoring assessment, placement, explanations. **Not used by Solar Site Analysis** (2026-09-22: it runs on Solink's own rules) | every AI surface shows `[PLACEHOLDER: CLAUDE API KEY]` and an unavailable state — no fake AI answers |
+| `WEATHER_API_KEY` | server | WeatherAPI.com current/forecast/air-quality; **required by Solar Site Analysis** | weather cards show `[PLACEHOLDER: WEATHER API KEY]`; no substitute provider. A site analysis still runs, reports the conditions as unavailable and reaches no environmental verdict |
+| `GOOGLE_MAPS_API_KEY` | server | Geocoding / reverse geocoding (`/api/geocode`); **required by Solar Site Analysis** | address search unavailable; manual coordinates allowed (labeled user-provided). A site analysis stops at the geocoding step and says so |
 | `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | browser (referrer-restricted) | Maps JavaScript API map view | map view unavailable state |
-| `GOOGLE_SOLAR_API_KEY` | server | Building insights (roof/sun data) — **only if access is confirmed** | `[PLACEHOLDER: GOOGLE SOLAR / SOLAR SITE DATA SOURCE]` |
+| `GOOGLE_SOLAR_API_KEY` | server | Building insights (roof/sun data) — **optional everywhere, including Solar Site Analysis** | `[PLACEHOLDER: GOOGLE SOLAR / SOLAR SITE DATA SOURCE]`. Roof measurements stay unavailable; nothing else changes |
 
 ## Not yet selected (deliberately no variable)
 - `[PLACEHOLDER: PAYMENT PROVIDER]` — checkout is a labeled non-functional demo.
