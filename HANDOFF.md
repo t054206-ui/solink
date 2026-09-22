@@ -1772,3 +1772,19 @@ real products across 5 manufacturers.
   the owner's behalf. One click per company on `/admin/manufacturers/[id]`
   does it, with the source and note prefilled by hand. Kuwait/GCC
   availability stays "not yet verified" for all five: no source found.
+
+## Frontend audit, 2026-09-22 — what changed
+
+Report: `docs/AUDIT-2026-09-22.md`. Fixed in commit `ceb4e50`: `/notifications`
+protected, security headers, passport page title, error boundaries for the
+public and sign-in areas (plain wording plus a reference code), one
+verification label map, admin in-page menu labels aligned with the sidebar,
+footer admin link labelled. Then, on the owner's "do what you see suitable":
+the film plays once per tab (`"session"`), the admin dashboard lost its third
+copy of the menu, `ProviderNav` was removed (the sidebar is the provider's
+navigation, as for manufacturers), and the site title lost its em dash.
+
+Left as they were, deliberately: the dimmed SOON items (the owner's Session 7
+choice), the four honest empty-state pages, Arabic for the app area (a
+project of its own), a Content-Security-Policy (its own task), and the
+Supabase leaked-password toggle (owner's dashboard).

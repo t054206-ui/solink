@@ -295,7 +295,7 @@ const en = {
   "about.cta.secondary": "Explore panels",
   "nav.about": "About",
 
-  "foot.rights": "Solink — solar-energy platform for Kuwait and the GCC.",
+  "foot.rights": "Solink: solar-energy platform for Kuwait and the GCC.",
   "foot.demo": "Running in demo mode. No real data is shown.",
 
   // Legal pages, /privacy and /terms. Drafted 2026-09-21 from how the code

@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/Button";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { getProviderAccess } from "./_lib/access";
-import { ProviderNav } from "./_components/ProviderNav";
 
 /**
- * Maintenance-provider shell. Access is gated by user_profiles.provider_company_id
+ * Maintenance-provider shell. Navigation lives in the app sidebar (one entry
+ * per section, like the manufacturer portal). Access is gated by user_profiles.provider_company_id
  * in Supabase mode (and RLS scopes every read to that company); demo mode is
  * allowed and labeled. The role model is not final:
  * [PLACEHOLDER: ADMIN AUTHENTICATION / PERMISSIONS].
@@ -40,10 +40,7 @@ export default async function ProviderLayout({ children }: { children: ReactNode
           detail={`Supabase is not connected. You are acting as ${access.providerName ?? "the demo maintenance company"}; cases are labeled demo records and anything you record is stored in this browser only.`}
         />
       )}
-      <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-8">
-        <ProviderNav />
-        <div className="min-w-0 mt-2 lg:mt-0">{children}</div>
-      </div>
+      {children}
     </div>
   );
 }

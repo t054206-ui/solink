@@ -20,10 +20,11 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
 - **The opening is the owner's own film**, the artifact `solink-intro.html`
   (2026-09-21), run verbatim from `src/components/intro/film/` on three.js r128
   vendored in `public/vendor/`. Do not redesign or modernise it; the owner's
-  requested edits are marked `owner 2026-09-21` in `film.ts`. It plays on every
-  page load (`INTRO_FREQUENCY` in `introStore.ts` and `FREQUENCY` in
-  `public/bootstrap.js`, change together), runs about 20 s, and ends on the
-  page it opened on. Replay button in the footer and on the sign-in aside.
+  requested edits are marked `owner 2026-09-21` in `film.ts`. It plays once
+  per browser tab since 2026-09-22 (`INTRO_FREQUENCY = "session"` in
+  `introStore.ts` and `FREQUENCY` in `public/bootstrap.js`, change together;
+  the owner accepted the audit's recommendation), runs about 20 s, and ends
+  on the page it opened on. Replay button in the footer and on the sign-in aside.
 - **Auth**: `/login` and `/signup` on the Studio palette with confirm-password
   and eye toggles, bilingual via `auth.*`. **Continue with Google** (Supabase
   OAuth, back through `/auth/callback`) sits under the primary button and is

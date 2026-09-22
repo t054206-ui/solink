@@ -24,7 +24,8 @@ import { useSyncExternalStore } from "react";
  */
 
 /**
- * How often the opening plays. The owner's call, 2026-09-21: "every time".
+ * How often the opening plays. The owner's call, 2026-09-21, was "every time";
+ * on 2026-09-22 the owner accepted the audit recommendation of once per tab.
  *
  *   "always"  every full page load (client-side navigation never replays it)
  *   "session" once per tab
@@ -34,7 +35,7 @@ import { useSyncExternalStore } from "react";
  * raises the curtain before React runs, from the same rule.
  */
 export type IntroFrequency = "always" | "session" | "once";
-export const INTRO_FREQUENCY: IntroFrequency = "always";
+export const INTRO_FREQUENCY: IntroFrequency = "session";
 
 // Bump the suffix when the opening changes enough that people who saw the
 // old one should see the new one once. bootstrap.js reads the same key.

@@ -33,7 +33,7 @@ const plexArabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Solink — The complete solar-energy ecosystem", template: "%s · Solink" },
+  title: { default: "Solink: the complete solar-energy ecosystem", template: "%s · Solink" },
   description: "Solink connects homeowners, solar products, installers, maintenance providers, system data and AI into one solar-energy platform for Kuwait and the GCC. Analyze → Calculate → Compare → Design → Purchase → Install → Monitor → Maintain → Report → Optimize.",
   applicationName: "Solink",
   metadataBase: new URL(publicEnv.appUrl),

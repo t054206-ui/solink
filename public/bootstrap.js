@@ -20,7 +20,7 @@
        when the sequence starts to leave. The timeout is a dead man's switch:
        without it, a browser that never gets as far as running React would
        hold the curtain up for ever. */
-    var FREQUENCY = "always";
+    var FREQUENCY = "session";
     var KEY = "solink:intro-seen-v2";
     var seen =
       FREQUENCY === "always" ? false
