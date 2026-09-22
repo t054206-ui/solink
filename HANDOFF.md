@@ -5,10 +5,11 @@ interface, connected Supabase and took sign-up live — read Session 3 first; it
 state of the site now.** Session 4 added the hero panel's take-apart sequence.
 Session 5 added the tariff sector, sourced two settings for the owner's yes, and
 fixed the hero labels. Session 6 ran two days: the opening film, sign in and sign
-up, the Marketplace on the real catalogue. Session 7 drafted the privacy policy
-and terms. **Start with "Session 6 closing state", which is the consolidated
-position, then read "Session 7" at the very end for what changed after it and
-the current to-do list.**_
+up, the Marketplace on the real catalogue. Session 7 (2026-09-21/22) added the
+legal pages and consent, Google sign-in, the roof planner, per-role navigation
+and the manufacturer portal. **Start with the last section of this file,
+"Session 7 closing state", which is the consolidated position and the current
+to-do list.** Session 6 closing state remains accurate for everything it covers._
 Folder: `~/Desktop/solink` (Next.js 16 App Router + React 19 + TypeScript + Tailwind v4)._
 
 Solink is a solar-energy platform for Kuwait and the GCC. It connects homeowners,
@@ -1576,3 +1577,59 @@ Reports/Settings pages for providers; the 0007 features until applied.
 7. As Session 6: **Google Solar**, **tilt → output**, **About placeholders**,
    **more catalogue** (Lolwah's import pattern), **the other pages**, and the
    Session 4 hero leftovers.
+
+---
+
+# SESSION 7 CLOSING STATE — 2026-09-22 (read this first)
+
+Session 7 ran over two days with the owner present. The addenda above record
+each step; this is the consolidated position so Session 8 does not have to
+reconcile them.
+
+## Where things stand
+
+| | |
+| --- | --- |
+| Production | https://solink-nu.vercel.app serves `main` at `c24167f` (plus the closing-state commit after it), built by Vercel on push. Deploys healthy. |
+| Repository | `main` clean, local = remote. Collaborators pushed during the session (`d508220` lint config, `2e52d1d` server-side site analysis, `d5a09e5`/`a34edb5` Open-Meteo sunlight, `1e623c8` roof segments), all rebased under Claude's commits without conflicts. Fetch before you work. |
+| Auth | Email + password and **Google** (live: Google Cloud project `Solink`, `triple-method-509315-n8`, provider enabled in Supabase 2026-09-21). Sign-up has an explicit consent checkbox (terms, privacy, data outside Kuwait) recorded on the user as `user_metadata.consent` versioned by `LEGAL_UPDATED`; `proxy.ts` and `/auth/callback` send anyone without a current record to `/consent` once. "Continue as a guest" leads to `/`. |
+| Legal | `/privacy` and `/terms`, bilingual, drafted from the code and reviewed clause by clause against Law 20/2014 and CITRA's regulation (`docs/LEGAL-NOTES.md`). Operator (the Solink team), contact (`t054206@coded.edu.kw`) and law (Kuwait) set by the owner in `LEGAL_VALUES`. Page banner still says a licensed lawyer has not reviewed them. |
+| Navigation | One sidebar per role (`src/lib/navigation.ts`, `AppShell.tsx`): homeowner journey (Home, Go Solar, My Solar System, Maintenance, Reports, Ask Solink, Help), provider workload, admin platform, manufacturer portal. Groups fold; items without a page are dimmed `[SOON]`. Footer shows name, company, email, Sign out (Sign in when demo). No icon-only mode by the owner's choice. |
+| Manufacturer portal | `/manufacturer/*`: My Products, Add/Edit (shared `ProductForm`, never self-verifies), Datasheets (link by URL), Company Profile; Performance, Requests, Orders, Reports, Settings are honest empty states. Migration `0007_solink_manufacturer_portal.sql` **written, not applied** (decision 22). |
+| Designer | Simple by default (roof size, obstacles, panel, "Fill my roof with panels", "Add a panel", ready layouts, plain-word results); "Show more options" reveals direction/tilt, photo tracing, blocks, clearances, snap, AI placement, weight, components, own assumptions. Blocks and obstacles drag and resize with a corner handle; panels keep datasheet size. Production uses platform sun hours and losses. |
+| Help | `InfoTip` opens on hover, focus and tap; ~90 tips across the app; glossary written for a parent. |
+| Platform settings | Tariff by sector, sun hours 5.58, performance ratio 0.86, CO₂ 0.635, **TCO 25 y, alert thresholds 10 %/20 % on 30 days, end-of-life criteria** (the last three entered 2026-09-22 on the owner's yes). Degradation per panel from the datasheet warranty curve; no platform default. |
+| Admin | Decisions card checks live state (`placeholderStatus.ts`): open / partial / resolved. |
+| Checks | `npx tsc --noEmit`, `npx eslint src`, `npm run build` clean at `c24167f`. |
+
+## Things Session 8 should know
+
+- **Testing without an account**: build in demo mode and serve on a spare port
+  (`NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run build`,
+  then `npx next start -p 3322`). It runs beside the dev server; the role
+  switcher on `/dashboard?as=…` also switches the sidebar. Remember to run a
+  normal `npm run build` before pushing so `.next` is the real build.
+- The intro plays on every full page load (`INTRO_FREQUENCY = "always"`,
+  owner's word); client-side links do not replay it. "Skip intro" is top right.
+- Generated route types can lag a new layout (`npx next typegen` fixes tsc).
+- nrel.gov / osti.gov are unreachable from this network (three sessions).
+- The owner's own account will see `/consent` once on the next visit.
+
+## What to do next, in priority order
+
+1. **Owner: apply migration 0007?** (decision 22). Then wire the manufacturer
+   sections it enables: requests, product events on the marketplace, datasheet
+   upload, company logo/description.
+2. **Owner's call on intro frequency.** Still `"always"`; recommend `"session"`.
+3. **Licensed lawyer's review** of `/privacy` and `/terms`; open points in
+   `docs/LEGAL-NOTES.md`. Kuwaiti review of all Arabic (`legal.*`, `auth.*`,
+   glossary is English-only so far).
+4. **Provider pages that are `[SOON]`**: Requests (could be the case queue
+   filtered), Systems, Reports, Settings.
+5. **Self-service account deletion** (privacy policy promises deletion on
+   request).
+6. **PVWatts §System Losses** from a network that reaches nrel.gov.
+7. Email sender, service-role key, domain: owner. On a domain: Google
+   authorised domains, Supabase redirect list and Site URL.
+8. As before: Google Solar, tilt → output, About placeholders, more catalogue,
+   the other pages, hero leftovers.

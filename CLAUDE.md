@@ -8,8 +8,8 @@
 Session 3 describes the site as it is; Sessions 4, 5, 6 and 7 are additions on top
 of it. **Session 2 supersedes Session 1 on anything visual.**
 
-The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
-"Session 6 closing state", then "Session 7"):
+The current position, as of 2026-09-22 (full account: HANDOFF.md,
+"Session 7 closing state"):
 
 - `main` is deployed to https://solink-nu.vercel.app by Vercel on push;
   Session 7 pushed several times on the owner's word (2026-09-21/22), see
