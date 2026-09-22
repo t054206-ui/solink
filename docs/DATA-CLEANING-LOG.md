@@ -199,3 +199,15 @@ set.** No image URL was recorded; the cards read "No image provided".
 Nothing was rejected in this batch. Bins other than the two per series were
 left out only to keep the first import small; the datasheets cover every bin
 and the same file can be extended.
+
+### C-010 — Product renders for the eight modules (added later on 2026-09-22)
+
+| | |
+|---|---|
+| **Field** | `images` on the eight rows imported earlier that day |
+| **Rule** | Only an image the manufacturer's own product page serves for this series; the page is recorded in `source.field_sources.images`. Nothing from resellers or image searches |
+| **JinkoSolar** | `…/uploads/6a69c67d/54-BDV.jpg` from the official download centre, where it sits beside "495-520W N-Type 54 Bifacial Module With Dual Glass", i.e. this series. A `78-182x182 BDV.jpg` image on the Tiger Neo page was rejected: 78-cell, a different module |
+| **Trina Solar** | `TSM-NEG9R.28-1.png` from `vertexsplus.trinasolar.com`, named for the exact model; render shows 6 × 24 = 144 cells, matching the datasheet |
+| **JA Solar** | `JAM_54_D40_LB_winkel_vorne.jpg` from the JAM54D40 LB product page (its og:image); render shows 6 × 18 = 108 cells, matching |
+| **Canadian Solar** | `TOPHiKu6-detailed-48.png`, the render the official TOPHiKu6 page serves. The file name says 48 but the render shows 6 × 18 = 108 half-cells, i.e. the 54-cell CS6.1-54TM; kept as the page's own image for the series, with this note |
+| **LONGi** | Unchanged: the two official renders from the 2026-09-20 import load (HTTP 200, also with a Solink referer) |

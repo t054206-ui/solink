@@ -100,7 +100,6 @@ const en = {
   "auth.consentTitle": "Before you continue",
   "auth.consentSub": "Solink now has terms of use and a privacy policy. Please read and accept them once; you will not be asked again unless they change.",
   "auth.consentContinue": "Accept and continue",
-  "auth.consentDecline": "Prefer not to?",
 
   "label.ratedPower": "Rated power",
   "label.efficiency": "Efficiency",
@@ -469,7 +468,6 @@ const ar: Dict = {
   "auth.consentTitle": "قبل ما تكمل",
   "auth.consentSub": "صار عند سولينك شروط استخدام وسياسة خصوصية. اقرأهما ووافق عليهما مرة واحدة؛ ما راح نسألك مرة ثانية إلا إذا تغيّرتا.",
   "auth.consentContinue": "أوافق وأكمل",
-  "auth.consentDecline": "ما تريد؟",
 
   "label.ratedPower": "القدرة",
   "label.efficiency": "الكفاءة",

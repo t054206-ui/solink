@@ -732,3 +732,25 @@ on conflict (manufacturer_id, model) do update set
 commit;
 
 -- Rollback (manual): delete from solar_products where model in ('JKM505N-54HL4M-BDV','JKM520N-54HL4M-BDV','TSM-445NEG9R.28','TSM-460NEG9R.28','JAM54D40-450/LB','JAM54D40-460/LB','CS6.1-54TM-450H','CS6.1-54TM-465H');
+
+-- ----------------------------------------------------------------------------
+-- Addendum, later on 2026-09-22: official product renders (owner: "the photos
+-- of the products are not showing"). Each address is the image the
+-- manufacturer's own product page serves for this series; the page is
+-- recorded in source.field_sources.images. Ran against the database the same
+-- day. See docs/DATA-CLEANING-LOG.md C-010.
+-- ----------------------------------------------------------------------------
+begin;
+update solar_products set images = array['https://jinkosolarcdn.shwebspace.com/uploads/6a69c67d/54-BDV.jpg'],
+  source = source || jsonb_build_object('field_sources', coalesce(source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://www.jinkosolar.com/en/site/dwparametern'))
+  where model in ('JKM505N-54HL4M-BDV','JKM520N-54HL4M-BDV') and manufacturer_id = (select id from manufacturers where slug = 'jinkosolar');
+update solar_products set images = array['https://vertexsplus.trinasolar.com/wp-content/uploads/2024/03/TSM-NEG9R.28-1.png'],
+  source = source || jsonb_build_object('field_sources', coalesce(source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://vertexsplus.trinasolar.com/'))
+  where model in ('TSM-445NEG9R.28','TSM-460NEG9R.28') and manufacturer_id = (select id from manufacturers where slug = 'trina-solar');
+update solar_products set images = array['https://www.jasolar.eu/fileadmin/data/4.0/JAM54D40_LB/JAM_54_D40_LB_winkel_vorne.jpg'],
+  source = source || jsonb_build_object('field_sources', coalesce(source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://www.jasolar.eu/en/products/jam54d40-lb-25y'))
+  where model in ('JAM54D40-450/LB','JAM54D40-460/LB') and manufacturer_id = (select id from manufacturers where slug = 'ja-solar');
+update solar_products set images = array['https://www.canadiansolar.com/na/wp-content/uploads/sites/3/2019/11/TOPHiKu6-detailed-48.png'],
+  source = source || jsonb_build_object('field_sources', coalesce(source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://www.canadiansolar.com/na/tophiku6/'))
+  where model in ('CS6.1-54TM-450H','CS6.1-54TM-465H') and manufacturer_id = (select id from manufacturers where slug = 'canadian-solar');
+commit;
