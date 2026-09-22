@@ -25,7 +25,7 @@ export function Footer() {
             <li><Link href="/about" className="hover:text-fg">About Solink</Link></li>
             <li><Link href="/guide" className="hover:text-fg">User Guide</Link></li>
             <li><Link href="/guide#quick-start" className="hover:text-fg">Quick Start</Link></li>
-            <li><Link href="/admin/integrations" className="hover:text-fg">Integration status</Link></li>
+            <li><Link href="/admin/integrations" className="hover:text-fg">Integration status (administrators)</Link></li>
           </ul>
         </div>
       </div>

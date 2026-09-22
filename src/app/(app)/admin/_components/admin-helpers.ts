@@ -22,14 +22,9 @@ export const CATEGORY_LABEL: Record<ProductCategory, string> = {
 };
 export const CATEGORIES = Object.keys(CATEGORY_LABEL) as ProductCategory[];
 
-export const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
-  unverified: "Unverified",
-  pending_verification: "Pending verification",
-  verified: "Verified",
-  needs_changes: "Needs changes",
-  rejected: "Rejected",
-};
-export const VERIFICATION_STATUSES = Object.keys(VERIFICATION_LABEL) as VerificationStatus[];
+/** One label map for the five verification states; the marketplace owns it and the admin reuses it. */
+export { VERIFICATION_LABEL } from "@/app/(app)/marketplace/_components/product-helpers";
+export const VERIFICATION_STATUSES: VerificationStatus[] = ["unverified", "pending_verification", "verified", "needs_changes", "rejected"];
 
 export const MAINTENANCE_STATUS_LABEL: Record<MaintenanceStatus, string> = {
   new: "New", reviewing: "Reviewing", scheduled: "Scheduled", in_progress: "In progress", resolved: "Resolved", closed: "Closed",

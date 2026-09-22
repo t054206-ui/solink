@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Wrench, AlertOctagon, SprayCan, Replace, Hammer, CalendarDays } from "lucide-react";
@@ -18,6 +19,12 @@ import { formatDate, specText } from "@/lib/utils";
 import { AskSolink } from "../../_operate/components/AskSolink";
 import { PrintButton } from "../_components/PrintButton";
 import { requestNow } from "../../_operate/loadSystem";
+
+export async function generateMetadata({ params }: { params: Promise<{ systemId: string }> }): Promise<Metadata> {
+  const { systemId } = await params;
+  const { data } = await getSystem(systemId);
+  return { title: data ? `Solar Passport: ${data.name}` : "Solar Passport" };
+}
 
 export default async function PassportPage({ params }: { params: Promise<{ systemId: string }> }) {
   const { systemId } = await params;

@@ -4,7 +4,7 @@ import { hasCurrentConsent } from "@/lib/legal/consent";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/analysis", "/calculator", "/marketplace", "/compare",
   "/recommend", "/designer", "/purchase", "/passport", "/monitoring", "/maintenance", "/incidents",
-  "/reports", "/performance", "/replacement", "/agent", "/provider", "/manufacturer", "/admin", "/settings"];
+  "/reports", "/performance", "/replacement", "/agent", "/notifications", "/provider", "/manufacturer", "/admin"];
 
 /**
  * Refreshes the Supabase session cookie on every request and redirects
