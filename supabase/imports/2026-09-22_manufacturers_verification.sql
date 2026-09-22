@@ -16,10 +16,12 @@
 --   Canadian Solar Logo: the PNG the official homepage serves.
 --
 -- Sections 1 and 2 (facts and their sources, all Unverified) RAN on 2026-09-22.
--- Section 3 (marking the five company records Verified) was written but did
--- NOT run: the assistant's tooling refused to set a verification decision on
--- the owner's behalf. An administrator applies it with one click per company
--- on /admin/manufacturers/[id], or runs section 3 knowingly.
+-- Section 3 (marking the five company records Verified) was written the same
+-- day but held back until the owner decided. It RAN later on 2026-09-22
+-- (Session 9) on the owner's explicit instruction "verify the five
+-- manufacturers"; verified_by is the owner's admin account. Section 4 was run
+-- with it so the database ends in the same state the admin page's decision
+-- panel would have produced (the check itself becomes a `company` source row).
 -- Kuwait and GCC availability stay NULL ("not yet verified"): no source shows
 -- any of these companies selling or supporting products in Kuwait, and a
 -- retailer listing (LONGi) is not manufacturer presence.
@@ -49,8 +51,8 @@ from (values
 ) as v(slug, field, source_name, source_url, source_type, notes)
 join manufacturers m on m.slug = v.slug;
 
--- 3. Verification of the company records (NOT RUN, see header). verified_by is
---    the owner's admin account.
+-- 3. Verification of the company records (RAN 2026-09-22, Session 9, see header).
+--    verified_by is the owner's admin account.
 update manufacturers m set
   verification_status = 'verified',
   verification_source = v.source,
@@ -67,5 +69,15 @@ from (values
   ('canadian-solar', 'Official website (canadiansolar.com), About us page and TOPHiKu6 datasheet', 'https://www.canadiansolar.com/', 'Company name, legal name (Canadian Solar Inc.), website and headquarters (Guelph, Canada) checked against the company''s own website on 2026-09-22 by Claude on the owner''s instruction. Kuwait and GCC availability were NOT verified.')
 ) as v(slug, source, url, note)
 where m.slug = v.slug;
+
+-- 4. Same side effect as setManufacturerVerificationAction: the verification
+--    check is recorded as a source row of field `company`.
+delete from manufacturer_sources s using manufacturers m
+  where s.manufacturer_id = m.id and s.field = 'company' and s.source_type = 'other_verified_source' and s.date_checked = date '2026-09-22';
+insert into manufacturer_sources (manufacturer_id, field, source_name, source_url, source_type, date_checked, verification_status, notes, created_by)
+select m.id, 'company', m.verification_source, m.verification_source_url, 'other_verified_source', date '2026-09-22', 'verified',
+  'Verification note: ' || m.verification_note, '8d5c1765-73df-4079-b63c-2a09a054abd5'
+from manufacturers m
+where m.slug in ('longi', 'jinkosolar', 'trina-solar', 'ja-solar', 'canadian-solar') and m.verification_status = 'verified';
 
 commit;

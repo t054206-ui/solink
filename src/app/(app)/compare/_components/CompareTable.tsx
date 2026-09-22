@@ -14,12 +14,13 @@ import type { Classified, DataClass } from "@/lib/classification";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import { annualProductionKwh, totalCostOfOwnership, type SolarAssumptions } from "@/lib/solar/calculations";
 import type { Product } from "@/lib/types";
-import { cn, specText } from "@/lib/utils";
+import { cn, specNum, specText } from "@/lib/utils";
 import { PriceCell } from "../../marketplace/_components/PriceCell";
 import { VerificationBadge } from "../../marketplace/_components/VerificationBadge";
 import { ManufacturerLink } from "../../marketplace/_components/ManufacturerLink";
 import { RecordProductEvent } from "../../marketplace/_components/RecordProductEvent";
-import { COMPARE_MAX, COMPARE_STORE_KEY, dimsSpec, getSpec, getSpecNum, realPrice } from "../../marketplace/_components/product-helpers";
+import { warrantyDegradation } from "@/lib/solar/degradation";
+import { COMPARE_MAX, COMPARE_STORE_KEY, dimsSpec, getAdditional, getSpec, getSpecNum, isBifacial, realPrice } from "../../marketplace/_components/product-helpers";
 
 interface UserAssumptions { peakSunHours: string; performanceRatio: string; horizonYears: string }
 const EMPTY_ASSUMPTIONS: UserAssumptions = { peakSunHours: "", performanceRatio: "", horizonYears: "" };
@@ -33,6 +34,31 @@ function specCell(p: Product, key: string): Cell {
   const s = getSpec(p.specs, key);
   const has = !!s && s.value !== null;
   return { node: specText(s), num: getSpecNum(p.specs, key), cls: has ? (p.is_demo ? "demo" : "source") : "unavailable", source: p.source.data_source };
+}
+
+/** A value under specs.additional (datasheet extras such as degradation limits). */
+function additionalCell(p: Product, key: string): Cell {
+  const s = getAdditional(p.specs, key);
+  const has = !!s && s.value !== null;
+  return { node: has ? specText(s) : <span className="text-fg-muted">Not stated</span>, num: specNum(s), cls: has ? (p.is_demo ? "demo" : "source") : "unavailable", source: p.source.data_source };
+}
+
+/** Bifaciality: the stated ratio when the datasheet prints one, else what the record says about the module type. */
+function bifacialCell(p: Product): Cell {
+  const ratio = getAdditional(p.specs, "bifaciality_pct");
+  if (ratio && ratio.value !== null) return { node: specText(ratio), num: specNum(ratio), cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
+  const b = isBifacial(p.specs);
+  if (b === false) return { node: "Mono-facial", num: 0, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
+  if (b === true) return { node: "Bifacial (ratio not stated)", num: null, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
+  return { node: <span className="text-fg-muted">Not stated</span>, num: null, cls: "unavailable" };
+}
+
+/** Annual degradation after year one, from the panel's own performance-warranty curve (never a platform default). */
+function annualDegradationCell(p: Product): Cell {
+  const d = warrantyDegradation(p.specs, p.manufacturer_name);
+  if (!d) return { node: <span className="text-fg-muted">Not stated</span>, num: null, cls: "unavailable" };
+  const pctPerYear = d.annualFraction * 100;
+  return { node: <span title={d.source}>{Number(pctPerYear.toFixed(3))} %/year</span>, num: pctPerYear, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
 }
 
 function classifiedCell(c: Classified, format: (v: number) => string): Cell {
@@ -76,9 +102,18 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
     { id: "eff", label: "Efficiency", term: "efficiency", best: "high", cell: (p) => specCell(p, "module_efficiency_pct") },
     { id: "dims", label: "Dimensions (L × W × T)", cell: (p) => { const d = dimsSpec(p.specs); return { node: specText(d), cls: d.value === null ? "unavailable" : p.is_demo ? "demo" : "source", source: p.source.data_source }; } },
     { id: "weight", label: "Weight", cell: (p) => specCell(p, "weight_kg") },
+    { id: "cells", label: "Number of cells", cell: (p) => specCell(p, "number_of_cells") },
+    { id: "bifacial", label: "Bifaciality", best: "high", cell: bifacialCell },
+    { id: "voc", label: "Open-circuit voltage (Voc)", term: "voc", cell: (p) => specCell(p, "voc_v") },
+    { id: "vmp", label: "Voltage at max power (Vmp)", term: "vmp", cell: (p) => specCell(p, "vmp_v") },
+    { id: "isc", label: "Short-circuit current (Isc)", term: "isc", cell: (p) => specCell(p, "isc_a") },
+    { id: "imp", label: "Current at max power (Imp)", term: "imp", cell: (p) => specCell(p, "imp_a") },
     { id: "tc", label: "Temperature coefficient", term: "temperature_coefficient", best: "high", cell: (p) => specCell(p, "temperature_coefficient_pmax_pct_per_c") },
     { id: "pw", label: "Product warranty", term: "product_warranty", best: "high", cell: (p) => specCell(p, "product_warranty_years") },
     { id: "perfw", label: "Performance warranty", term: "performance_warranty", best: "high", cell: (p) => specCell(p, "performance_warranty_years") },
+    { id: "perfend", label: "Guaranteed output at end of warranty", term: "degradation", best: "high", cell: (p) => specCell(p, "performance_warranty_end_pct") },
+    { id: "deg1", label: "First-year degradation (max)", best: "low", cell: (p) => additionalCell(p, "first_year_degradation_pct") },
+    { id: "degy", label: "Annual degradation after year one", term: "degradation", best: "low", cell: annualDegradationCell },
     { id: "prod", label: "Expected annual production (per panel)", term: "energy_production", best: "high", cell: (p) => {
       const src = p.expected_annual_production_kwh;
       if (src.value !== null) return { node: specText(src), num: src.value, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };

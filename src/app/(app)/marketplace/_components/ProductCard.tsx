@@ -35,7 +35,7 @@ export function ProductCard({ product: p }: { product: Product }) {
       <div className="flex flex-1 flex-col gap-3 p-4">
         {p.is_demo && <DemoBanner text={DEMO_PRODUCT_BANNER} className="py-1.5 text-[12px]" />}
         <div className="min-w-0">
-          <div className="text-[12px] text-fg-muted"><ManufacturerLink product={p} /> · <span className="font-mono">{p.model}</span></div>
+          <div className="text-[12px] text-fg-muted"><ManufacturerLink product={p} />{p.series ? <> · {p.series}</> : null} · <span className="font-mono">{p.model}</span></div>
           <h3 className="mt-0.5 text-[15px] font-semibold leading-snug text-fg"><Link href={href} className="hover:underline underline-offset-2">{p.name}</Link></h3>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">

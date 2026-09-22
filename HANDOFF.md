@@ -1988,3 +1988,40 @@ was started and stopped at the owner's word mid-way. What exists:
 5. Arabic for the app area (a project); provider Reports and Settings (SOON).
 6. As before: lawyer's review of legal pages, PVWatts losses, domain and
    email sender, service-role key for n8n and the Agent.
+
+---
+
+# SESSION 9 CLOSING STATE — 2026-09-22 (read this first)
+
+Session 9 was a short continuation on the same day, on the owner's word
+"verify the five manufacturers, the leaked-password toggle, and continue
+where it cut off". It sits on top of Session 8's closing state above; only
+what changed is listed.
+
+## Where things stand
+
+| | |
+|---|---|
+| Manufacturers | All five real companies are **Verified** (2026-09-22, `verified_by` = the owner's admin account). Run from §3–§4 of `supabase/imports/2026-09-22_manufacturers_verification.sql` on the owner's explicit instruction; each company also carries a `company` source row, exactly as the admin decision panel would have written. Kuwait/GCC availability stays **not yet verified**: no source shows presence. |
+| Products | **39 real panels** (11 from Session 8 + 28 from this session), all Unverified, zero validation flags, one version each, `series` on every row, two `solar_product_sources` rows (datasheet + product page) each. New: LONGi Hi-MO X6 Scientist LR7-72HTH 620/625/630 (single glass, 15 y/25 y, 89.4 %); JinkoSolar Tiger Neo 66HL4M-(V) 610–635 mono-facial (6); JA Solar DeepBlue 4.0 Pro JAM72D42 LB 625–650 bifacial (6); Trina Vertex N TSM-NEG21C.20 700–725 bifacial (6); Canadian Solar TOPBiHiKu6 CS6.2-66TB-H 590–620 bifacial (7). Renders only for JA Solar and Canadian Solar (checked cell counts); none for the LONGi, Jinko and Trina rows, see `docs/DATA-CLEANING-LOG.md` C-011 to C-016. No prices: none found. |
+| Import files | `supabase/imports/2026-09-22_manufacturer_series_2.sql` (2 700 lines, human-readable, one block per row, generated from the readings by `gen_import.py` in the session scratchpad, which checked Vmp × Imp ≈ Pmax, Vmp < Voc, Imp < Isc and P ÷ area ≈ efficiency for every bin). It RAN via an equivalent compact form (one INSERT … SELECT FROM VALUES per series, same data) on 2026-09-22. Re-running the file is idempotent. |
+| Marketplace | Panel filters in the grid: min/max power, min efficiency, cell-technology family (from the datasheet wording: TOPCon, HPBC, HJT, PERC, Other), bifacial / mono-facial, verification status. A record without the filtered value is left out and the count line says how many. Search also matches `series`; cards show the series. |
+| Compare | New rows: number of cells, bifaciality (ratio, or mono-facial / bifacial as stated), Voc, Vmp, Isc, Imp, guaranteed output at end of warranty, first-year degradation, annual degradation after year one (from `warrantyDegradation`, i.e. the panel's own warranty curve). |
+| Calculator | "Panels × watts" mode has a catalogue picker (`CalcPanelOption`, built in `calculator/page.tsx` from real rows). Choosing a panel fills the rating and the field's badge turns to `source`; typing another number makes it `user` again. The free field stays. |
+| Product page | Two new cards from the 0011 tables: **Documents on record** (`solar_product_sources`, with version, retrieval date and the fields each supports) and **Prices on record** (`solar_product_prices`; empty says "No supplier price has been recorded. Solink never estimates one."). Series in the eyebrow. Component: `marketplace/_components/ProvenanceCards.tsx`. |
+| Admin | Products table has a manufacturer filter and shows the series; the product edit page shows the same two provenance cards read-only under the form (Supabase mode). |
+| Leaked-password protection | **Cannot be enabled on the Free plan.** The toggle was switched in the dashboard's Email provider panel and Save answered: "Configuring leaked password protection via HaveIBeenPwned.org is available on Pro Plans and up." Nothing was changed; the advisor warning stays until the project is upgraded, which is the owner's decision. |
+| Checks | `npx tsc --noEmit` and `npx eslint` on the changed folders clean; `npm run build` see the commit message. |
+
+## Things Session 10 should know
+
+- Verification of the 39 products is still the owner's: one click each on `/admin/products/[id]` or `/admin/verification`, or a knowing SQL run. Nothing here verified a product.
+- Supplier prices: the only price rows are the three LONGi Hi-MO 7 retailer observations. `solar_product_prices` is ready for more; the marketplace still reads `price` on the product row for the card.
+- The technology-family filter groups by datasheet wording only (`technologyFamily` in `product-helpers.ts`). The LONGi X6 rows read "HPBC" from the product page, not the datasheet (C-011), and are sourced accordingly.
+- The Trina Vertex N rows point at the trinasolar.com home page because no product page could be opened without JavaScript (C-014); a later session with a browser can replace it and add the render.
+
+## What to do next, in priority order
+
+1. Owner: verify products (or ask for a knowing SQL run with the note recorded), and decide on the Pro plan for leaked-password protection.
+2. Test the full flow signed in (marketplace → compare → recommend → designer → purchase → passport) with the 39-row catalogue; the designer and purchase read the catalogue and were not changed.
+3. Rate limiting with a shared store (Upstash / Vercel KV); Arabic for the app area; provider Reports and Settings; the earlier list.

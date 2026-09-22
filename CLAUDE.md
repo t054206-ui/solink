@@ -5,11 +5,11 @@
 ## Read HANDOFF.md first, before doing anything else
 
 `HANDOFF.md` is the state of this project. Read it at the start of every session.
-Session 3 describes the site as it is; Sessions 4, 5, 6, 7 and 8 are additions on top
+Session 3 describes the site as it is; Sessions 4, 5, 6, 7, 8 and 9 are additions on top
 of it. **Session 2 supersedes Session 1 on anything visual.**
 
 The current position, as of 2026-09-22 (full account: HANDOFF.md,
-"Session 8 closing state"):
+"Session 8 closing state" then "Session 9 closing state"):
 
 - `main` is deployed to https://solink-nu.vercel.app by Vercel on push;
   Session 7 pushed several times on the owner's word (2026-09-21/22), see
@@ -40,7 +40,8 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
 - Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0011 applied, both
   environments in Supabase mode, sign-up live, the owner's account is admin.
-  Still needed: service-role key, SMTP sender, domain.
+  Still needed: service-role key, SMTP sender, domain. Leaked-password
+  protection needs the Pro plan (Session 9 tried the toggle; Supabase refused).
 - Platform settings entered with sources on the owner's yes: tariff by MEW
   sector, CO₂ factor, peak sun hours 5.58 (GHI, Kuwait City), performance
   ratio 0.86. Never enter a platform number without the owner's yes;
@@ -73,19 +74,24 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   homeowner journey, provider workload, admin platform, manufacturer portal.
   Items with no page are dimmed `[SOON]`, never invented routes. No icon-only
   collapsed mode by the owner's choice.
-- **Products** (Session 8): 11 real panels from official datasheets across the
-  five manufacturers, versions and passport snapshots as before, plus
-  `solar_products.series`, `solar_product_sources` (provenance per document)
-  and `solar_product_prices` (supplier prices apart from datasheet data),
-  migration 0011. Five more series are parsed and waiting to be imported
-  (HANDOFF, Session 8 closing state).
+- **Products** (Sessions 8–9): 39 real panels from official datasheets across
+  the five manufacturers (two series each, every bin), versions and passport
+  snapshots as before, plus `solar_products.series`, `solar_product_sources`
+  (provenance per document) and `solar_product_prices` (supplier prices apart
+  from datasheet data), migration 0011. Marketplace filters (power,
+  efficiency, technology family, bifacial, verification), Compare rows for
+  cells/bifaciality/Voc/Vmp/Isc/Imp/degradation, a catalogue panel picker in
+  the Savings Calculator, and "Documents on record" / "Prices on record"
+  cards on the product and admin product pages (Session 9). All products are
+  still Unverified; verification is the owner's click.
 - **Manufacturer companies** (Session 8, 2026-09-22, migration 0008 applied):
   `manufacturers` is the company record (legal name, slug, logo, HQ, website,
   type and market classification, tri-state Kuwait/GCC availability,
   verification with source and note, archive) with `manufacturer_versions`
   and `manufacturer_sources`. Five real companies exist (LONGi with its three
   Hi-MO 7 products; JinkoSolar, Trina Solar, JA Solar, Canadian Solar with
-  none), all Unverified. Directory `/marketplace/manufacturers`, profile by
+  none), **all five Verified on 2026-09-22 on the owner's instruction**
+  (Kuwait/GCC availability still not verified). Directory `/marketplace/manufacturers`, profile by
   slug, admin at `/admin/manufacturers`, marketplace filter `?manufacturer=`.
   Passports freeze the manufacturer version by trigger. A manufacturer
   account cannot change its own standing (trigger). Never invent a logo, HQ

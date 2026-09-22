@@ -143,3 +143,55 @@ export function dimsSpec(specs: Product["specs"]): AnySpec {
   if (l === null || w === null) return { value: null, status: "unavailable" };
   return { value: t === null ? `${l} × ${w}` : `${l} × ${w} × ${t}`, unit: "mm" };
 }
+
+/** Read a key under `specs.additional` defensively. */
+export function getAdditional(specs: Product["specs"] | undefined, key: string): AnySpec | undefined {
+  const extra = specs?.additional;
+  if (!extra || typeof extra !== "object") return undefined;
+  const v = (extra as Record<string, unknown>)[key];
+  if (v && typeof v === "object" && "value" in (v as Record<string, unknown>)) return v as AnySpec;
+  return undefined;
+}
+
+/**
+ * Cell technology family, read from the datasheet's own `cell_technology`
+ * wording. A grouping for filters only, never a claim the datasheet did not
+ * make: a record whose wording names none of the known families is "Other",
+ * and a record without the field is null.
+ */
+export type TechnologyFamily = "TOPCon" | "HPBC (back-contact)" | "HJT" | "PERC" | "Other (as stated)";
+export const TECHNOLOGY_FAMILIES: TechnologyFamily[] = ["TOPCon", "HPBC (back-contact)", "HJT", "PERC", "Other (as stated)"];
+
+export function technologyFamily(specs: Product["specs"] | undefined): TechnologyFamily | null {
+  const s = getSpec(specs, "cell_technology");
+  if (!s || typeof s.value !== "string" || !s.value.trim()) return null;
+  const t = s.value.toLowerCase();
+  if (t.includes("topcon")) return "TOPCon";
+  if (t.includes("hpbc") || t.includes("back-contact") || t.includes("back contact")) return "HPBC (back-contact)";
+  if (t.includes("hjt") || t.includes("heterojunction")) return "HJT";
+  if (t.includes("perc")) return "PERC";
+  return "Other (as stated)";
+}
+
+/**
+ * Whether the datasheet describes the module as bifacial: the explicit
+ * `additional.bifacial` flag first, then a stated bifaciality ratio, then the
+ * cell-technology wording. null when the record does not say.
+ */
+export function isBifacial(specs: Product["specs"] | undefined): boolean | null {
+  const flag = getAdditional(specs, "bifacial");
+  if (flag && typeof flag.value === "string") {
+    const v = flag.value.trim().toLowerCase();
+    if (v.startsWith("yes")) return true;
+    if (v.startsWith("no")) return false;
+  }
+  const ratio = getAdditional(specs, "bifaciality_pct");
+  if (ratio && ratio.value !== null) return true;
+  const tech = getSpec(specs, "cell_technology");
+  if (tech && typeof tech.value === "string") {
+    const t = tech.value.toLowerCase();
+    if (t.includes("bifacial")) return true;
+    if (t.includes("mono-facial") || t.includes("monofacial") || t.includes("single glass")) return false;
+  }
+  return null;
+}

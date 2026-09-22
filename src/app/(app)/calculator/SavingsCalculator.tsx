@@ -3,7 +3,7 @@ import { useId } from "react";
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { Field, Input } from "@/components/ui/Form";
+import { Field, Input, Select } from "@/components/ui/Form";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { Placeholder } from "@/components/ui/Placeholder";
@@ -22,15 +22,20 @@ import { AssumptionField, resolveAssumption } from "../_plan/AssumptionField";
 import { MetricWithNotes } from "../_plan/MetricWithNotes";
 import { DataLegend } from "../_plan/DataLegend";
 
+/** A catalogue panel the calculator can take its rating from. Built by the page from real product rows. */
+export interface CalcPanelOption { id: string; label: string; ratedW: number | null; isDemo: boolean; source: string }
+
 export interface CalcInputs {
   monthlyKwh: number | null; monthlyBill: number | null;
   sizeMode: "kwp" | "panels"; kwp: number | null; panelCount: number | null; panelW: number | null;
+  /** Catalogue product the rating was taken from; null when the person typed it. */
+  panelId?: string | null;
   productionOverride: number | null;
   tariff: number | null; systemCost: number | null; installCost: number | null; maintenance: number | null; cleaning: number | null; repairs: number | null;
   horizon: number | null; degradationPct: number | null; co2: number | null; psh: number | null; pr: number | null;
 }
 const EMPTY: CalcInputs = {
-  monthlyKwh: null, monthlyBill: null, sizeMode: "kwp", kwp: null, panelCount: null, panelW: null, productionOverride: null,
+  monthlyKwh: null, monthlyBill: null, sizeMode: "kwp", kwp: null, panelCount: null, panelW: null, panelId: null, productionOverride: null,
   tariff: null, systemCost: null, installCost: null, maintenance: null, cleaning: null, repairs: null,
   horizon: null, degradationPct: null, co2: null, psh: null, pr: null,
 };
@@ -39,9 +44,17 @@ const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFin
 const toNum = (raw: string): number | null => { if (raw.trim() === "") return null; const n = Number(raw); return Number.isFinite(n) ? n : null; };
 const show = (v: number | null) => (v === null ? "" : String(v));
 
-export function SavingsCalculator({ settings, mode }: { settings: PlatformSettings; mode: DataMode }) {
+export function SavingsCalculator({ settings, mode, panels = [] }: { settings: PlatformSettings; mode: DataMode; panels?: CalcPanelOption[] }) {
   const [inp, setInp] = useLocalStore<CalcInputs>("calculator", EMPTY);
   const set = <K extends keyof CalcInputs>(k: K, v: CalcInputs[K]) => setInp((p) => ({ ...p, [k]: v }));
+
+  // The chosen catalogue panel, only while the rating field still holds its value; a typed change makes the figure the person's own.
+  const chosenPanel = panels.find((o) => o.id === (inp.panelId ?? null)) ?? null;
+  const ratingFromCatalogue = chosenPanel !== null && chosenPanel.ratedW === inp.panelW;
+  const choosePanel = (id: string) => {
+    const o = panels.find((x) => x.id === id) ?? null;
+    setInp((p) => ({ ...p, panelId: o ? o.id : null, panelW: o ? o.ratedW : p.panelW }));
+  };
 
   /* ---------- assumptions: platform (source) → user → unavailable ---------- */
   const tariff = resolveAssumption(inp.tariff, settings.electricity_tariff_per_kwh);
@@ -165,11 +178,17 @@ export function SavingsCalculator({ settings, mode }: { settings: PlatformSettin
               </Field>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Panel from the catalogue" className="sm:col-span-2" hint={chosenPanel ? <DataBadge cls={chosenPanel.isDemo ? "demo" : "source"} compact source={chosenPanel.source} /> : undefined} help={panels.length === 0 ? "No panels are in the catalogue yet; type the rating below." : "Choosing a panel fills its rated power from the record. You can still type a rating of your own."}>
+                  <Select value={chosenPanel?.id ?? ""} onChange={(e) => choosePanel(e.target.value)} disabled={panels.length === 0} aria-label="Panel from the catalogue">
+                    <option value="">Type the rating myself</option>
+                    {panels.map((o) => <option key={o.id} value={o.id}>{o.label} ({o.ratedW} W){o.isDemo ? " (DEMO)" : ""}</option>)}
+                  </Select>
+                </Field>
                 <Field label="Number of panels" hint={<DataBadge cls="user" compact />}>
                   <Input type="number" inputMode="numeric" min={0} step="1" value={show(inp.panelCount)} onChange={(e) => set("panelCount", toNum(e.target.value))} aria-label="Number of panels" />
                 </Field>
-                <Field label={<>Panel rating <InfoTip term="peak_power" /></>} hint={<DataBadge cls="user" compact />} help="From the panel datasheet or the Marketplace.">
-                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.panelW)} onChange={(e) => set("panelW", toNum(e.target.value))} aria-label="Panel rated power in watts" /><span className="text-[12.5px] text-fg-muted">W</span></div>
+                <Field label={<>Panel rating <InfoTip term="peak_power" /></>} hint={ratingFromCatalogue && chosenPanel ? <DataBadge cls={chosenPanel.isDemo ? "demo" : "source"} compact source={chosenPanel.source} /> : <DataBadge cls="user" compact />} help={ratingFromCatalogue && chosenPanel ? `From the ${chosenPanel.label} record.` : "From the panel datasheet or the Marketplace."}>
+                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.panelW)} onChange={(e) => { const v = toNum(e.target.value); setInp((p) => ({ ...p, panelW: v, panelId: chosenPanel && v === chosenPanel.ratedW ? p.panelId : null })); }} aria-label="Panel rated power in watts" /><span className="text-[12.5px] text-fg-muted">W</span></div>
                 </Field>
               </div>
             )}

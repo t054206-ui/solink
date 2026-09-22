@@ -211,3 +211,84 @@ and the same file can be extended.
 | **JA Solar** | `JAM_54_D40_LB_winkel_vorne.jpg` from the JAM54D40 LB product page (its og:image); render shows 6 × 18 = 108 cells, matching |
 | **Canadian Solar** | `TOPHiKu6-detailed-48.png`, the render the official TOPHiKu6 page serves. The file name says 48 but the render shows 6 × 18 = 108 half-cells, i.e. the 54-cell CS6.1-54TM; kept as the page's own image for the series, with this note |
 | **LONGi** | Unchanged: the two official renders from the 2026-09-20 import load (HTTP 200, also with a Solink referer) |
+
+## Import 2026-09-22 (part 2) — one flagship series per manufacturer, every bin (Session 9)
+
+Twenty-eight rows across the five manufacturers, every power bin the datasheet
+lists, from `supabase/imports/2026-09-22_manufacturer_series_2.sql` (generated
+from the datasheet readings by a script that checked Vmp × Imp ≈ Pmax,
+Vmp < Voc, Imp < Isc and power ÷ area ≈ efficiency for every bin before
+writing). All Unverified, zero validation flags. **No Kuwait price or retailer
+listing was found for any of these models on 2026-09-22; `price` is
+unavailable.** `series` is set on every row and two `solar_product_sources`
+rows (datasheet, product page) record provenance per product.
+
+**Sources used**
+
+| Manufacturer | Series and bins | Datasheet (version) | Page linked from |
+|---|---|---|---|
+| LONGi | Hi-MO X6 Scientist LR7-72HTH, 620 / 625 / 630 W | `20240511 V2` — `https://static.longi.com/LR_7_72_HTH_620_630_M_30_30_and_15_Frame_Scientist_20240511_V2_ea4bd3ee93.pdf` | `https://www.longi.com/en/products/modules/hi-mo-x6/` |
+| JinkoSolar | Tiger Neo 66HL4M-(V) mono-facial, 610–635 W (six bins) | `JKM610-635N-66HL4M-(V)-F2-EN`, © 2024 — `https://www.jinkosolar.com/uploads/JKM610-635N-66HL4M-(V)-F2-EN.pdf` | `https://www.jinkosolar.com/en/site/tigerneo` |
+| JA Solar | DeepBlue 4.0 Pro JAM72D42 LB bifacial, 625–650 W (six bins) | `Global-EN-20241122A` — `https://www.jasolar.eu/fileadmin/data/products/4.0/JAM72D42_LB.pdf` | `https://www.jasolar.eu/en/products/jam72d42-lb` |
+| Trina Solar | Vertex N TSM-NEG21C.20 bifacial, 700–725 W (six bins) | `TSM_APAC_EN_2024_B` — `https://static.trinasolar.com/sites/default/files/DT-M-0042%20APAC%20EN%20G%20210Vertex_NEG21C.20_700-725%202024_B_web.pdf` | `https://www.trinasolar.com/en-glb/` (home page; see C-014) |
+| Canadian Solar | TOPBiHiKu6 CS6.2-66TB-H bifacial, 590–620 W (seven bins) | `V1.1_F68_L2B_TX`, April 2026 — `https://www.canadiansolar.com/wp-content/uploads/sites/3/2026/04/CS-Datasheet-TOPBiHiKu6_CS6.2-66TB-H_v1.1_F68_L2B_TX.pdf` | `https://www.canadiansolar.com/na/topbihiku6/` |
+
+### C-011 — LONGi: the datasheet does not name the cell type
+
+| | |
+|---|---|
+| **Field** | `cell_technology` on the three LR7-72HTH rows |
+| **Issue** | The LR7-72HTH sheet states the cell layout (144, 6 × 24), single 3.2 mm glass and the electrical data, but never names the cell technology |
+| **Stored** | A wording that says exactly that, and that the official Hi-MO X6 page describes the series' HPBC back-contact cells. `source.field_sources.cell_technology` points at the product page, not the datasheet |
+| **Also** | First-year degradation is printed as "<1 %"; stored as 1 with the wording in the unit. Warranty 15 y product / 25 y power, 89.4 % at year 25, as printed; the degradation key is `annual_degradation_year_2_25_pct` |
+
+### C-012 — JinkoSolar: mono-facial variant, two printed limits
+
+| | |
+|---|---|
+| **Field** | `operating_temperature_range_c`, `max_system_voltage_v` |
+| **Issue** | The 66HL4M-(V) sheet prints the operating range as -40 to +70 °C and the system voltage as "1000/1500 VDC (IEC)" |
+| **Stored** | Both as printed; 1500 stored as the numeric maximum with the pair in `specs.additional.max_system_voltage_note` |
+| **Model** | The datasheet's own model string, `JKM6xxN-66HL4M-(V)`, parentheses included |
+| **Image** | None. The download centre serves `66-630-BDV.jpg`, which is the bifacial dual-glass 66-cell variant, not this mono-facial one; rejected |
+
+### C-013 — JA Solar: text layer present this time
+
+| | |
+|---|---|
+| **Issue** | Unlike the JAM54D40 sheet (C-008), this PDF has a text layer. The STC table lists bins out of order (645, 650, 625, 630, 635, 640) |
+| **Check** | Each bin paired by Vmp × Imp ≈ Pmax (43.71 × 14.30 = 625.1 … 44.67 × 14.55 = 650.0) |
+| **Image** | `JAM_72_D42_LB_winkel_vorne.jpg`, the og:image of the official JAM72D42 LB page; render shows 6 × 24 = 144 cells, matching |
+
+### C-014 — Trina Solar: interleaved columns, no reachable product page, 2025 sheet missing
+
+| | |
+|---|---|
+| **Field** | `voc_v`, `isc_a`, `vmp_v`, `imp_a` |
+| **Issue 1** | The extracted text interleaves STC, NOCT and BNPI columns and swaps the 715 and 720 W blocks |
+| **Check** | Paired by Vmp × Imp ≈ Pmax: 40.5 × 17.29 = 700.2, 40.7 × 17.33 = 705.3, 40.9 × 17.36 = 710.0, 41.1 × 17.40 = 715.1, 41.3 × 17.44 = 720.3, 41.5 × 17.47 = 725.0. Isc always above Imp; efficiency 22.5–23.3 % matches power ÷ 3.106 m² |
+| **Issue 2** | The 2025 edition (715–740 W) returned HTTP 404; the 2024 B APAC edition the static server serves was used and is named in every note |
+| **Issue 3** | No Vertex N product page could be opened without JavaScript; the manufacturer URL is the official site's home page and no image was recorded |
+| **Model** | `TSM-7xxNEG21C.20`, following the `TSM-445NEG9R.28` pattern of the earlier import |
+
+### C-015 — Canadian Solar: regional sheet, no printed end-of-warranty percentage (again)
+
+| | |
+|---|---|
+| **Issue** | As C-009: US (TX) regional edition, "Assembled in the US from imported components"; certificates and warranty terms are region-dependent per its footnotes. Prints 1 % first-year and 0.4 %/year limits over 30 years but no end percentage |
+| **Stored** | `performance_warranty_end_pct` unavailable, limits in `specs.additional`; product warranty 12 years as printed, with the footnote wording in `product_warranty_note`. System voltage 1500 V (IEC/UL), snow 6000 Pa, wind 5400 Pa |
+| **Image** | `TOPBiHiKu6-Detailed.png`, the render the official TOPBiHiKu6 page serves; shows 6 × 22 = 132 cells, matching |
+
+### C-016 — Images: what was rejected
+
+| | |
+|---|---|
+| **Rule** | Only an image the manufacturer's own product page serves for this series (as C-010) |
+| **LONGi** | The Hi-MO X6 page serves `X6_Scientist_*.jpg`: a cropped atmospheric shot and a marketing banner, not product renders. No image stored |
+| **JinkoSolar** | See C-012. No image stored |
+| **Trina Solar** | See C-014. No image stored |
+
+### Not imported
+
+Nothing was rejected in this batch. The 2025 Trina sheet (715–740 W) is the
+only document that was wanted and not obtained.

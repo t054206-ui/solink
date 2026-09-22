@@ -19,6 +19,9 @@ export function ProductsTable({ products, mode }: { products: Product[]; mode: D
   const all = useMemo(() => mergeLocalProducts(products, mode === "demo" ? store : undefined), [products, store, mode]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<"" | ProductCategory>("");
+  const [mfr, setMfr] = useState("");
+  // The manufacturer options are the names on the rows themselves, so the list is always exactly what the table can show.
+  const manufacturers = useMemo(() => Array.from(new Set(all.map((p) => p.manufacturer_name))).sort((a, b) => a.localeCompare(b)), [all]);
   const [ver, setVer] = useState<"" | VerificationStatus>("");
   const [demoFilter, setDemoFilter] = useState<"" | "demo" | "real">("");
   const [showArchived, setShowArchived] = useState(false);
@@ -27,13 +30,14 @@ export function ProductsTable({ products, mode }: { products: Product[]; mode: D
   const rows = useMemo(() => all.map((p) => ({ p, flags: validateProductSpecs(p.specs, p.category) })).filter(({ p, flags }) => {
     if (!showArchived && p.is_archived) return false;
     if (cat && p.category !== cat) return false;
+    if (mfr && p.manufacturer_name !== mfr) return false;
     if (ver && p.source.verification_status !== ver) return false;
     if (demoFilter === "demo" && !p.is_demo) return false;
     if (demoFilter === "real" && p.is_demo) return false;
     if (flaggedOnly && flags.length === 0) return false;
     if (q) { const s = `${p.manufacturer_name} ${p.model} ${p.name}`.toLowerCase(); if (!s.includes(q.toLowerCase())) return false; }
     return true;
-  }), [all, q, cat, ver, demoFilter, showArchived, flaggedOnly]);
+  }), [all, q, cat, mfr, ver, demoFilter, showArchived, flaggedOnly]);
 
   const localCount = mode === "demo" ? Object.keys(store).length : 0;
 
@@ -42,6 +46,7 @@ export function ProductsTable({ products, mode }: { products: Product[]; mode: D
       <div className="flex flex-wrap items-end gap-2">
         <div className="min-w-[180px] flex-1"><Input aria-label="Search products" placeholder="Search manufacturer, model, name" value={q} onChange={(e) => setQ(e.target.value)} /></div>
         <Select aria-label="Category" value={cat} onChange={(e) => setCat(e.target.value as "" | ProductCategory)} className="w-auto"><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>)}</Select>
+        <Select aria-label="Manufacturer" value={mfr} onChange={(e) => setMfr(e.target.value)} className="w-auto"><option value="">All manufacturers</option>{manufacturers.map((name) => <option key={name} value={name}>{name}</option>)}</Select>
         <Select aria-label="Verification" value={ver} onChange={(e) => setVer(e.target.value as "" | VerificationStatus)} className="w-auto"><option value="">Any verification</option>{VERIFICATION_STATUSES.map((s) => <option key={s} value={s}>{VERIFICATION_LABEL[s]}</option>)}</Select>
         <Select aria-label="Demo or real" value={demoFilter} onChange={(e) => setDemoFilter(e.target.value as "" | "demo" | "real")} className="w-auto"><option value="">Demo + real</option><option value="demo">Demo only</option><option value="real">Real only</option></Select>
         <label className="flex h-10 items-center gap-1.5 text-[13px] text-fg-secondary"><input type="checkbox" checked={flaggedOnly} onChange={(e) => setFlaggedOnly(e.target.checked)} className="size-4 accent-[var(--brand)]" /> Flagged only</label>
@@ -61,7 +66,7 @@ export function ProductsTable({ products, mode }: { products: Product[]; mode: D
             {rows.map(({ p, flags }) => (
               <tr key={p.id} className="hover:bg-inset/60">
                 <Td className="font-medium text-fg">{p.manufacturer_name}</Td>
-                <Td><div className="font-mono text-[12px]">{p.model}</div><div className="text-[12px] text-fg-muted">{p.name}</div></Td>
+                <Td><div className="font-mono text-[12px]">{p.model}</div><div className="text-[12px] text-fg-muted">{p.series ? <>{p.series} · </> : null}{p.name}</div></Td>
                 <Td>{CATEGORY_LABEL[p.category]}</Td>
                 <Td><VerificationPill status={p.source.verification_status} /></Td>
                 <Td><div className="flex flex-wrap gap-1">{p.is_demo ? <DataBadge cls="demo" compact /> : <Badge tone="data">Real</Badge>}{isLocalId(p.id) || (mode === "demo" && store[p.id]) ? <Badge tone="brand">Local</Badge> : null}</div></Td>

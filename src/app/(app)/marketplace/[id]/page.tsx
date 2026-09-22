@@ -10,7 +10,8 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { SourceReferences } from "@/components/ui/SourceReferences";
 import { DEMO_PRODUCT_BANNER } from "@/lib/demo/data";
-import { getProduct } from "@/lib/data/repositories";
+import { getProduct, listProductPrices, listProductSources } from "@/lib/data/repositories";
+import { PricesCard, SourceDocumentsCard } from "../_components/ProvenanceCards";
 import { CompareToggle } from "../_components/CompareToggle";
 import { CompareTray } from "../_components/CompareTray";
 import { PriceCell } from "../_components/PriceCell";
@@ -34,6 +35,8 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
   const { id } = await params;
   const { data: p } = await getProduct(id);
   if (!p || p.is_archived) notFound();
+  // Provenance tables (0011): the documents behind the record and any supplier price on record.
+  const [{ data: docs }, { data: prices }] = await Promise.all([listProductSources([p.id]), listProductPrices([p.id])]);
 
   const isPanel = p.category === "solar_panel";
 
@@ -42,7 +45,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
       <Link href="/marketplace" className="mb-4 inline-flex items-center gap-1 text-[13px] text-fg-secondary hover:text-fg"><ArrowLeft className="size-3.5" aria-hidden /> Back to marketplace</Link>
 
       <PageHeader
-        eyebrow={<span className="inline-flex flex-wrap items-center gap-2">Choose · {CATEGORY_SINGULAR[p.category]}</span>}
+        eyebrow={<span className="inline-flex flex-wrap items-center gap-2">Choose · {CATEGORY_SINGULAR[p.category]}{p.series ? <> · {p.series} series</> : null}</span>}
         title={p.name}
         description={<span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1.5"><span>Manufacturer: <ManufacturerLink product={p} className="font-medium text-fg" /> · <span className="font-mono">{p.model}</span></span><VerificationBadge status={p.source.verification_status} /><Badge tone="brand">{CATEGORY_SINGULAR[p.category]}</Badge>{p.is_outdated && <Badge tone="warn">Outdated</Badge>}</span>}
         actions={
@@ -98,6 +101,8 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
           </Card>
 
           <SourceCard product={p} />
+          <SourceDocumentsCard docs={docs} />
+          <PricesCard prices={prices} />
           <Card>
             <CardHeader title="Next steps" />
             <CardBody className="flex flex-col gap-2">
