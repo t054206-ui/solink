@@ -68,6 +68,17 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
   clearances, a photo underlay with hand tracing, three deterministic
   "Get inspired" layouts, panel weight and a `ROOF_LOAD_CAPACITY` placeholder
   (decision 21). Geometry in `src/app/(app)/designer/geometry.ts`.
+- **Navigation is per role** (`src/lib/navigation.ts`, `AppShell.tsx`, 2026-09-22):
+  homeowner journey, provider workload, admin platform, manufacturer portal.
+  Items with no page are dimmed `[SOON]`, never invented routes. No icon-only
+  collapsed mode by the owner's choice.
+- **Manufacturer portal** at `/manufacturer/*`: own products, add/edit (never
+  self-verifies), datasheet links, company profile; performance, requests,
+  orders, reports and settings are honest empty states pending
+  `supabase/migrations/0007_*.sql`, which is written and **not applied**
+  (decision 22).
+- **Designer is simple by default**; "Show more options" reveals the rest.
+  Blocks and obstacles resize; panels never do. `InfoTip` opens on hover.
 - Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch
   before you work; coordinate before touching the intro or the import.
 - Nothing is pushed or deployed without the owner's word.

@@ -12,7 +12,7 @@ import type { Manufacturer, Product, ProductCategory, ProviderCompany, Verificat
 import type { DataMode } from "@/lib/data/mode";
 import { SpecField } from "./SpecField";
 import { FlagList } from "./AdminBits";
-import { saveProductAction, type ProductInput } from "../actions";
+import { saveProductAction, type ActionResult, type ProductInput } from "../actions";
 import {
   ADMIN_PRODUCTS_STORE, CATEGORIES, CATEGORY_LABEL, COST_FIELDS, PANEL_SPEC_FIELDS, UNAVAILABLE, VERIFICATION_LABEL, VERIFICATION_STATUSES,
   newLocalId, toNumericSpec, validateProductSpecs, type AdminProductStore, type AnySpec,
@@ -34,14 +34,26 @@ function cleanSpec(v: AnySpec): AnySpec {
   return v;
 }
 
-export function ProductForm({ initial, manufacturers, providers, mode }: { initial?: Product; manufacturers: Manufacturer[]; providers: ProviderCompany[]; mode: DataMode }) {
+/**
+ * One product form for two rooms. Admin: any manufacturer, full verification
+ * controls. Manufacturer portal: `lockedManufacturer` pins the company to the
+ * signed-in account, `canVerify={false}` removes the verification controls
+ * (a manufacturer submits; an admin verifies, with a note), `basePath` points
+ * the back link and the after-create redirect at the portal, and `saveAction`
+ * is the portal's own server action, which enforces the same rules again.
+ */
+export function ProductForm({ initial, manufacturers, providers, mode, lockedManufacturer = null, canVerify = true, basePath = "/admin/products", saveAction }: {
+  initial?: Product; manufacturers: Manufacturer[]; providers: ProviderCompany[]; mode: DataMode;
+  lockedManufacturer?: Manufacturer | null; canVerify?: boolean; basePath?: string;
+  saveAction?: (input: ProductInput) => Promise<ActionResult>;
+}) {
   const router = useRouter();
   const [store, setStore] = useLocalStore<AdminProductStore>(ADMIN_PRODUCTS_STORE, {});
   const [pending, start] = useTransition();
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   const [category, setCategory] = useState<ProductCategory>(initial?.category ?? "solar_panel");
-  const [manufacturerName, setManufacturerName] = useState(initial?.manufacturer_name ?? "");
+  const [manufacturerName, setManufacturerName] = useState(lockedManufacturer?.name ?? initial?.manufacturer_name ?? "");
   const [model, setModel] = useState(initial?.model ?? "");
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -53,7 +65,11 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
   const [sourceUrl, setSourceUrl] = useState(initial?.source.source_url ?? "");
   const [datasheetUrl, setDatasheetUrl] = useState(initial?.source.datasheet_url ?? "");
   const [mfrDocUrl, setMfrDocUrl] = useState(initial?.source.manufacturer_doc_url ?? "");
-  const [verification, setVerification] = useState<VerificationStatus>(initial?.source.verification_status ?? "unverified");
+  // Without verification controls, a submission is always pending: a new product
+  // starts there, and editing a verified one sends it back for another look.
+  const submittedStatus: VerificationStatus = initial && initial.source.verification_status !== "verified" ? initial.source.verification_status : "pending_verification";
+  const [verificationState, setVerification] = useState<VerificationStatus>(initial?.source.verification_status ?? "unverified");
+  const verification: VerificationStatus = canVerify ? verificationState : submittedStatus;
   const [verificationNote, setVerificationNote] = useState("");
   const [isOutdated, setIsOutdated] = useState(initial?.is_outdated ?? false);
   const [isArchived, setIsArchived] = useState(initial?.is_archived ?? false);
@@ -88,7 +104,7 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
       const id = initial?.id ?? newLocalId();
       const now = new Date().toISOString();
       const product: Product = {
-        id, category: input.category, manufacturer_id: initial?.manufacturer_id ?? null, manufacturer_name: input.manufacturer_name || "—",
+        id, category: input.category, manufacturer_id: lockedManufacturer?.id ?? initial?.manufacturer_id ?? null, manufacturer_name: input.manufacturer_name || "—",
         model: input.model, name: input.name, description: input.description, price: toNumericSpec(input.price), currency: "KWD",
         installation_cost: toNumericSpec(input.installation_cost), annual_maintenance_cost: toNumericSpec(input.annual_maintenance_cost), cleaning_cost: toNumericSpec(input.cleaning_cost),
         expected_annual_production_kwh: toNumericSpec(input.expected_annual_production_kwh), images: input.images, specs: { ...input.specs, additional: {} },
@@ -98,12 +114,12 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
       if (input.verification_status === "verified") product.source.verification_note = input.verification_note;
       setStore((prev) => ({ ...prev, [id]: product }));
       setResult({ ok: true, text: "Saved in this browser only (demo mode). Nothing was sent to a server." });
-      if (!initial) router.push(`/admin/products/${id}`);
+      if (!initial) router.push(`${basePath}/${id}`);
       return;
     }
     start(async () => {
-      const r = await saveProductAction(input);
-      if (r.ok) { setResult({ ok: true, text: r.message ?? "Saved." }); if (!initial && r.id) router.push(`/admin/products/${r.id}`); else router.refresh(); }
+      const r = await (saveAction ?? saveProductAction)(input);
+      if (r.ok) { setResult({ ok: true, text: r.message ?? "Saved." }); if (!initial && r.id) router.push(`${basePath}/${r.id}`); else router.refresh(); }
       else setResult({ ok: false, text: r.error });
     });
   };
@@ -122,10 +138,16 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
           <Field label="Category">
             <Select value={category} onChange={(e) => setCategory(e.target.value as ProductCategory)}>{CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>)}</Select>
           </Field>
-          <Field label={isService ? "Company / manufacturer name" : "Manufacturer"} help="Type a new name or pick an existing one. New names are created as Unverified.">
-            <Input list="mfr-list" value={manufacturerName} onChange={(e) => setManufacturerName(e.target.value)} placeholder="Manufacturer name" />
-            <datalist id="mfr-list">{manufacturers.map((m) => <option key={m.id} value={m.name} />)}</datalist>
-          </Field>
+          {lockedManufacturer ? (
+            <Field label="Manufacturer" help="Your company. Products you add are listed under it and only you and Solink's administrators can edit them.">
+              <Input value={lockedManufacturer.name} readOnly aria-readonly="true" className="bg-inset" />
+            </Field>
+          ) : (
+            <Field label={isService ? "Company / manufacturer name" : "Manufacturer"} help="Type a new name or pick an existing one. New names are created as Unverified.">
+              <Input list="mfr-list" value={manufacturerName} onChange={(e) => setManufacturerName(e.target.value)} placeholder="Manufacturer name" />
+              <datalist id="mfr-list">{manufacturers.map((m) => <option key={m.id} value={m.name} />)}</datalist>
+            </Field>
+          )}
           <Field label="Model"><Input value={model} onChange={(e) => setModel(e.target.value)} required /></Field>
           <Field label="Display name"><Input value={name} onChange={(e) => setName(e.target.value)} required /></Field>
           <Field label="Description" className="sm:col-span-2"><Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
@@ -174,14 +196,24 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
       </Card>
 
       <Card>
-        <CardHeader title="Verification & lifecycle" subtitle="Verified is an explicit human decision recorded with a note. Nothing is verified automatically." />
+        <CardHeader title={canVerify ? "Verification & lifecycle" : "Verification"} subtitle={canVerify ? "Verified is an explicit human decision recorded with a note. Nothing is verified automatically." : "You submit; a Solink administrator verifies against your datasheet and records a note. You cannot set Verified yourself."} />
         <CardBody className="grid gap-4 sm:grid-cols-2">
-          <Field label="Verification status">
-            <Select value={verification} onChange={(e) => setVerification(e.target.value as VerificationStatus)}>{VERIFICATION_STATUSES.map((s) => <option key={s} value={s}>{VERIFICATION_LABEL[s]}</option>)}</Select>
-          </Field>
-          <Field label="Verified-against-source note" help={verification === "verified" ? "Required: which document/page you checked and the date." : "Optional context for reviewers."} error={needsNote && !wasVerified ? "Required when setting Verified." : undefined}>
-            <Textarea value={verificationNote} onChange={(e) => setVerificationNote(e.target.value)} placeholder="e.g. Checked against manufacturer datasheet rev. 2026-03, page 2." />
-          </Field>
+          {canVerify ? (
+            <>
+              <Field label="Verification status">
+                <Select value={verification} onChange={(e) => setVerification(e.target.value as VerificationStatus)}>{VERIFICATION_STATUSES.map((s) => <option key={s} value={s}>{VERIFICATION_LABEL[s]}</option>)}</Select>
+              </Field>
+              <Field label="Verified-against-source note" help={verification === "verified" ? "Required: which document/page you checked and the date." : "Optional context for reviewers."} error={needsNote && !wasVerified ? "Required when setting Verified." : undefined}>
+                <Textarea value={verificationNote} onChange={(e) => setVerificationNote(e.target.value)} placeholder="e.g. Checked against manufacturer datasheet rev. 2026-03, page 2." />
+              </Field>
+            </>
+          ) : (
+            <div className="sm:col-span-2 flex flex-wrap items-center gap-2 rounded-[10px] border border-border bg-inset px-3 py-2 text-[13px] text-fg-secondary">
+              <span>On save this product will be</span>
+              <Badge tone={submittedStatus === "pending_verification" ? "warn" : "neutral"}>{VERIFICATION_LABEL[submittedStatus]}</Badge>
+              {wasVerified && <span>because a verified product that changes has to be checked again.</span>}
+            </div>
+          )}
           <label className="flex items-center gap-2 text-[13.5px]"><input type="checkbox" checked={isOutdated} onChange={(e) => setIsOutdated(e.target.checked)} className="size-4 accent-[var(--brand)]" /> Mark as outdated (a newer datasheet/version exists)</label>
           <label className="flex items-center gap-2 text-[13.5px]"><input type="checkbox" checked={isArchived} onChange={(e) => setIsArchived(e.target.checked)} className="size-4 accent-[var(--brand)]" /> <Archive className="size-4 text-fg-muted" aria-hidden /> Archive (hidden from the marketplace)</label>
         </CardBody>
@@ -193,7 +225,7 @@ export function ProductForm({ initial, manufacturers, providers, mode }: { initi
       {result && <p role="status" className={result.ok ? "text-[13px] text-good-fg" : "text-[13px] text-critical-fg"}>{result.text}</p>}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={pending || errors.length > 0}><Save className="size-4" aria-hidden /> {pending ? "Saving…" : initial ? "Save changes" : "Create product"}</Button>
-        <Button type="button" variant="outline" href="/admin/products">Back to products</Button>
+        <Button type="button" variant="outline" href={basePath}>Back to products</Button>
       </div>
       <p className="text-[12px] text-fg-muted">Saving with changed specs or price creates a new immutable product version (database trigger). Passports keep pointing at the version they were issued with.</p>
     </form>

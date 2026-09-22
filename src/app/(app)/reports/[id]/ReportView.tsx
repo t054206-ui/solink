@@ -96,7 +96,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
         <CardHeader title={<>Energy <InfoTip term="energy_production" /></>} subtitle={`What the system produced in ${monthLabel(report.month)}, from the daily records Solink holds.`} />
         <CardBody className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Metric label="Total produced" data={energy} format={(v) => fmtKwh(v, 1)} />
+            <Metric label="Total produced" term="energy_production" data={energy} format={(v) => fmtKwh(v, 1)} />
             <Metric
               label={<span className="inline-flex items-center gap-1.5">Change vs previous month {report.energy.trend_pct !== null && (report.energy.trend_pct < 0 ? <TrendingDown className="size-3.5 text-serious-fg" aria-hidden /> : <TrendingUp className="size-3.5 text-good-fg" aria-hidden />)}</span>}
               data={trend}
@@ -125,8 +125,8 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
         <CardHeader title="Financial" subtitle="What the month's production may have been worth, and what maintenance cost." />
         <CardBody className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Metric label="Estimated savings" data={savings} format={(v) => formatMoney(v, currency, 2)} />
-            <Metric label="Maintenance costs" data={maintenanceCost} format={(v) => formatMoney(v, currency, 2)} />
+            <Metric label="Estimated savings" term="estimated_savings" data={savings} format={(v) => formatMoney(v, currency, 2)} />
+            <Metric label="Maintenance costs" term="maintenance_costs" data={maintenanceCost} format={(v) => formatMoney(v, currency, 2)} />
           </div>
           {report.financial.notes.length > 0 && (
             <ul className="space-y-0.5 text-[11.5px] leading-snug text-fg-muted">
@@ -189,7 +189,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
       <Card className="print-break">
         <CardHeader title={<><Leaf className="size-4 text-good-fg" aria-hidden /> Environmental</>} subtitle="CO₂ avoided by producing this energy instead of drawing it from the grid." />
         <CardBody className="space-y-3">
-          <Metric label="CO₂ avoided" data={co2} format={(v) => `${Math.round(v).toLocaleString("en-US")} kg`} className="sm:max-w-sm" />
+          <Metric label="CO₂ avoided" term="co2_reduction" data={co2} format={(v) => `${Math.round(v).toLocaleString("en-US")} kg`} className="sm:max-w-sm" />
           {report.environmental.co2_kg === null && <PlaceholderNote k="GRID_CO2_EMISSION_FACTOR" />}
           {report.environmental.notes.length > 0 && report.environmental.co2_kg !== null && (
             <ul className="space-y-0.5 text-[11.5px] text-fg-muted">{report.environmental.notes.map((n, i) => <li key={i}>· {n}</li>)}</ul>

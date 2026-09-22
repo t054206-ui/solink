@@ -20,6 +20,7 @@ import { isLocalId, upsertRecord, useLocalMaintenance } from "../../_ops/localRe
 import { CostCell, KindBadge, MaintStatusPill, UrgencyBadge } from "../../_ops/Pills";
 import { WorkflowStrip } from "../../_ops/WorkflowStrip";
 import { addMaintenanceNote, cancelMaintenanceCase } from "../actions";
+import { InfoTip } from "@/components/help/InfoTip";
 
 const CANCELLABLE: MaintenanceStatus[] = ["new", "reviewing", "scheduled"];
 
@@ -90,7 +91,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Detected issue" />
+          <CardHeader title={<>Detected issue <InfoTip term="detected_issue" /></>} />
           <CardBody className="space-y-4">
             <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-fg">{c.detected_issue}</p>
             <div>
@@ -107,7 +108,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
         </Card>
 
         <Card>
-          <CardHeader title="Status timeline" subtitle="Only recorded timestamps are shown." />
+          <CardHeader title={<>Status timeline <InfoTip term="case_status" /></>} subtitle="Only recorded timestamps are shown." />
           <CardBody>
             <ol className="relative ml-2 border-l border-border pl-4">
               {MAINT_STATUS_ORDER.map((s, i) => {
@@ -159,9 +160,9 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
             <ImageSlot label="After" path={c.after_image_path} />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Metric label="Production before" data={c.production_before_kwh === null || c.production_before_kwh === undefined ? { value: null, cls: "unavailable", reason: "Not recorded on this case." } : { value: c.production_before_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }} unit="kWh/day" format={(v) => v.toFixed(1)} />
-            <Metric label="Production after" data={c.production_after_kwh === null || c.production_after_kwh === undefined ? { value: null, cls: "unavailable", reason: "Not recorded on this case." } : { value: c.production_after_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }} unit="kWh/day" format={(v) => v.toFixed(1)} />
-            <Metric label="Change" data={changeCls} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`} footnote="(after − before) ÷ before" />
+            <Metric label="Production before" term="cleaning_effect" data={c.production_before_kwh === null || c.production_before_kwh === undefined ? { value: null, cls: "unavailable", reason: "Not recorded on this case." } : { value: c.production_before_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }} unit="kWh/day" format={(v) => v.toFixed(1)} />
+            <Metric label="Production after" term="cleaning_effect" data={c.production_after_kwh === null || c.production_after_kwh === undefined ? { value: null, cls: "unavailable", reason: "Not recorded on this case." } : { value: c.production_after_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }} unit="kWh/day" format={(v) => v.toFixed(1)} />
+            <Metric label="Change" term="cleaning_effect" data={changeCls} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`} footnote="(after − before) ÷ before" />
           </div>
           <p className="rounded-[10px] border border-dashed border-border-strong bg-inset p-3 text-[13px] leading-relaxed text-fg-secondary">
             This change coincides with the maintenance; it does not prove the maintenance caused it. Weather, season and other events also move daily production.

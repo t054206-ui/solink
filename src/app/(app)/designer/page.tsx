@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/layout/PageHeader";
 import { listProducts, getProfile } from "@/lib/data/repositories";
+import { getPlatformSettings } from "@/lib/data/settings";
 import { specNum } from "@/lib/utils";
 import { DesignerCanvas, type PanelOption } from "./DesignerCanvas";
 
@@ -11,9 +12,10 @@ export const metadata = { title: "Solar Designer" };
  */
 export default async function DesignerPage({ searchParams }: { searchParams: Promise<{ panel?: string }> }) {
   const sp = await searchParams;
-  const [{ data: products, mode }, { data: profile }] = await Promise.all([
+  const [{ data: products, mode }, { data: profile }, settings] = await Promise.all([
     listProducts({ category: "solar_panel" }).catch(() => ({ data: [], mode: "demo" as const })),
     getProfile().catch(() => ({ data: null, mode: "demo" as const })),
+    getPlatformSettings(),
   ]);
 
   const panels: PanelOption[] = products.map((p) => ({
@@ -35,11 +37,12 @@ export default async function DesignerPage({ searchParams }: { searchParams: Pro
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
       <PageHeader
         eyebrow="Choose"
-        title="Roof Planner and Solar Designer"
-        description="Lay real panels, walkways, planters and seating on a scaled drawing of your roof, or over a photo of it, and see what fits. Counts, areas, coverage and panel weight are pure geometry from the manufacturer's dimensions and the sizes you type; production, cost and what the roof can carry need data that has not been provided yet."
+        title="Solar Designer"
+        description="See how many panels fit on your roof. Type its size, pick a panel, press one button, and drag things around if you like. Press any ⓘ for a plain explanation. More tools are one switch away when you want them."
       />
       <DesignerCanvas
         mode={mode}
+        settings={settings}
         panels={panels}
         preselectPanelId={sp.panel ?? null}
         serverProfile={profile ? { roof_length_m: profile.roof_length_m ?? null, roof_width_m: profile.roof_width_m ?? null, roof_orientation: profile.roof_orientation ?? null, roof_tilt_deg: profile.roof_tilt_deg ?? null, shading_notes: profile.shading_notes ?? null } : null}

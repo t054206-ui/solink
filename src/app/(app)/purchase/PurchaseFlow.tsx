@@ -169,7 +169,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
             </ul>
             <div className="grid gap-3 sm:grid-cols-2">
               <Metric label="System capacity" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
-              <Metric label="Total" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span className="flex flex-wrap items-center gap-1">Total unavailable: <Placeholder k="INSTALLATION_PRICE" /> / prices not provided</span> : undefined} />
+              <Metric label="Total" term="estimated_cost" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span className="flex flex-wrap items-center gap-1">Total unavailable: <Placeholder k="INSTALLATION_PRICE" /> / prices not provided</span> : undefined} />
             </div>
             {selectedDesign && <p className="text-[12.5px] text-fg-muted flex items-center gap-1.5"><PencilRuler className="size-3.5"  aria-hidden /> From design “{selectedDesign.name}”: {selectedDesign.roof.length_m}×{selectedDesign.roof.width_m} m roof, {selectedDesign.summary.used_area_m2} m² of panels{selectedDesign.is_ai_suggested && <DataBadge cls="ai" compact />}</p>}
           </CardBody>
@@ -179,7 +179,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
       {s.step === 2 && (
         <div className="grid gap-4 md:grid-cols-2">
           <Card className={cn(s.request_kind === "quote" && "ring-2 ring-[var(--brand)]")}>
-            <CardHeader title={<><FileText className="size-4" aria-hidden /> Request a quote</>} subtitle="Send your itemised system to installers. They reply with real prices. Nothing is charged." />
+            <CardHeader title={<><FileText className="size-4" aria-hidden /> Request a quote <InfoTip term="quote_request" /></>} subtitle="Send your itemised system to installers. They reply with real prices. Nothing is charged." />
             <CardBody className="space-y-3">
               <ul className="list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">
                 <li>Creates an order with status <Badge>requested</Badge>.</li>

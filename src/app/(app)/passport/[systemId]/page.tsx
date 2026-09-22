@@ -81,7 +81,7 @@ export default async function PassportPage({ params }: { params: Promise<{ syste
 
       <section className="grid gap-4 lg:grid-cols-3" aria-label="Installation">
         <Card className="lg:col-span-2">
-          <CardHeader title="Installation" action={<DataBadge cls={cls} compact />} />
+          <CardHeader title={<>Installation <InfoTip term="installation_record" /></>} action={<DataBadge cls={cls} compact />} />
           <CardBody>
             <dl className="grid gap-x-6 gap-y-2 text-[13.5px] sm:grid-cols-2">
               <Row k="Installation date" v={formatDate(passport.installation_date)} />
@@ -97,7 +97,7 @@ export default async function PassportPage({ params }: { params: Promise<{ syste
           </CardBody>
         </Card>
         <Card>
-          <CardHeader title="Warranties" subtitle="Expiry dates are calculated from the installation date." />
+          <CardHeader title={<>Warranties <InfoTip term="warranties" /></>} subtitle="Expiry dates are calculated from the installation date." />
           <CardBody>
             <ul className="space-y-2.5 text-[13.5px]">
               <WarrantyRow label="Product" term="product_warranty" years={passport.warranty.product_years} from={passport.installation_date} cls={cls} nowIso={nowIso} />
@@ -111,7 +111,7 @@ export default async function PassportPage({ params }: { params: Promise<{ syste
 
       <section className="grid gap-4 lg:grid-cols-2" aria-label="Equipment">
         <Card>
-          <CardHeader title="Solar panels" subtitle={ps ? `${ps.manufacturer} · ${ps.model}` : "No panel snapshot"} action={<DataBadge cls={cls} compact />} />
+          <CardHeader title={<>Solar panels <InfoTip term="datasheet" /></>} subtitle={ps ? `${ps.manufacturer} · ${ps.model}` : "No panel snapshot"} action={<DataBadge cls={cls} compact />} />
           <CardBody>
             {ps ? (
               <>

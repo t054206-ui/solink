@@ -167,7 +167,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
 
       {/* Location */}
       <Card>
-        <CardHeader title="Location" subtitle="Where the roof is. Used for the site map and, once connected, weather and solar-resource lookups." />
+        <CardHeader title={<>Location <InfoTip term="location_use" /></>} subtitle="Where the roof is. Used for the site map and, once connected, weather and solar-resource lookups." />
         <CardBody className="grid gap-4">
           <Field label="Address" hint={<DataBadge cls="user" compact />} error={errors.address} help="Street, area and governorate. Only the address text is sent to the geocoder.">
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -239,7 +239,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
 
       {/* Roof */}
       <Card>
-        <CardHeader title="Roof" subtitle="Size, orientation and anything that casts shade. Roof area is required. Fill this in yourself, or use the photo reader above and confirm each suggestion." />
+        <CardHeader title={<>Roof <InfoTip term="roof_size" /></>} subtitle="Size, orientation and anything that casts shade. Roof area is required. Fill this in yourself, or use the photo reader above and confirm each suggestion." />
         <CardBody className="grid gap-4">
           <div role="radiogroup" aria-label="How to enter roof area" className="inline-flex w-fit rounded-[10px] border border-border bg-inset p-0.5 text-[13px]">
             {(["dimensions", "direct"] as const).map((m) => (
@@ -291,7 +291,7 @@ export function ProfileForm({ profile, mode, existingPhotoUrl }: { profile: Sola
 
       {/* Electricity & budget */}
       <Card>
-        <CardHeader title="Electricity and budget" subtitle="Enter your monthly consumption in kWh or your monthly bill. One is required." />
+        <CardHeader title={<>Electricity and budget <InfoTip term="monthly_consumption" /></>} subtitle="Enter your monthly consumption in kWh or your monthly bill. One is required." />
         <CardBody className="grid gap-4">
           <Field label="Electricity tariff sector" hint={<DataBadge cls="user" compact />} className="sm:max-w-md"
             help="MEW prices a kWh by the sector the property is billed under, not by who lives there. A private house is Residential; an apartment building is Investmental & Commercial. Savings estimates use this sector's rate when the platform has one.">

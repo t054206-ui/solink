@@ -15,6 +15,7 @@ import { mergeRecords, isLocalId, useLocalAppointments, useLocalMaintenance } fr
 import { KindBadge, MaintStatusPill, UrgencyBadge } from "../../_ops/Pills";
 import { appointmentForCase, caseImageCount, coarseLocation, isoDay, panelInfo } from "../_lib/workflow";
 import { Fact, LocalBadge, PrivacyNote, StatTile } from "./ProviderBits";
+import { InfoTip } from "@/components/help/InfoTip";
 
 type StatusFilter = MaintenanceStatus | "all" | "open";
 type KindFilter = MaintenanceKind | "all";
@@ -69,9 +70,9 @@ export function CaseQueue({ mode, providerId, serverCases, serverAppointments, p
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatTile label="Urgent open cases" value={String(urgentOpen)} sub={`${openCases.length} open of ${cases.length} cases`} />
+        <StatTile label={<>Urgent open cases <InfoTip term="urgent_case" /></>} value={String(urgentOpen)} sub={`${openCases.length} open of ${cases.length} cases`} />
         <StatTile label="Scheduled today" value={String(scheduledToday)} sub={`Appointments dated ${formatDate(nowIso)}`} />
-        <StatTile label="Unassigned" value={String(unassigned)} sub="Open cases with no provider on the record" />
+        <StatTile label={<>Unassigned <InfoTip term="unassigned_case" /></>} value={String(unassigned)} sub="Open cases with no provider on the record" />
       </div>
 
       <PrivacyNote />

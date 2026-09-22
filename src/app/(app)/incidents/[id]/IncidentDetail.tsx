@@ -14,6 +14,7 @@ import { formatDate } from "@/lib/utils";
 import { MAINT_KIND, MAINT_STATUS } from "../../_ops/meta";
 import { isLocalId, mergeRecords, useLocalIncidents, useLocalMaintenance } from "../../_ops/localRecords";
 import { CostCell, IncidentStatusPill } from "../../_ops/Pills";
+import { InfoTip } from "@/components/help/InfoTip";
 
 export function IncidentDetail({ id, mode, serverIncident, systems, cases }: { id: string; mode: DataMode; serverIncident: Incident | null; systems: SolarSystem[]; cases: MaintenanceCase[] }) {
   const [localIncidents, , loaded] = useLocalIncidents();
@@ -67,7 +68,7 @@ export function IncidentDetail({ id, mode, serverIncident, systems, cases }: { i
           <CardBody><p className="whitespace-pre-wrap text-[14px] leading-relaxed text-fg">{inc.reported_problem}</p></CardBody>
         </Card>
         <Card>
-          <CardHeader title="AI analysis" action={inc.ai_analysis ? <DataBadge cls={inc.is_demo ? "demo" : "ai"} compact /> : undefined} />
+          <CardHeader title={<>AI analysis <InfoTip term="ai_analysis" /></>} action={inc.ai_analysis ? <DataBadge cls={inc.is_demo ? "demo" : "ai"} compact /> : undefined} />
           <CardBody>
             {inc.ai_analysis ? <p className="text-[13.5px] leading-relaxed text-fg-secondary">{inc.ai_analysis}</p> : <p className="text-[13px] text-fg-muted">No AI analysis attached. An AI screening can be run from <Link href="/monitoring/inspection" className="text-[var(--brand-strong)] hover:underline">Monitoring → Inspection</Link>; it is an interpretation, not a diagnosis.</p>}
           </CardBody>

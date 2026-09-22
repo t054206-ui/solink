@@ -20,6 +20,7 @@ import { CalculatedHelpers } from "./_components/CalculatedHelpers";
 import { ImageGallery } from "./_components/ImageGallery";
 import { SourceCard } from "./_components/SourceCard";
 import { SpecTable } from "./_components/SpecTable";
+import { InfoTip } from "@/components/help/InfoTip";
 
 export async function generateMetadata({ params }: PageProps<"/marketplace/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -73,7 +74,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
           </Card>
 
           <Card>
-            <CardHeader title="Specifications" subtitle="Each value is labeled with its data class. Fields the source did not provide are shown as unavailable." />
+            <CardHeader title={<>Specifications <InfoTip term="datasheet" /></>} subtitle="Each value is labeled with its data class. Fields the source did not provide are shown as unavailable." />
             <CardBody><SpecTable product={p} /></CardBody>
           </Card>
 

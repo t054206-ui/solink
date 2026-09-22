@@ -3,6 +3,7 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
 import type { ProviderCompany } from "@/lib/types";
 import { MAINT_KIND, MAINT_KIND_ORDER, providerKindsFor } from "../../_ops/meta";
+import { InfoTip } from "@/components/help/InfoTip";
 
 /**
  * Feature 43 — Maintenance costs. Service type × provider price. Providers have
@@ -13,7 +14,7 @@ export function MaintenanceCostsCard({ providers }: { providers: ProviderCompany
   const serviceProviders = providers.filter((p) => p.kind.some((k) => k === "maintenance" || k === "cleaning" || k === "installer"));
   return (
     <Card>
-      <CardHeader title="Maintenance costs" subtitle="What each service type costs with each provider. Prices are shown only when a provider enters them." />
+      <CardHeader title={<>Maintenance costs <InfoTip term="maintenance_costs" /></>} subtitle="What each service type costs with each provider. Prices are shown only when a provider enters them." />
       <CardBody className="space-y-3">
         {serviceProviders.length === 0 ? (
           <PlaceholderNote k="MAINTENANCE_PRICE" />

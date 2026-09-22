@@ -19,6 +19,7 @@ import { WorkflowStrip } from "../../../_ops/WorkflowStrip";
 import { appointmentForCase, coarseLocation, panelInfo } from "../../_lib/workflow";
 import { PrivacyNote } from "../../_components/ProviderBits";
 import { WorkRecordForm } from "./WorkRecordForm";
+import { InfoTip } from "@/components/help/InfoTip";
 
 export function ProviderCaseDetail({ id, mode, providerId, providerName, serverCase, systems, providers, appointments, relatedIncidents, governorate, nowIso }: {
   id: string;
@@ -85,7 +86,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Detected issue" subtitle={MAINT_KIND[c.kind].description} />
+          <CardHeader title={<>Detected issue <InfoTip term="detected_issue" /></>} subtitle={MAINT_KIND[c.kind].description} />
           <CardBody className="space-y-4">
             <p className="whitespace-pre-wrap text-[14px] leading-relaxed text-fg">{c.detected_issue}</p>
             <div>
@@ -155,7 +156,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
                 : { value: c.production_after_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }}
               unit="kWh/day" format={(v) => v.toFixed(1)}
             />
-            <Metric label="Change" data={changeCls} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`} footnote="(after − before) ÷ before" />
+            <Metric label="Change" term="cleaning_effect" data={changeCls} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`} footnote="(after − before) ÷ before" />
           </div>
           <p className="rounded-[10px] border border-dashed border-border-strong bg-inset p-3 text-[13px] leading-relaxed text-fg-secondary">
             This change coincides with the work; it does not prove the work caused it. Weather, season and other events also move daily production.

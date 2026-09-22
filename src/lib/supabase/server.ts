@@ -48,3 +48,30 @@ export async function getCurrentRole(): Promise<Role | null> {
   const role: unknown = data?.role;
   return isRole(role) ? role : DEFAULT_ROLE;
 }
+
+export interface ShellIdentity { email: string | null; name: string | null; role: Role; orgName: string | null }
+
+/**
+ * What the sidebar footer shows: the person's name, their email, and for a
+ * provider or manufacturer the organisation they act for. One read of
+ * user_profiles plus one of the linked company, both under RLS.
+ */
+export async function getShellIdentity(): Promise<ShellIdentity | null> {
+  const supabase = await createClient();
+  if (!supabase) return null;
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user) return null;
+  const { data: prof } = await supabase.from("user_profiles").select("full_name, role, provider_company_id, manufacturer_id").eq("user_id", user.id).maybeSingle();
+  const role: Role = isRole(prof?.role) ? prof.role : DEFAULT_ROLE;
+  const metaName = typeof user.user_metadata?.full_name === "string" ? (user.user_metadata.full_name as string) : null;
+  let orgName: string | null = null;
+  if (prof?.provider_company_id) {
+    const { data } = await supabase.from("provider_companies").select("name").eq("id", prof.provider_company_id).maybeSingle();
+    orgName = (data?.name as string | undefined) ?? null;
+  } else if (prof?.manufacturer_id) {
+    const { data } = await supabase.from("manufacturers").select("name").eq("id", prof.manufacturer_id).maybeSingle();
+    orgName = (data?.name as string | undefined) ?? null;
+  }
+  return { email: user.email ?? null, name: (prof?.full_name as string | null) ?? metaName, role, orgName };
+}

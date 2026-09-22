@@ -30,7 +30,7 @@ export function PrivacyNote({ className }: { className?: string }) {
 }
 
 /** Summary tile for the queue. */
-export function StatTile({ label, value, sub }: { label: string; value: ReactNode; sub: ReactNode }) {
+export function StatTile({ label, value, sub }: { label: ReactNode; value: ReactNode; sub: ReactNode }) {
   return (
     <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm">
       <div className="text-[12.5px] font-medium text-fg-secondary">{label}</div>

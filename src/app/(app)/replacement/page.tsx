@@ -20,6 +20,7 @@ import { CostCell } from "../_ops/Pills";
 import { MAINT_STATUS } from "../_ops/meta";
 import { EquipmentTable } from "./_components/EquipmentTable";
 import { buildEquipmentRows, unattributedReplacements } from "./_components/equipment";
+import { InfoTip } from "@/components/help/InfoTip";
 
 export const metadata: Metadata = {
   title: "Replacement",
@@ -84,7 +85,7 @@ export default async function ReplacementPage() {
       </Card>
 
       <Card>
-        <CardHeader title="When should something be replaced?" subtitle="This is a decision Solink refuses to fake." />
+        <CardHeader title={<>When should something be replaced? <InfoTip term="end_of_life" /></>} subtitle="This is a decision Solink refuses to fake." />
         <CardBody className="space-y-3">
           <p className="text-[13.5px] leading-relaxed text-fg-secondary">
             Solink will not tell you that a component <em>will fail</em> or that it <em>is at end of life</em>. Deciding that requires criteria: a minimum acceptable output, an age limit, a repair-frequency limit or an economic test. And those have not been defined for this platform. What the table above shows is factual: age, warranty cover and the repairs and replacements actually recorded.

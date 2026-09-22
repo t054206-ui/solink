@@ -9,6 +9,7 @@ import { listNotifications } from "@/lib/data/repositories";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types";
+import { InfoTip } from "@/components/help/InfoTip";
 
 export const metadata = {
   title: "Notifications",
@@ -64,7 +65,7 @@ export default async function NotificationsPage() {
 
         <aside className="space-y-4 lg:col-span-2">
           <Card>
-            <CardHeader title="Delivery" subtitle="In-app only for now." />
+            <CardHeader title={<>Delivery <InfoTip term="notifications_delivery" /></>} subtitle="In-app only for now." />
             <CardBody className="space-y-3">
               <p className="text-[13.5px] leading-relaxed text-fg-secondary">
                 Notifications are recorded and shown on this page, but nothing is sent by email, SMS or

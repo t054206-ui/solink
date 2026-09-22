@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, RotateCw, Trash2, Undo2, Grid3x3, Sparkles, Save, ArrowRight, ArrowUp, ArrowDown, ArrowLeft, Eraser, AlertTriangle, FolderOpen, Image as ImageIcon, PenLine, Lightbulb, Scale, ListChecks } from "lucide-react";
+import { Plus, RotateCw, Trash2, Undo2, Grid3x3, Sparkles, Save, ArrowRight, ArrowUp, ArrowDown, ArrowLeft, Eraser, AlertTriangle, FolderOpen, Image as ImageIcon, PenLine, Lightbulb, Scale, ListChecks, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
@@ -17,6 +17,8 @@ import { systemCapacityKwp, annualProductionKwh, formatNumber } from "@/lib/sola
 import { classified, unavailable, type Classified } from "@/lib/classification";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { DataMode } from "@/lib/data/mode";
+import type { PlatformSettings } from "@/lib/data/settings";
+import { resolveAssumption } from "../_plan/AssumptionField";
 import type { RoofOrientation, SolarProfile } from "@/lib/types";
 import type { RoofScanResult } from "@/app/api/ai/inspect-roof/route";
 import { cn, formatMoney } from "@/lib/utils";
@@ -38,8 +40,8 @@ type AiState = { status: "idle" } | { status: "loading" } | { status: "not_confi
 type ScanState = { status: "idle" } | { status: "loading" } | { status: "not_configured"; message: string } | { status: "error"; message: string } | { status: "ready"; result: RoofScanResult };
 
 /** One undo step holds both layers, so undoing an inspired layout removes its walkways too. */
-interface Snapshot { panels: PlacedPanel[]; modules: PlacedModule[] }
-type Selection = { kind: "panel" | "module"; id: string } | null;
+interface Snapshot { panels: PlacedPanel[]; modules: PlacedModule[]; obstacles?: Obstacle[] }
+type Selection = { kind: "panel" | "module" | "obstacle"; id: string } | null;
 
 const ORIENTATIONS: RoofOrientation[] = ["flat", "N", "NE", "E", "SE", "S", "SW", "W", "NW", "unknown"];
 const PX_PER_M = 60;
@@ -57,10 +59,13 @@ const DEFAULT_ROOF: RoofSpec = { length_m: 12, width_m: 8, orientation: "flat", 
  * carry, what the system will produce and what it costs stay unavailable until
  * the data exists.
  */
-export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }: { mode: DataMode; panels: PanelOption[]; preselectPanelId: string | null; serverProfile: ServerProfile | null }) {
+export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, settings }: { mode: DataMode; panels: PanelOption[]; preselectPanelId: string | null; serverProfile: ServerProfile | null; settings: PlatformSettings }) {
   const router = useRouter();
   const [localProfile, , profileLoaded] = useLocalStore<Partial<SolarProfile> | null>("profile", null);
   const [store, setStore, storeLoaded] = useLocalStore<DesignerStore>("designer", EMPTY_DESIGNER_STORE);
+  // Simple by default (the owner's choice, 2026-09-22): a parent sees roof, panel,
+  // one button and the results. Everything else waits behind this switch.
+  const [advanced, setAdvanced] = useLocalStore<boolean>("designer:advanced", false);
 
   /* ---------------- roof & obstacles ---------------- */
   const prefillRoof = useMemo<RoofSpec>(() => {
@@ -114,8 +119,13 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
     setHistory((h) => {
       if (!h.length) return h;
       const prev = h[h.length - 1];
-      setLay(prev);
-      setSel((s) => (s && (s.kind === "panel" ? prev.panels : prev.modules).some((p) => p.id === s.id) ? s : null));
+      setLay({ panels: prev.panels, modules: prev.modules });
+      if (prev.obstacles) setRoof((r) => ({ ...r, obstacles: prev.obstacles! }));
+      setSel((s) => {
+        if (!s) return s;
+        const list = s.kind === "panel" ? prev.panels : s.kind === "module" ? prev.modules : (prev.obstacles ?? roof.obstacles);
+        return list.some((p) => p.id === s.id) ? s : null;
+      });
       return h.slice(0, -1);
     });
   };
@@ -167,10 +177,19 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
         const c = clampToRoof(m.x, m.y, m.h, m.w, roof);
         return { ...m, w: m.h, h: m.w, x: c.x, y: c.y };
       }) }));
+    } else if (sel.kind === "obstacle") {
+      setHistory((hist) => [...hist.slice(-(MAX_HISTORY - 1)), { ...lay, obstacles: roof.obstacles }]);
+      setRoof((r) => ({ ...r, obstacles: r.obstacles.map((o) => (o.id !== sel.id ? o : { ...o, w: o.h, h: o.w, ...clampToRoof(o.x, o.y, o.h, o.w, r) })) }));
     }
   };
   const removeSelected = () => {
     if (!sel) return;
+    if (sel.kind === "obstacle") {
+      setHistory((hist) => [...hist.slice(-(MAX_HISTORY - 1)), { ...lay, obstacles: roof.obstacles }]);
+      setRoof((r) => ({ ...r, obstacles: r.obstacles.filter((o) => o.id !== sel.id) }));
+      setSel(null);
+      return;
+    }
     commit((prev) => (sel.kind === "panel" ? { panels: prev.panels.filter((p) => p.id !== sel.id) } : { modules: prev.modules.filter((m) => m.id !== sel.id) }));
     setSel(null);
   };
@@ -186,6 +205,9 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
       }) }));
     } else if (sel.kind === "module") {
       commit((prev) => ({ modules: prev.modules.map((m) => (m.id !== sel.id ? m : { ...m, ...clampToRoof(round2(m.x + dx), round2(m.y + dy), m.w, m.h, roof) })) }));
+    } else if (sel.kind === "obstacle") {
+      setHistory((hist) => [...hist.slice(-(MAX_HISTORY - 1)), { ...lay, obstacles: roof.obstacles }]);
+      setRoof((r) => ({ ...r, obstacles: r.obstacles.map((o) => (o.id !== sel.id ? o : { ...o, ...clampToRoof(round2(o.x + dx), round2(o.y + dy), o.w, o.h, r) })) }));
     }
   };
   const autoFill = () => {
@@ -246,7 +268,8 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
   const svgRef = useRef<SVGSVGElement>(null);
   const viewW = roof.length_m * PX_PER_M + PAD * 2;
   const viewH = roof.width_m * PX_PER_M + PAD * 2;
-  const dragRef = useRef<{ kind: "panel" | "module"; id: string; offX: number; offY: number; before: Snapshot; moved: boolean } | null>(null);
+  // "resize" drags the bottom-right corner of a block; panels are never resized (they are real products).
+  const dragRef = useRef<{ kind: "panel" | "module" | "resize" | "obstacle" | "obstacle-resize"; id: string; offX: number; offY: number; before: Snapshot; moved: boolean } | null>(null);
 
   const toMetres = (e: { clientX: number; clientY: number }) => {
     const svg = svgRef.current; if (!svg) return { x: 0, y: 0 };
@@ -256,14 +279,38 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
   };
   const clampPt = (m: { x: number; y: number }) => ({ x: Math.min(roof.length_m, Math.max(0, m.x)), y: Math.min(roof.width_m, Math.max(0, m.y)) });
 
-  const startDrag = (e: ReactPointerEvent<SVGGElement>, kind: "panel" | "module", id: string, x: number, y: number) => {
+  const startDrag = (e: ReactPointerEvent<SVGGElement>, kind: "panel" | "module" | "obstacle", id: string, x: number, y: number) => {
     if (traceMode) return;
     e.stopPropagation();
     (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     const m = toMetres(e);
-    dragRef.current = { kind, id, offX: m.x - x, offY: m.y - y, before: lay, moved: false };
+    dragRef.current = { kind, id, offX: m.x - x, offY: m.y - y, before: { ...lay, obstacles: roof.obstacles }, moved: false };
     setSel({ kind, id });
     svgRef.current?.focus();
+  };
+  const startResize = (e: ReactPointerEvent<SVGRectElement>, target: { kind: "module" | "obstacle"; id: string }) => {
+    if (traceMode) return;
+    e.stopPropagation();
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    dragRef.current = { kind: target.kind === "module" ? "resize" : "obstacle-resize", id: target.id, offX: 0, offY: 0, before: { ...lay, obstacles: roof.obstacles }, moved: false };
+    setSel(target);
+  };
+  /** Set an obstacle's size directly; snapped, at least 0.2 m, kept on the roof. */
+  const resizeObstacle = (id: string, w: number, h: number) => {
+    setHistory((hist) => [...hist.slice(-(MAX_HISTORY - 1)), { ...lay, obstacles: roof.obstacles }]);
+    setRoof((r) => ({ ...r, obstacles: r.obstacles.map((o) => {
+      if (o.id !== id) return o;
+      return { ...o, w: round2(Math.min(Math.max(0.2, snap(w)), r.length_m - o.x)), h: round2(Math.min(Math.max(0.2, snap(h)), r.width_m - o.y)) };
+    }) }));
+  };
+  /** Set a block's size directly (keyboard and the size fields); snapped, at least 0.2 m, kept on the roof. */
+  const resizeModule = (id: string, w: number, h: number) => {
+    commit((prev) => ({ modules: prev.modules.map((m) => {
+      if (m.id !== id) return m;
+      const nw = round2(Math.min(Math.max(0.2, snap(w)), roof.length_m - m.x));
+      const nh = round2(Math.min(Math.max(0.2, snap(h)), roof.width_m - m.y));
+      return { ...m, w: nw, h: nh };
+    }) }));
   };
   const onSvgPointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
     if (traceMode) {
@@ -285,7 +332,31 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
     }
     const d = dragRef.current; if (!d) return;
     const m = toMetres(e);
+    if (d.kind === "obstacle" || d.kind === "obstacle-resize") {
+      setRoof((r) => ({ ...r, obstacles: r.obstacles.map((o) => {
+        if (o.id !== d.id) return o;
+        if (d.kind === "obstacle-resize") {
+          const w = round2(Math.min(Math.max(0.2, snap(m.x - o.x)), r.length_m - o.x));
+          const h = round2(Math.min(Math.max(0.2, snap(m.y - o.y)), r.width_m - o.y));
+          if (w !== o.w || h !== o.h) d.moved = true;
+          return { ...o, w, h };
+        }
+        const c = clampToRoof(snap(m.x - d.offX), snap(m.y - d.offY), o.w, o.h, r);
+        if (c.x !== o.x || c.y !== o.y) d.moved = true;
+        return { ...o, x: round2(c.x), y: round2(c.y) };
+      }) }));
+      return;
+    }
     setLay((prev) => {
+      if (d.kind === "resize") {
+        return { ...prev, modules: prev.modules.map((mod) => {
+          if (mod.id !== d.id) return mod;
+          const w = round2(Math.min(Math.max(0.2, snap(m.x - mod.x)), roof.length_m - mod.x));
+          const h = round2(Math.min(Math.max(0.2, snap(m.y - mod.y)), roof.width_m - mod.y));
+          if (w !== mod.w || h !== mod.h) d.moved = true;
+          return { ...mod, w, h };
+        }) };
+      }
       if (d.kind === "panel") {
         if (!geom) return prev;
         return { ...prev, panels: prev.panels.map((p) => {
@@ -352,8 +423,13 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
   const [pr, setPr] = useState("");
   const pshNum = psh.trim() === "" ? null : Number(psh);
   const prNum = pr.trim() === "" ? null : Number(pr);
-  const productionRaw = annualProductionKwh(capacity.value, { peakSunHoursPerDay: Number.isFinite(pshNum as number) ? pshNum : null, performanceRatio: Number.isFinite(prNum as number) ? prNum : null });
-  const production: Classified = productionRaw.value !== null ? { ...productionRaw, notes: [...(productionRaw.notes ?? []), "Peak sun hours and performance ratio were entered by you (user-provided), not taken from a data source."] } : productionRaw;
+  // Platform values (Global Solar Atlas sun hours, PVWatts losses) unless the person typed their own.
+  const pshR = resolveAssumption(Number.isFinite(pshNum as number) ? pshNum : null, settings.peak_sun_hours_per_day);
+  const prR = resolveAssumption(Number.isFinite(prNum as number) ? prNum : null, settings.performance_ratio);
+  const productionRaw = annualProductionKwh(capacity.value, { peakSunHoursPerDay: pshR.value, performanceRatio: prR.value });
+  const production: Classified = productionRaw.value !== null
+    ? { ...productionRaw, notes: [...(productionRaw.notes ?? []), pshR.cls === "user" || prR.cls === "user" ? "Uses a value you typed under more options, not a data source." : `Sun hours and losses from platform settings: ${pshR.source ?? ""}${prR.source ? `; ${prR.source}` : ""}`] }
+    : productionRaw;
 
   const cost: Classified = (() => {
     if (!product) return unavailable("Select a panel.");
@@ -467,6 +543,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
 
   const selectedPanel = sel?.kind === "panel" ? placed.find((p) => p.id === sel.id) ?? null : null;
   const selectedModule = sel?.kind === "module" ? modules.find((m) => m.id === sel.id) ?? null : null;
+  const selectedObstacle = sel?.kind === "obstacle" ? roof.obstacles.find((o) => o.id === sel.id) ?? null : null;
   const gridLines = useMemo(() => ({ v: Array.from({ length: Math.floor(roof.length_m) + 1 }, (_, i) => i), h: Array.from({ length: Math.floor(roof.width_m) + 1 }, (_, i) => i) }), [roof.length_m, roof.width_m]);
   const moduleGroups = useMemo(() => MODULE_ORDER.map((k) => ({ kind: k, items: modules.filter((m) => m.kind === k) })).filter((g) => g.items.length), [modules]);
 
@@ -478,34 +555,44 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
       </div>
       {product?.is_demo && <DemoBanner text="DEMO PRODUCT — NOT REAL" detail="The selected panel is an illustrative demo record. Its dimensions, weight and power are not from a real manufacturer." />}
 
+      <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius)] border border-border bg-elevated px-3 py-2.5 text-[13px] has-[:checked]:border-[var(--brand)]">
+        <input type="checkbox" checked={advanced} onChange={(e) => setAdvanced(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />
+        <span className="min-w-0">
+          <span className="flex items-center gap-1.5 font-medium text-fg"><SlidersHorizontal className="size-4 text-fg-muted" aria-hidden /> Show more options</span>
+          <span className="block text-[12.5px] text-fg-muted">Roof direction and tilt, a photo of your roof, walkways and planters, space at the edges, AI placement, weight on the roof, and your own assumptions. Off by default; the simple view is enough to size a system.</span>
+        </span>
+      </label>
+
       <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
         {/* ---------------- Setup ---------------- */}
         <div className="space-y-4">
           <Card>
-            <CardHeader title="Roof" subtitle="Dimensions in metres, seen from above. A photo cannot measure, so these stay yours." />
+            <CardHeader title={<>Your roof <InfoTip term="roof_size" /></>} subtitle="How long and how wide, in metres, seen from above." />
             <CardBody className="grid grid-cols-2 gap-3">
               <Field label="Length (m)"><Input type="number" min={1} max={100} step={0.1} value={roof.length_m} onChange={(e) => setRoofDim("length_m", e.target.value)} /></Field>
               <Field label="Width (m)"><Input type="number" min={1} max={100} step={0.1} value={roof.width_m} onChange={(e) => setRoofDim("width_m", e.target.value)} /></Field>
+              {advanced && (<>
               <Field label={<>Orientation <InfoTip term="orientation" /></>}>
                 <Select value={roof.orientation} onChange={(e) => setRoof((r) => ({ ...r, orientation: e.target.value as RoofOrientation }))}>
                   {ORIENTATIONS.map((o) => <option key={o} value={o}>{o === "flat" ? "Flat roof" : o === "unknown" ? "Unknown" : o}</option>)}
                 </Select>
               </Field>
               <Field label={<>Tilt (°) <InfoTip term="tilt" /></>}><Input type="number" min={0} max={90} step={1} value={roof.tilt_deg} onChange={(e) => setRoofDim("tilt_deg", e.target.value)} /></Field>
-              <Field label="Edge setback (m)" help="Clear strip along every edge.">
+              <Field label={<>Space at the edges (m) <InfoTip term="setback" /></>}>
                 <div className="relative"><Input type="number" min={0} max={5} step={0.1} value={setback} onChange={(e) => setRoofDim("setback_m", e.target.value)} /><DataBadge cls="user" compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
               </Field>
-              <Field label="Walkway width (m)" help="Between rows, for cleaning.">
+              <Field label={<>Walkway width (m) <InfoTip term="walkway" /></>}>
                 <div className="relative"><Input type="number" min={0} max={5} step={0.1} value={walkway} onChange={(e) => setRoofDim("walkway_m", e.target.value)} /><DataBadge cls="user" compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
               </Field>
               <Field label={<>Shading notes <InfoTip term="shading" /></>} className="col-span-2" help="Optional. Passed to AI Smart Placement only.">
                 <Textarea value={shadingNotes} onChange={(e) => setShadingNotes(e.target.value)} className="min-h-16" maxLength={500} placeholder="e.g. neighbour's building casts shade on the west edge after 3 pm" />
               </Field>
+              </>)}
             </CardBody>
           </Card>
 
-          <Card>
-            <CardHeader title={<><ImageIcon className="size-4 text-fg-muted" aria-hidden /> Photo of the roof</>} subtitle="An overhead or drone photo goes under the grid, stretched to the dimensions above. Then trace what is on it." />
+          {advanced && <Card>
+            <CardHeader title={<><ImageIcon className="size-4 text-fg-muted" aria-hidden /> Photo of the roof <InfoTip term="photo_trace" /></>} subtitle="An overhead or drone photo goes under the grid, stretched to the dimensions above. Then trace what is on it." />
             <CardBody className="space-y-3">
               <input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload a roof photo" onChange={(e) => onPhotoFile(e.target.files?.[0] ?? null)} className="block w-full text-[12.5px] text-fg-secondary file:mr-3 file:rounded-[var(--radius)] file:border file:border-border-strong file:bg-elevated file:px-3 file:py-1.5 file:text-[12.5px] file:font-medium file:text-fg hover:file:bg-inset" />
               {photo && (
@@ -555,10 +642,10 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
               )}
               {!photo && <p className="text-[12px] text-fg-muted">Optional. Without a photo, the grid alone is the canvas.</p>}
             </CardBody>
-          </Card>
+          </Card>}
 
           <Card>
-            <CardHeader title="Obstacles" subtitle="Water tanks, AC units, stairwells: nothing can be placed on them." />
+            <CardHeader title={<>Anything on the roof? <InfoTip term="obstacle" /></>} subtitle="A water tank, an AC unit, a stairwell. Panels will not be placed on them." />
             <CardBody className="space-y-3">
               {roof.obstacles.length > 0 && (
                 <ul className="space-y-1.5">
@@ -582,7 +669,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
           </Card>
 
           <Card>
-            <CardHeader title="Panel" subtitle="Real catalog dimensions are used for every rectangle." />
+            <CardHeader title="Pick a panel" subtitle="Real panels from the catalogue, drawn at their true size." />
             <CardBody className="space-y-3">
               <Field label="Panel model">
                 <Select value={panelId} onChange={(e) => changePanel(e.target.value)}>
@@ -593,7 +680,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
               {product && geom && (
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px]">
                   <dt className="text-fg-muted">Size</dt><dd className="tabular text-right text-fg">{geom.length_m.toFixed(3)} × {geom.width_m.toFixed(3)} m <DataBadge cls={product.is_demo ? "demo" : "source"} compact /></dd>
-                  <dt className="text-fg-muted">Rated power</dt><dd className="tabular text-right text-fg">{geom.rated_power_w !== null ? `${geom.rated_power_w} W` : "Unavailable"}</dd>
+                  <dt className="text-fg-muted">Power <InfoTip term="rated_power" /></dt><dd className="tabular text-right text-fg">{geom.rated_power_w !== null ? `${geom.rated_power_w} W` : "Unavailable"}</dd>
                   <dt className="text-fg-muted">Weight</dt><dd className="tabular text-right text-fg">{geom.weight_kg !== null && geom.weight_kg !== undefined ? `${geom.weight_kg} kg` : "Unavailable"}</dd>
                   <dt className="text-fg-muted">Area / panel</dt><dd className="tabular text-right text-fg">{(geom.length_m * geom.width_m).toFixed(2)} m² <DataBadge cls="calculated" compact /></dd>
                   <dt className="text-fg-muted">Price</dt><dd className="tabular text-right text-fg">{product.price !== null ? formatMoney(product.price, product.currency) : "Unavailable"}</dd>
@@ -602,8 +689,8 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
             </CardBody>
           </Card>
 
-          <Card>
-            <CardHeader title="Modules" subtitle="Walkways, planters, seating, pergolas. Generic blocks at the size you type; not products." />
+          {advanced && <Card>
+            <CardHeader title={<>Walkways, planters, seating <InfoTip term="modules" /></>} subtitle="Blocks at the size you type; shapes only, not products." />
             <CardBody className="space-y-3">
               <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Module kind">
                 {MODULE_ORDER.map((k) => (
@@ -618,7 +705,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
               </div>
               <Button variant="outline" size="sm" onClick={addModule} className="w-full"><Plus className="size-4" aria-hidden /> Add {MODULE_KINDS[moduleDraft.kind].label.toLowerCase()}</Button>
             </CardBody>
-          </Card>
+          </Card>}
         </div>
 
         {/* ---------------- Canvas ---------------- */}
@@ -626,13 +713,14 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
           <Card>
             <CardBody className="pt-4 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Button size="sm" onClick={() => addPanel(0)} disabled={!geom}><Plus className="size-4" aria-hidden /> Add panel</Button>
-                <Button size="sm" variant="outline" onClick={autoFill} disabled={!geom}><Grid3x3 className="size-4" aria-hidden /> Auto-fill grid</Button>
+                <Button size="sm" onClick={autoFill} disabled={!geom}><Grid3x3 className="size-4" aria-hidden /> Fill my roof with panels</Button>
+                <InfoTip term="auto_fill" />
+                <Button size="sm" variant="outline" onClick={() => addPanel(0)} disabled={!geom}><Plus className="size-4" aria-hidden /> Add a panel</Button>
                 <Button size="sm" variant="outline" onClick={undo} disabled={!history.length} aria-label="Undo"><Undo2 className="size-4" aria-hidden /> Undo</Button>
                 <Button size="sm" variant="ghost" onClick={clearAll} disabled={!placed.length && !modules.length}><Eraser className="size-4" aria-hidden /> Clear all</Button>
-                <label className="ml-auto flex items-center gap-2 text-[12.5px] text-fg-secondary select-none">
+                {advanced && <label className="ml-auto flex items-center gap-2 text-[12.5px] text-fg-secondary select-none">
                   <input type="checkbox" checked={snapNeighboursOn} onChange={(e) => setSnapNeighboursOn(e.target.checked)} className="accent-[var(--brand)]" /> Snap to neighbours
-                </label>
+                </label>}
               </div>
 
               <div className="relative overflow-hidden rounded-[var(--radius)] border border-border bg-inset">
@@ -672,12 +760,24 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                     <text x={(roof.length_m * PX_PER_M) / 2} y={-9} textAnchor="middle" fontSize={11} fill="var(--fg-muted)" className="tabular">{roof.length_m} m</text>
                     <text x={-9} y={(roof.width_m * PX_PER_M) / 2} textAnchor="middle" fontSize={11} fill="var(--fg-muted)" transform={`rotate(-90 -9 ${(roof.width_m * PX_PER_M) / 2})`} className="tabular">{roof.width_m} m</text>
                     {/* obstacles */}
-                    {roof.obstacles.map((o) => (
-                      <g key={o.id}>
-                        <rect x={o.x * PX_PER_M} y={o.y * PX_PER_M} width={o.w * PX_PER_M} height={o.h * PX_PER_M} fill="url(#hatch)" stroke="var(--fg-muted)" strokeWidth={1.5} />
-                        <text x={o.x * PX_PER_M + 4} y={o.y * PX_PER_M + 13} fontSize={10.5} fill="var(--fg-secondary)">{o.label}</text>
-                      </g>
-                    ))}
+                    {roof.obstacles.map((o) => {
+                      const isSel = sel?.kind === "obstacle" && sel.id === o.id;
+                      return (
+                        <g key={o.id} onPointerDown={(e) => startDrag(e, "obstacle", o.id, o.x, o.y)} className={traceMode ? "" : "cursor-grab active:cursor-grabbing"} role="button" aria-label={`${o.label}, ${o.w} by ${o.h} metres at ${o.x}, ${o.y}. Drag to move.`}>
+                          <rect x={o.x * PX_PER_M} y={o.y * PX_PER_M} width={o.w * PX_PER_M} height={o.h * PX_PER_M} fill="url(#hatch)" stroke={isSel ? "var(--brand-strong)" : "var(--fg-muted)"} strokeWidth={isSel ? 3 : 1.5} />
+                          <text x={o.x * PX_PER_M + 4} y={o.y * PX_PER_M + 13} fontSize={10.5} fill="var(--fg-secondary)" className="pointer-events-none">{o.label}</text>
+                          {!traceMode && (
+                            <rect
+                              x={(o.x + o.w) * PX_PER_M - 9} y={(o.y + o.h) * PX_PER_M - 9} width={18} height={18} rx={3}
+                              fill={isSel ? "var(--brand)" : "var(--bg-elevated)"} stroke={isSel ? "var(--bg-elevated)" : "var(--fg-muted)"} strokeWidth={2}
+                              className="cursor-nwse-resize"
+                              role="button" aria-label={`Resize ${o.label}: drag this corner`}
+                              onPointerDown={(e) => startResize(e, { kind: "obstacle", id: o.id })}
+                            />
+                          )}
+                        </g>
+                      );
+                    })}
                     {/* modules */}
                     {modules.map((m) => {
                       const meta = MODULE_KINDS[m.kind];
@@ -691,6 +791,17 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                             strokeWidth={isSel ? 3 : 1.5} strokeDasharray={meta.dashed && !isSel ? "5 4" : undefined} />
                           {m.kind === "pergola" && <><line x1={m.x * PX_PER_M} y1={m.y * PX_PER_M} x2={(m.x + m.w) * PX_PER_M} y2={(m.y + m.h) * PX_PER_M} stroke={meta.stroke} strokeOpacity={0.3} /><line x1={(m.x + m.w) * PX_PER_M} y1={m.y * PX_PER_M} x2={m.x * PX_PER_M} y2={(m.y + m.h) * PX_PER_M} stroke={meta.stroke} strokeOpacity={0.3} /></>}
                           <text x={(m.x + m.w / 2) * PX_PER_M} y={(m.y + m.h / 2) * PX_PER_M + 4} textAnchor="middle" fontSize={10.5} fill={bad ? "var(--critical-fg)" : "var(--fg-secondary)"} className="pointer-events-none">{m.label}</text>
+                          {!traceMode && (
+                            // Corner handle: always present on a block so it can be grabbed
+                            // without selecting first; larger and solid once selected.
+                            <rect
+                              x={(m.x + m.w) * PX_PER_M - 9} y={(m.y + m.h) * PX_PER_M - 9} width={18} height={18} rx={3}
+                              fill={isSel ? "var(--brand)" : "var(--bg-elevated)"} stroke={isSel ? "var(--bg-elevated)" : meta.stroke} strokeWidth={2}
+                              className="cursor-nwse-resize"
+                              role="button" aria-label={`Resize ${m.label}: drag this corner`}
+                              onPointerDown={(e) => startResize(e, { kind: "module", id: m.id })}
+                            />
+                          )}
                         </g>
                       );
                     })}
@@ -719,10 +830,27 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
 
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[12.5px] text-fg-muted">
-                  {selectedPanel ? `Panel ${placed.indexOf(selectedPanel) + 1} selected: (${selectedPanel.x}, ${selectedPanel.y}) m, ${selectedPanel.rotation}°`
-                    : selectedModule ? `${selectedModule.label} selected: (${selectedModule.x}, ${selectedModule.y}) m, ${selectedModule.w} × ${selectedModule.h} m`
-                    : traceMode ? "Tracing mode: drag on the drawing to add an obstacle." : "Tap a panel or module to select it. Drag to move."}
+                  {selectedPanel ? `Panel ${placed.indexOf(selectedPanel) + 1} selected. Drag to move, rotate with the arrow button. Panels keep their real size; pick another model to change it.`
+                    : selectedModule ? `${selectedModule.label} selected at (${selectedModule.x}, ${selectedModule.y}) m. Drag the corner to resize, or type a size:`
+                    : selectedObstacle ? `${selectedObstacle.label} selected at (${selectedObstacle.x}, ${selectedObstacle.y}) m. Drag it to move, drag the corner to resize, or type a size:`
+                    : traceMode ? "Tracing mode: drag on the drawing to add an obstacle." : "Tap anything on the drawing to select it. Drag to move; drag a corner square to resize a block or an obstacle."}
                 </span>
+                {selectedObstacle && (
+                  <span className="flex items-center gap-1 text-[12.5px] text-fg-secondary">
+                    <Input type="number" step={0.1} min={0.2} value={selectedObstacle.w} onChange={(e) => resizeObstacle(selectedObstacle.id, Number(e.target.value) || selectedObstacle.w, selectedObstacle.h)} aria-label="Obstacle width in metres" className="h-8 w-20" />
+                    <span aria-hidden>×</span>
+                    <Input type="number" step={0.1} min={0.2} value={selectedObstacle.h} onChange={(e) => resizeObstacle(selectedObstacle.id, selectedObstacle.w, Number(e.target.value) || selectedObstacle.h)} aria-label="Obstacle depth in metres" className="h-8 w-20" />
+                    <span>m</span>
+                  </span>
+                )}
+                {selectedModule && (
+                  <span className="flex items-center gap-1 text-[12.5px] text-fg-secondary">
+                    <Input type="number" step={0.1} min={0.2} value={selectedModule.w} onChange={(e) => resizeModule(selectedModule.id, Number(e.target.value) || selectedModule.w, selectedModule.h)} aria-label="Block width in metres" className="h-8 w-20" />
+                    <span aria-hidden>×</span>
+                    <Input type="number" step={0.1} min={0.2} value={selectedModule.h} onChange={(e) => resizeModule(selectedModule.id, selectedModule.w, Number(e.target.value) || selectedModule.h)} aria-label="Block depth in metres" className="h-8 w-20" />
+                    <span>m</span>
+                  </span>
+                )}
                 <div className="ml-auto flex items-center gap-1">
                   <button type="button" aria-label="Nudge left" disabled={!sel} onClick={() => nudge(-0.1, 0)} className={ctl}><ArrowLeft className="size-4" aria-hidden /></button>
                   <button type="button" aria-label="Nudge up" disabled={!sel} onClick={() => nudge(0, -0.1)} className={ctl}><ArrowUp className="size-4" aria-hidden /></button>
@@ -732,7 +860,9 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                   <button type="button" aria-label="Remove selection (Delete)" disabled={!sel} onClick={removeSelected} className={cn(ctl, "hover:text-critical-fg")}><Trash2 className="size-4" aria-hidden /></button>
                 </div>
               </div>
-              <p className="text-[11.5px] text-fg-muted">Keyboard: focus the drawing, then arrow keys (Shift = 0.5 m), <kbd className="rounded border border-border px-1">R</kbd> rotate, <kbd className="rounded border border-border px-1">Delete</kbd> remove, <kbd className="rounded border border-border px-1">Esc</kbd> deselect. Positions snap to 0.1 m. The dashed line is the {setback} m setback.</p>
+              {advanced
+                ? <p className="text-[11.5px] text-fg-muted">Keyboard: focus the drawing, then arrow keys (Shift = 0.5 m), <kbd className="rounded border border-border px-1">R</kbd> rotate, <kbd className="rounded border border-border px-1">Delete</kbd> remove, <kbd className="rounded border border-border px-1">Esc</kbd> deselect. Positions snap to 0.1 m. The dashed line is the {setback} m setback.</p>
+                : <p className="text-[11.5px] text-fg-muted">The dashed line is the {setback} m kept clear at the edges. Tap a panel, then use the arrows to move it or the bin to remove it.</p>}
 
               {problems.messages.length > 0 && (
                 <div role="alert" className="rounded-[10px] border border-[var(--critical)]/40 bg-critical-soft px-3 py-2 text-[12.5px] text-critical-fg">
@@ -752,18 +882,18 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
 
           {/* Get inspired */}
           <Card>
-            <CardHeader title={<><Lightbulb className="size-4 text-fg-muted" aria-hidden /> Get inspired</>} subtitle="Three ready layouts for this roof, from its size, your setback and walkway settings, and the panel's real dimensions. Geometry only; each note says what the layout gives up." />
+            <CardHeader title={<><Lightbulb className="size-4 text-fg-muted" aria-hidden /> Try a ready layout <InfoTip term="get_inspired" /></>} subtitle="Three starting points for your roof. Pick one, then move anything you like." />
             <CardBody className="space-y-3">
               <div className="grid gap-2 sm:grid-cols-3">
                 <InspireButton active={inspireNotes?.goal === "max_energy"} onClick={() => getInspired("max_energy")} disabled={!geom} title="Most panels" body="Dense rows, no walkways." />
                 <InspireButton active={inspireNotes?.goal === "serviceable"} onClick={() => getInspired("serviceable")} disabled={!geom} title="Easy to clean" body={`A ${walkway} m walkway after every second row.`} />
                 <InspireButton active={inspireNotes?.goal === "mixed_use"} onClick={() => getInspired("mixed_use")} disabled={!geom} title="Panels and a terrace" body="A leisure zone along the far edge." />
               </div>
-              <div className="flex items-center gap-2 text-[12.5px] text-fg-secondary">
+              {advanced && <div className="flex items-center gap-2 text-[12.5px] text-fg-secondary">
                 <label htmlFor="amenity-share" className="shrink-0">Leisure share of the usable depth</label>
                 <div className="relative w-24"><Input id="amenity-share" type="number" min={10} max={80} step={5} value={amenityShare} onChange={(e) => setAmenityShare(e.target.value)} /><span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-fg-muted">%</span></div>
                 <DataBadge cls="user" compact />
-              </div>
+              </div>}
               {inspireNotes && (
                 <div className="space-y-1 text-[12.5px]">
                   <div className="flex items-center gap-2"><DataBadge cls="calculated" compact /><span className="font-medium text-fg">Applied. Drag anything to change it; Undo brings the previous layout back.</span></div>
@@ -774,7 +904,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
           </Card>
 
           {/* AI Smart Placement */}
-          <Card>
+          {advanced && <Card>
             <CardHeader title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> AI Smart Placement</>} subtitle="Ask the AI Solar Agent for a suggested layout. It sees only the roof, obstacles, modules, panel size and your shading notes."
               action={<Button size="sm" variant="secondary" onClick={requestAi} disabled={!geom || ai.status === "loading"}>{ai.status === "loading" ? "Thinking…" : "Suggest placement"}</Button>} />
             <CardBody>
@@ -801,31 +931,34 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                 </div>
               )}
             </CardBody>
-          </Card>
+          </Card>}
         </div>
 
         {/* ---------------- Summary ---------------- */}
         <div className="space-y-3">
           {aiSuggested && <div className="flex items-center gap-2 text-[12.5px] text-fg-secondary"><DataBadge cls="ai" /> Layout applied from an AI suggestion.</div>}
-          <Metric label="Panels placed" data={countCls} format={(v) => String(v)} />
+          <Metric label="Panels that fit" term="panel_count" data={countCls} format={(v) => String(v)} />
+          <Metric label="Roof used" term="coverage" data={coverageCls} unit="%" format={(v) => formatNumber(v, 0)} />
+          <Metric label="System size" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
+          <Metric label="Yearly production, roughly" term="yearly_production" data={production} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={production.value !== null ? production.notes?.[production.notes.length - 1] : undefined} />
+          {advanced && <>
           <Metric label="Panel area" data={usedCls} unit="m²" format={(v) => formatNumber(v, 1)} />
-          <Metric label="Coverage of open roof" data={coverageCls} unit="%" format={(v) => formatNumber(v, 0)} />
-          <Metric label="Remaining area" data={remainingCls} unit="m²" format={(v) => formatNumber(v, 1)} />
-          <Metric label="System capacity" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
+          <Metric label="Space left" term="remaining_area" data={remainingCls} unit="m²" format={(v) => formatNumber(v, 1)} />
+          </>}
 
-          <Card>
-            <CardHeader title={<><Scale className="size-4 text-fg-muted" aria-hidden /> Structure</>} subtitle="What the panels weigh is known from the manufacturer. What the roof can carry is not: that is a fact about this building." />
+          {advanced && <Card>
+            <CardHeader title={<><Scale className="size-4 text-fg-muted" aria-hidden /> Weight on the roof <InfoTip term="panel_weight" /></>} subtitle="What the panels weigh is known from the manufacturer. What the roof can carry is not: that is a fact about this building." />
             <CardBody className="space-y-3">
               <Metric label="Total panel weight" data={weightCls} unit="kg" format={(v) => formatNumber(v, 0)} />
               <Metric label="Panel load over its footprint" data={loadCls} unit="kg/m²" format={(v) => formatNumber(v, 1)} />
               <div className="rounded-[var(--radius)] border border-dashed border-border-strong bg-inset px-3 py-2 text-[12.5px] text-fg-secondary">
-                <div className="flex flex-wrap items-center gap-1.5">Roof capacity: <Placeholder k="ROOF_LOAD_CAPACITY" /></div>
+                <div className="flex flex-wrap items-center gap-1.5">What the roof can carry <InfoTip term="roof_load" />: <Placeholder k="ROOF_LOAD_CAPACITY" /></div>
                 <p className="mt-1 text-fg-muted">Mounting, ballast and wind uplift are not in the catalogue. Compare the figures above with the engineer’s permissible load before anything is ordered.</p>
               </div>
             </CardBody>
-          </Card>
+          </Card>}
 
-          <Card>
+          {advanced && <Card>
             <CardHeader title={<><ListChecks className="size-4 text-fg-muted" aria-hidden /> Components</>} subtitle="Everything on the drawing, itemised." />
             <CardBody>
               {!placed.length && !modules.length ? <p className="text-[12.5px] text-fg-muted">Nothing placed yet.</p> : (
@@ -854,27 +987,26 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile }
                 </ul>
               )}
             </CardBody>
-          </Card>
+          </Card>}
 
-          <Card>
-            <CardHeader title={<>Annual production <InfoTip term="energy_production" /></>} subtitle="Needs a solar resource figure and a performance ratio. Enter your own assumptions." />
+          {advanced && <Card>
+            <CardHeader title={<>Your own assumptions <InfoTip term="energy_production" /></>} subtitle="Yearly production uses the platform's sourced sun hours and losses. Type a value here to override it; it is then labelled as yours." />
             <CardBody className="space-y-3">
-              <Metric label="Estimated annual production" data={production} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={production.value !== null ? "Based on your assumptions below" : undefined} />
               <div className="grid grid-cols-2 gap-2">
-                <Field label={<>Peak sun h/day <InfoTip term="peak_sun_hours" /></>} help={<Placeholder k="SOLAR_RESOURCE_DATA_SOURCE" />}>
-                  <div className="relative"><Input type="number" step={0.1} min={0} max={12} value={psh} onChange={(e) => setPsh(e.target.value)} placeholder="e.g. 5.5" aria-label="Peak sun hours per day (your assumption)" /><DataBadge cls="user" compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
+                <Field label={<>Peak sun h/day <InfoTip term="peak_sun_hours" /></>} help={settings.peak_sun_hours_per_day ? `Platform: ${settings.peak_sun_hours_per_day.value}` : <Placeholder k="SOLAR_RESOURCE_DATA_SOURCE" />}>
+                  <div className="relative"><Input type="number" step={0.1} min={0} max={12} value={psh} onChange={(e) => setPsh(e.target.value)} placeholder={settings.peak_sun_hours_per_day ? String(settings.peak_sun_hours_per_day.value) : "e.g. 5.5"} aria-label="Peak sun hours per day (your assumption)" /><DataBadge cls={pshR.cls === "user" ? "user" : "source"} compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
                 </Field>
-                <Field label={<>Performance ratio <InfoTip term="performance_ratio" /></>} help={<Placeholder k="SYSTEM_LOSS_FACTOR" />}>
-                  <div className="relative"><Input type="number" step={0.01} min={0} max={1} value={pr} onChange={(e) => setPr(e.target.value)} placeholder="0–1, e.g. 0.8" aria-label="Performance ratio (your assumption)" /><DataBadge cls="user" compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
+                <Field label={<>Performance ratio <InfoTip term="performance_ratio" /></>} help={settings.performance_ratio ? `Platform: ${settings.performance_ratio.value}` : <Placeholder k="SYSTEM_LOSS_FACTOR" />}>
+                  <div className="relative"><Input type="number" step={0.01} min={0} max={1} value={pr} onChange={(e) => setPr(e.target.value)} placeholder={settings.performance_ratio ? String(settings.performance_ratio.value) : "0–1, e.g. 0.8"} aria-label="Performance ratio (your assumption)" /><DataBadge cls={prR.cls === "user" ? "user" : "source"} compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
                 </Field>
               </div>
             </CardBody>
-          </Card>
+          </Card>}
 
-          <Metric label="Estimated cost" data={cost} format={(v) => formatMoney(v, product?.currency ?? "KWD")} footnote={cost.value === null ? <span className="flex flex-wrap items-center gap-1">Installation: <Placeholder k="INSTALLATION_PRICE" /></span> : undefined} />
+          <Metric label="Estimated cost" term="estimated_cost" data={cost} format={(v) => formatMoney(v, product?.currency ?? "KWD")} footnote={cost.value === null ? <span className="flex flex-wrap items-center gap-1">Installation: <Placeholder k="INSTALLATION_PRICE" /></span> : undefined} />
 
           <Card>
-            <CardHeader title="Save design" />
+            <CardHeader title="Save this design" subtitle="Keep it, and use it to ask installers for a quote." />
             <CardBody className="space-y-3">
               <Field label="Design name"><Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></Field>
               <div className="flex flex-col gap-2">

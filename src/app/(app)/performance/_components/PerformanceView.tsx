@@ -131,13 +131,13 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
       {cls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} detail="Every figure below is computed from a simulated production series. None of it describes a real system." />}
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Overall">
-        <Metric label="Total production recorded" data={totalRecorded} format={(v) => fmtKwh(v)} />
+        <Metric label="Total production recorded" term="energy_production" data={totalRecorded} format={(v) => fmtKwh(v)} />
         <Metric label={<span className="inline-flex items-center gap-1">Specific yield, last 365 days <InfoTip term="specific_yield" /></span>} data={trailingYield} format={(v) => `${formatNumber(v)} kWh/kWp`} />
-        <Metric label="Years with records" data={{ value: rows.length, cls: "calculated", source: `${completeRows.length} complete, ${rows.length - completeRows.length} partial` }} />
+        <Metric label="Years with records" term="years_with_records" data={{ value: rows.length, cls: "calculated", source: `${completeRows.length} complete, ${rows.length - completeRows.length} partial` }} />
       </section>
 
       <Card>
-        <CardHeader title="Production by year" subtitle="Calendar-year totals from the daily records Solink holds. A year counts as complete only with at least 360 daily records." action={<DataBadge cls={cls} compact />} />
+        <CardHeader title={<>Production by year <InfoTip term="production_by_year" /></>} subtitle="Calendar-year totals from the daily records Solink holds. A year counts as complete only with at least 360 daily records." action={<DataBadge cls={cls} compact />} />
         <CardBody className="space-y-4">
           {rows.length === 0 ? (
             <EmptyState title="No production records yet">Yearly performance appears once daily production records exist for this system.</EmptyState>

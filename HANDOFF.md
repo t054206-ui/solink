@@ -1491,6 +1491,72 @@ was simply printing the whole registry.
   monitoring and replacement pages, which still say what they cannot assess
   until production data exists.
 
+## 2026-09-22 — one sidebar per role, a manufacturer portal, a simpler designer, ⓘ everywhere
+
+Built in the working tree, previewed by the owner on a demo-mode build
+(`next start -p 3322`), then pushed on their word. Owner's choices along the
+way: greyed placeholder items for structure entries with no page; five real
+journey steps; no icon-only collapsed sidebar; manufacturers get a full portal
+(their brief is in the chat transcript, not repeated here); database changes
+proposed, not applied; data-less sections as real pages with honest empty
+states; simple-by-default designer with a "Show more options" switch; blocks
+and obstacles resize, panels never do.
+
+**Navigation** (`src/lib/navigation.ts`, `src/components/layout/AppShell.tsx`)
+- `navFor(role)` returns links and groups; groups fold and the one holding the
+  current page opens on arrival. A link with `notBuilt` renders dimmed with a
+  `[SOON]` marker (`src/components/ui/NotBuilt.tsx`) and no route: homeowner
+  Maintenance Costs; provider Requests, Systems, Reports, Settings; admin
+  Product Specifications, Repairs.
+- Homeowner: Home · Go Solar (8) · My Solar System (4) · Maintenance (6) ·
+  Reports · Ask Solink · Help. Provider (role `company`): Dashboard · Requests ·
+  Appointments · Systems · Maintenance (= case queue) · Services · Reports ·
+  Settings. Admin: 12 entries with three groups; every existing admin page is
+  reachable; AI Alerts sits under AI. Manufacturer: Dashboard · Products (My
+  Products, Add Product, Datasheets) · Product Performance · Requests · Orders ·
+  Reports · Company Profile · Settings.
+- Footer: name, company (provider/manufacturer), email, Sign out; in demo
+  mode "Demo <role>", "not signed in", Sign in. Identity comes from
+  `getShellIdentity()` in `src/lib/supabase/server.ts`. In demo mode the
+  sidebar follows the role the dashboard switcher stores in the browser.
+- Homeowner onboarding is five steps: Profile → Solar Potential → Marketplace →
+  Designer → Purchase.
+
+**Manufacturer portal** (`src/app/(app)/manufacturer/`)
+- Access: `user_profiles.manufacturer_id` (Supabase) or the demo manufacturer
+  (`_lib/access.ts`). `/manufacturer` is in `PROTECTED_PREFIXES`.
+- My Products (own catalogue, demo-local copies merged), Add/Edit reusing the
+  admin `ProductForm` with new props `lockedManufacturer`, `canVerify=false`,
+  `basePath`, `saveAction`; `saveOwnProductAction` forces the manufacturer id
+  and never sets Verified (a verified product that is edited goes back to
+  pending, with a note). Datasheets: documents on own products plus a link-by-
+  URL form (`addDatasheetLinkAction`); file upload needs 0007. Company Profile:
+  name/country/website via RLS self update. Performance, Requests, Orders,
+  Reports, Settings: `SectionShell` pages that say what they will show and
+  what is missing.
+- `supabase/migrations/0007_solink_manufacturer_portal.sql` is **written, not
+  applied**: company columns, storage write policy for manufacturers,
+  `manufacturer_requests`, `product_events`. Decision 22.
+
+**Designer** (`src/app/(app)/designer/`)
+- Simple view: Your roof (size), Anything on the roof?, Pick a panel, "Fill my
+  roof with panels", "Add a panel", Undo, Clear, three ready layouts, results
+  in plain words. `designer:advanced` (per browser) reveals direction/tilt,
+  photo tracing, blocks, setback/walkway, snap, AI placement, weight,
+  components, own assumptions. Yearly production now uses platform sun hours
+  and losses via `resolveAssumption` (empty in demo mode, so N/A there).
+- Blocks and obstacles: draggable, corner-handle resizable (18 px, always
+  shown), size fields when selected, Delete, rotate, Undo (Snapshot now
+  carries `obstacles`). Panels keep their datasheet size; the selection line
+  says so.
+- ⓘ (`InfoTip`) now opens on hover and focus as well as tap. 45 added across
+  maintenance, reports, performance, replacement, incidents, monitoring,
+  purchase, passport, marketplace, compare, profile, notifications, provider
+  and manufacturer screens; ~45 new glossary entries written for a parent.
+
+**Not done**: no collapsed desktop sidebar (owner's choice); Requests/Systems/
+Reports/Settings pages for providers; the 0007 features until applied.
+
 ## What to do next, in priority order
 
 1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.

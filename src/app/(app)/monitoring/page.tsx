@@ -33,7 +33,7 @@ export default async function MonitoringOverviewPage() {
 
       <section className="grid gap-4 lg:grid-cols-2" aria-label="Live data">
         <Card>
-          <CardHeader title="Live monitoring" subtitle="Real-time power, inverter status and per-string data." />
+          <CardHeader title={<>Live monitoring <InfoTip term="live_monitoring" /></>} subtitle="Real-time power, inverter status and per-string data." />
           <CardBody className="space-y-3">
             <UnavailableState title="Live monitoring is not connected yet">{ctx.system.monitoring_source ? `Source: ${ctx.system.monitoring_source}` : "This system has no monitoring source. Once inverter or meter data is connected, live readings replace this notice."}</UnavailableState>
             <PlaceholderNote k="SOLAR_MONITORING_HARDWARE_API" />

@@ -203,16 +203,19 @@ function journeySteps(profile: SolarProfile | null, system: SolarSystem | null, 
 }
 
 function Onboarding({ profile }: { profile: SolarProfile | null }) {
+  // The pre-installation journey, one real page per step. The owner chose five
+  // steps (2026-09-22) so that no two steps point at the same page.
   const steps = [
-    { href: "/profile", title: "1. Solar Profile", text: profile ? "Your home details are saved. Review or update them." : "Tell Solink about your home, roof and electricity use.", done: Boolean(profile) },
-    { href: "/analysis", title: "2. Solar Potential", text: "See what your roof could produce and what data that estimate needs.", done: false },
-    { href: "/marketplace", title: "3. Marketplace", text: "Browse panels, inverters and services with source-labelled specifications.", done: false },
-    { href: "/designer", title: "4. Solar Designer", text: "Lay out a system for your roof and save it as your first system.", done: false },
+    { href: "/profile", title: "1. Complete Profile", text: profile ? "Your home details are saved. Review or update them." : "Tell Solink about your home, roof and electricity use.", done: Boolean(profile) },
+    { href: "/analysis", title: "2. Solar Potential", text: "See what your roof could produce, save and avoid, and what each figure rests on.", done: false },
+    { href: "/marketplace", title: "3. Explore Systems", text: "Browse real panels with source-labelled specifications, and compare them.", done: false },
+    { href: "/designer", title: "4. Design System", text: "Lay panels on a drawing of your roof and save your first design.", done: false },
+    { href: "/purchase", title: "5. Request Installation", text: "Turn a saved design into a quote request and pick an installer.", done: false },
   ];
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Overview" title="Welcome to Solink" description="You don't have a solar system on record yet. Follow the journey below; your dashboard fills in as you go." />
-      <ol className="grid gap-3 sm:grid-cols-2">
+      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {steps.map((s) => (
           <li key={s.href}>
             <Link href={s.href} className="group flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">

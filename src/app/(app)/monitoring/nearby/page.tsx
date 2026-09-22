@@ -59,7 +59,7 @@ export default async function NearbyPage() {
       </Card>
 
       <Card>
-        <CardHeader title="What this comparison is for" subtitle="It separates three very different explanations for a drop in output." />
+        <CardHeader title={<>What this comparison is for <InfoTip term="nearby_comparison" /></>} subtitle="It separates three very different explanations for a drop in output." />
         <CardBody>
           <ul className="grid gap-3 sm:grid-cols-3">
             {ANSWERS.map((a) => (

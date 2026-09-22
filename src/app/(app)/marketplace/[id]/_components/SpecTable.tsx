@@ -69,7 +69,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
     <section aria-labelledby={`spec-${title.replace(/\W+/g, "-").toLowerCase()}`}>
       <h3 id={`spec-${title.replace(/\W+/g, "-").toLowerCase()}`} className="mb-1 text-[12px] font-semibold uppercase tracking-wider text-fg-muted">{title}</h3>
       <table className="w-full">
-        <thead className="sr-only"><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Data class</th></tr></thead>
+        <thead className="sr-only"><tr><th scope="col">Specification</th><th scope="col">Value</th><th scope="col">Data class <InfoTip term="data_class" /></th></tr></thead>
         <tbody>{children}</tbody>
       </table>
     </section>

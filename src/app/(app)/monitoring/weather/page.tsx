@@ -63,7 +63,7 @@ export default async function WeatherPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Weather ↔ production" subtitle="Your recorded production alongside what weather data Solink actually has." />
+        <CardHeader title={<>Weather ↔ production <InfoTip term="weather_production" /></>} subtitle="Your recorded production alongside what weather data Solink actually has." />
         <CardBody className="space-y-4">
           <DailyProductionChart points={days30} cls={productionCls(production)} source={production[0]?.source} caption="Daily production, last 30 days · kWh" />
           <UnavailableState title="Historical weather is not available for this chart">

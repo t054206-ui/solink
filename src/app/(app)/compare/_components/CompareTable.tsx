@@ -189,7 +189,7 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <Card>
-          <CardHeader title="Assumptions for estimate rows" subtitle="Expected production and total cost of ownership need these. Nothing is assumed for you: enter values or wait for an admin to set platform defaults." action={usesUserInput ? <DataBadge cls="user" compact /> : undefined} />
+          <CardHeader title={<>Assumptions for estimate rows <InfoTip term="assumptions" /></>} subtitle="Expected production and total cost of ownership need these. Nothing is assumed for you: enter values or wait for an admin to set platform defaults." action={usesUserInput ? <DataBadge cls="user" compact /> : undefined} />
           <CardBody className="grid gap-3 sm:grid-cols-3">
             <Field label={<span className="inline-flex items-center gap-1">Peak sun hours / day<InfoTip term="peak_sun_hours" /></span>} help={assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay) === "source" ? `Platform setting: ${platformAssumptions.peakSunHoursPerDay}` : undefined}>
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={ua.peakSunHours} placeholder={platformAssumptions.peakSunHoursPerDay?.toString() ?? "e.g. from a real source"} onChange={(e) => setUa((prev) => ({ ...prev, peakSunHours: e.target.value }))} aria-describedby="a-psh" />

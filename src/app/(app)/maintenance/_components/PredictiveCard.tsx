@@ -32,11 +32,11 @@ export function PredictiveCard({ signals, systemId }: { signals: PredictiveSigna
       <CardBody className="space-y-3">
         {signals.productionCls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} detail="The production trend below is computed from a simulated series." />}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Metric label="Production trend" data={signals.trend} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}
+          <Metric label="Production trend" term="production_trend" data={signals.trend} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}
             footnote={signals.trend.value === null ? undefined : `Last 7 days (${signals.trendWindow.last7Days} records) vs the 30 days before (${signals.trendWindow.previous30Days} records)`} />
-          <Metric label="Incidents, last 12 months" data={{ value: signals.repeatedIncidents.value, cls: signals.repeatedIncidents.cls, source: "Incident records" }} format={(v) => String(v)} />
-          <Metric label="System age" data={signals.systemAgeYears} unit="years" format={(v) => v.toFixed(1)} />
-          <Metric label="Product warranty remaining" data={signals.warrantyYearsRemaining} unit="years" format={(v) => v.toFixed(1)} footnote={signals.warrantyYearsRemaining.value !== null && signals.warrantyYearsRemaining.value < 0 ? "Product warranty period has ended (calculated)." : undefined} />
+          <Metric label="Incidents, last 12 months" term="repeated_incidents" data={{ value: signals.repeatedIncidents.value, cls: signals.repeatedIncidents.cls, source: "Incident records" }} format={(v) => String(v)} />
+          <Metric label="System age" term="system_age" data={signals.systemAgeYears} unit="years" format={(v) => v.toFixed(1)} />
+          <Metric label="Product warranty remaining" term="product_warranty" data={signals.warrantyYearsRemaining} unit="years" format={(v) => v.toFixed(1)} footnote={signals.warrantyYearsRemaining.value !== null && signals.warrantyYearsRemaining.value < 0 ? "Product warranty period has ended (calculated)." : undefined} />
         </div>
         <div className="rounded-[10px] border border-border bg-inset p-3 text-[13px] leading-relaxed text-fg-secondary">
           {anySignal ? (

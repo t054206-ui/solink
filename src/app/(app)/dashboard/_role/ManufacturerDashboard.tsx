@@ -7,7 +7,10 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { listManufacturers, listProducts } from "@/lib/data/repositories";
+import { getManufacturerAccess } from "@/app/(app)/manufacturer/_lib/access";
+import { NotBuiltNote } from "@/components/ui/NotBuilt";
 import type { Product, SpecValue } from "@/lib/types";
+import { InfoTip } from "@/components/help/InfoTip";
 
 /**
  * What a manufacturer comes here to do, in the owner's words: publish their
@@ -34,11 +37,13 @@ function specCount(p: Product): { filled: number; total: number; missing: string
 }
 
 export default async function ManufacturerDashboard() {
-  const [{ data: products, mode }, { data: manufacturers }] = await Promise.all([
-    listProducts(),
+  const [{ data: products, mode }, { data: manufacturers }, access] = await Promise.all([
+    listProducts({ includeArchived: true }),
     listManufacturers(),
+    getManufacturerAccess(),
   ]);
-  const me = manufacturers.find((m) => m.id === MINE) ?? manufacturers[0] ?? null;
+  // Supabase mode: the company linked to the signed-in account. Demo mode: the labelled demo manufacturer.
+  const me = access.manufacturer ?? manufacturers.find((m) => m.id === MINE) ?? manufacturers[0] ?? null;
   const mine = products.filter((p) => p.manufacturer_id === (me?.id ?? MINE));
   const isDemo = mode === "demo";
 
@@ -55,10 +60,10 @@ export default async function ManufacturerDashboard() {
         description="Everything you publish here is what homeowners compare against their own roof area and orientation. A specification you leave out is shown to them as missing, never as zero."
         actions={
           <Link
-            href="/admin/products/new"
+            href="/manufacturer/products/new"
             className="press inline-flex h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-[13.5px] font-medium text-brand-fg hover:bg-brand-hover"
           >
-            Publish a panel
+            Add a product
             <ArrowRight className="size-3.5 rtl:rotate-180" aria-hidden="true" />
           </Link>
         }
@@ -142,6 +147,25 @@ export default async function ManufacturerDashboard() {
           <PlaceholderNote k="SOLAR_RESOURCE_DATA_SOURCE" />
         </CardBody>
       </Card>
+
+      <div className="mt-[var(--grid-gap)] grid gap-[var(--grid-gap)] lg:grid-cols-2">
+        <Card>
+          <CardHeader title={<>Company verification <InfoTip term="company_verification" /></>} subtitle="Set by a Solink administrator after checking your company; you can see it, not change it." />
+          <CardBody className="flex flex-wrap items-center gap-3">
+            <Badge tone={me?.verification_status === "verified" ? "good" : me?.verification_status === "pending_verification" ? "warn" : "neutral"}>
+              {(me?.verification_status ?? "unverified").replace(/_/g, " ")}
+            </Badge>
+            <span className="text-[13px] text-fg-secondary">{verified} verified · {pending} pending · {unverified} unverified product{mine.length === 1 ? "" : "s"}</span>
+            <Link href="/manufacturer/company" className="ms-auto text-[12.5px] font-medium text-fg-secondary hover:text-fg">Company profile</Link>
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader title="Requests" subtitle="Product, availability and business inquiries addressed to you." />
+          <CardBody>
+            <NotBuiltNote title="MANUFACTURER REQUESTS">No request can reach you yet: the table that would hold them is proposed in migration 0007 and has not been applied. When it is, new requests appear here and under Requests.</NotBuiltNote>
+          </CardBody>
+        </Card>
+      </div>
 
       <Card className="mt-[var(--grid-gap)]">
         <CardHeader title="Where your data comes from" subtitle="Shown to every homeowner alongside the specification." />

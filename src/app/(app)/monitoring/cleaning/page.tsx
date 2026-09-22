@@ -62,8 +62,8 @@ export default async function CleaningPage() {
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Inputs">
         <Metric label="Production trend (7d vs 30d)" term="energy_production" data={signal.deviation} format={(v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`} footnote="Calculated from daily records" />
-        <Metric label="Days since last cleaning" data={daysSince} unit="days" format={(v) => String(v)} footnote={lastDate ? `Visit on ${formatDate(lastDate)}` : undefined} />
-        <Metric label="Previous cleaning effect" data={effect} format={(v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(0)}%`} footnote={last?.production_before_kwh != null && last?.production_after_kwh != null ? `${last.production_before_kwh} → ${last.production_after_kwh} kWh/day` : undefined} />
+        <Metric label="Days since last cleaning" term="cleaning_interval" data={daysSince} unit="days" format={(v) => String(v)} footnote={lastDate ? `Visit on ${formatDate(lastDate)}` : undefined} />
+        <Metric label="Previous cleaning effect" term="cleaning_effect" data={effect} format={(v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(0)}%`} footnote={last?.production_before_kwh != null && last?.production_after_kwh != null ? `${last.production_before_kwh} → ${last.production_after_kwh} kWh/day` : undefined} />
         <Metric label="System capacity" term="kwp" data={ctx.system.capacity_kwp != null ? classified(ctx.system.capacity_kwp, ctx.system.is_demo ? "demo" : "source", "System record") : unavailable("Not recorded.")} unit="kWp" />
       </section>
 
@@ -79,7 +79,7 @@ export default async function CleaningPage() {
           </CardBody>
         </Card>
         <Card>
-          <CardHeader title="Previous cleaning effectiveness" subtitle="Before/after daily production from the last completed cleaning record." action={last ? <DataBadge cls={effect.cls} compact /> : undefined} />
+          <CardHeader title={<>Previous cleaning effectiveness <InfoTip term="cleaning_effect" /></>} subtitle="Before/after daily production from the last completed cleaning record." action={last ? <DataBadge cls={effect.cls} compact /> : undefined} />
           <CardBody className="space-y-3">
             {!last ? <p className="text-[13px] text-fg-muted">No completed cleaning on record.</p> : (
               <>
