@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
@@ -34,7 +35,7 @@ export async function createManufacturerRequestAction(input: { manufacturerId: s
     requester_display_name: (prof?.full_name as string | null) ?? metaName ?? "Solink user",
     requester_governorate: (solar?.governorate as string | null) ?? null,
   }).select("id").single();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/manufacturer/requests"); revalidatePath("/dashboard");
   return { ok: true, id: data.id as string, message: "Sent. The manufacturer sees your name and governorate, not your contact details; its answer will appear here." };
 }

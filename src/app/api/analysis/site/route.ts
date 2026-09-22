@@ -2,6 +2,7 @@ import { z } from "zod";
 import { askClaudeJson } from "@/lib/ai/claude";
 import { getDataMode } from "@/lib/data/mode";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import {
   buildAnalysisSystemPrompt,
@@ -73,6 +74,8 @@ export async function POST(req: Request) {
   if (!user) {
     return fail(401, { ok: false, stage: "auth", reason: "unauthenticated", message: "Sign in to run a site analysis." });
   }
+  const limited = checkRateLimit(rateLimitKey(req, user.id, "analysis/site"), LIMITS.analysis);
+  if (limited) return limited;
 
   /** Records the run and returns the row id, or null when even that failed. */
   async function record(input: Record<string, unknown>, output: Record<string, unknown>, model: string | null) {

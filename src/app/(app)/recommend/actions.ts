@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
@@ -79,6 +80,6 @@ export async function logRecommendationRun(raw: unknown): Promise<LogRunResult> 
     .select("id")
     .single();
 
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   return { ok: true, id: data.id as string };
 }

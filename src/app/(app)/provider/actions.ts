@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 /**
  * Maintenance-provider server actions (Supabase mode only).
  *
@@ -105,7 +106,7 @@ export async function saveWorkRecord(formData: FormData): Promise<ProviderAction
 
   const { data: existing, error: readErr } = await g.c
     .from("maintenance_cases").select("id, status, system_id").eq("id", d.id).eq("provider_id", g.providerId).maybeSingle();
-  if (readErr) return { ok: false, reason: "error", error: readErr.message };
+  if (readErr) return { ok: false, reason: "error", error: friendlyDbError(readErr) };
   if (!existing) return { ok: false, reason: "unauthorized", error: "This case is not assigned to your company." };
 
   const from = existing.status as MaintenanceStatus;
@@ -128,7 +129,7 @@ export async function saveWorkRecord(formData: FormData): Promise<ProviderAction
   }
 
   const { error } = await g.c.from("maintenance_cases").update(update).eq("id", d.id).eq("provider_id", g.providerId);
-  if (error) return { ok: false, reason: "error", error: error.message };
+  if (error) return { ok: false, reason: "error", error: friendlyDbError(error) };
 
   if (d.appointment_at) {
     // Best effort: keep a linked appointment in step with the case.
@@ -179,13 +180,13 @@ export async function saveProviderService(raw: unknown): Promise<ProviderActionR
 
   const { data: existing, error: readErr } = await g.c
     .from("provider_prices").select("id").eq("provider_id", g.providerId).eq("service", d.service).maybeSingle();
-  if (readErr) return { ok: false, reason: "error", error: readErr.message };
+  if (readErr) return { ok: false, reason: "error", error: friendlyDbError(readErr) };
 
   const row = { provider_id: g.providerId, service: d.service, price, currency: "KWD", notes, updated_at: new Date().toISOString() };
   const { error } = existing
     ? await g.c.from("provider_prices").update(row).eq("id", existing.id)
     : await g.c.from("provider_prices").insert(row);
-  if (error) return { ok: false, reason: "error", error: error.message };
+  if (error) return { ok: false, reason: "error", error: friendlyDbError(error) };
 
   revalidatePath("/provider/services");
   revalidatePath("/maintenance");

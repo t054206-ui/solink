@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
@@ -32,7 +33,7 @@ export async function createOrderAction(input: CreateOrderInput): Promise<{ ok: 
     user_id: r.user.id, status: "requested", items: input.items, totals: { ...input.totals, design_id: input.design_id },
     payment_provider: null, notes: input.notes ?? null,
   }).select("id").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   // Activity for the manufacturers whose products were requested: one row per product, counts only.
   const productIds = Array.from(new Set(input.items.map((i) => i.product_id).filter((id): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id))));
   if (productIds.length) await r.c.from("product_events").insert(productIds.map((product_id) => ({ product_id, kind: "purchase_request", user_id: r.user.id })));
@@ -64,11 +65,11 @@ export async function scheduleInstallationAction(input: ScheduleInstallationInpu
     panel_product_id: input.system.panel_product_id, inverter_product_id: input.system.inverter_product_id, battery_product_id: input.system.battery_product_id,
     installer_id: input.installer_id, installation_date: input.scheduled_at.slice(0, 10), is_demo: false,
   }).select("id").single();
-  if (e1) return { ok: false, reason: "error", message: e1.message };
+  if (e1) return { ok: false, reason: "error", message: friendlyDbError(e1) };
   const { data: appt, error: e2 } = await c.from("appointments").insert({
     user_id: user.id, system_id: sys.id, provider_id: input.installer_id, kind: "installation", scheduled_at: input.scheduled_at, status: "requested", notes: input.notes ?? null,
   }).select("id").single();
-  if (e2) return { ok: false, reason: "error", message: e2.message };
+  if (e2) return { ok: false, reason: "error", message: friendlyDbError(e2) };
   if (input.order_id) {
     await c.from("orders").update({ system_id: sys.id, installer_id: input.installer_id, status: "installation_scheduled" }).eq("id", input.order_id).eq("user_id", user.id);
   }

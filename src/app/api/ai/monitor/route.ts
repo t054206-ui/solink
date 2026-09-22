@@ -4,6 +4,7 @@ import { buildUserContext } from "@/lib/ai/context";
 import { buildContextBlock } from "@/lib/ai/claude";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { requireUser } from "@/lib/api/auth";
+import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
 
 const Body = z.object({ systemId: z.string(), weather: z.unknown().optional() });
 
@@ -20,6 +21,8 @@ export interface MonitorAssessment {
 export async function POST(req: Request) {
   const gate = await requireUser();
   if ("response" in gate) return gate.response;
+  const limited = checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/monitor"), LIMITS.ai);
+  if (limited) return limited;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
   if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `AI monitoring is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });

@@ -1890,3 +1890,13 @@ more, and nothing needs to wait for it.
   `SiteAnalysis.tsx` returns "Unavailable" for null. Keep it that way.
 - The three API keys used for testing were pasted into a chat transcript and
   should be rotated once the workflow is verified.
+
+## Security follow-up, same day — CSP enforced, rate limits, friendly errors
+
+`next.config.ts` enforces a Content-Security-Policy (report-only first, no
+violations on the film, sign-in, product, designer, profile, agent and
+manufacturer pages). `src/lib/api/rateLimit.ts` limits the AI, weather,
+geocode and site-analysis routes per user per instance (a shared store is
+the next step for a hard limit). `src/lib/api/errors.ts` replaces raw
+database messages in every server action. Provider Requests and Systems
+pages now exist (two SOON items fewer); Reports and Settings stay SOON.

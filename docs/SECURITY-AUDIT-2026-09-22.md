@@ -7,12 +7,14 @@ with a real non-admin user id; fixed what was safe; re-ran the Supabase
 security advisor, type check, lint, `npm audit` and the production build.
 No secrets are reproduced here.
 
-## Verdict: SECURITY CHECK NEEDS ATTENTION (two items remain, both yours)
+## Verdict: SECURITY CHECK PASSED, with one owner toggle outstanding
 
-Fixed in this pass: 1 high, 3 medium, 3 low. Remaining: no CSP (medium,
-its own task), leaked-password protection off (low, dashboard toggle), no
-rate limiting (medium, needs a decision on a store), Supabase error text
-surfaced to users in some action results (low).
+Fixed: 1 high, 4 medium, 4 low. Later the same day, on the owner's "solve
+these": a Content-Security-Policy is enforced (tested report-only first),
+the paid and heavy routes have a per-instance rate limit (a shared store
+would make it a hard limit; see finding 9), and server actions return
+plain sentences instead of database error text. Remaining: leaked-password
+protection, a Supabase dashboard toggle only the owner can flip.
 
 ## Findings
 
@@ -25,9 +27,9 @@ surfaced to users in some action results (low).
 | 5 | Low | Data integrity | `cleaning_records`, `repair_records` | `system_id` was free next to the case reference. | Yes, follows the case by trigger |
 | 6 | Low | Data integrity | `incidents` owner policy | Could reference another person's system id. | Yes, `owns_system` in with-check |
 | 7 | Low | Spoofing | `product_events` insert | `user_id` could be someone else's. | Yes |
-| 8 | Medium | Headers | all routes | No Content-Security-Policy. Four other headers were added earlier today. | No, needs allow-list + test pass |
-| 9 | Medium | Abuse | login, AI, uploads, analysis | No rate limiting anywhere. | No, needs a store (Upstash/Vercel KV) decision |
-| 10 | Low | Error exposure | several server actions | `error.message` from Supabase (constraint names) returned to the UI. | No, cosmetic; log server-side instead |
+| 8 | Medium | Headers | all routes | No Content-Security-Policy. Four other headers were added earlier today. | Yes, enforced after a report-only pass with no violations (`next.config.ts`) |
+| 9 | Medium | Abuse | AI, weather, geocode, site analysis | No rate limiting anywhere. | Yes, per-user (or per-address) fixed window in process memory (`src/lib/api/rateLimit.ts`): 20 AI calls, 6 analyses, 60 lookups per minute. Per server instance, so a hard global limit still needs Upstash or Vercel KV. Sign-in and password reset are Supabase Auth endpoints with Supabase's own limits |
+| 10 | Low | Error exposure | several server actions | `error.message` from Supabase (constraint names) returned to the UI. | Yes, `friendlyDbError()` maps codes to sentences and keeps the app's own trigger messages (44 sites) |
 | 11 | Low | Auth setting | Supabase Auth | Leaked-password protection disabled. | Owner's dashboard |
 | 12 | Info | Public reads | `product-documents` bucket, `manufacturer_sources`, `data_sources`, `platform_settings` | Readable without sign-in by design (public catalogue data). | Accepted |
 

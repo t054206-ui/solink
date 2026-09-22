@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -31,7 +32,7 @@ export async function saveReport(raw: unknown): Promise<SaveReportResult> {
   if (!user) return { ok: false, reason: "unauthenticated", message: "Sign in to save reports." };
   const d = parsed.data;
   const { data, error } = await c.from("reports").upsert({ ...d, user_id: user.id, is_demo: false, generated_at: new Date().toISOString() }, { onConflict: "system_id,month" }).select("*").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   revalidatePath("/reports");
   return { ok: true, report: data as MonthlyReport };
 }

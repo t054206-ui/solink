@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -53,7 +54,7 @@ export async function createIncident(formData: FormData): Promise<CreateIncident
     system_id: d.system_id, user_id: user.id, panel_index: d.panel_index, occurred_at: d.occurred_at, reported_problem: d.reported_problem,
     images, status: "open", cost: { value: null, status: "unavailable" }, is_demo: false,
   }).select("*").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   revalidatePath("/incidents");
   return { ok: true, incident: data as Incident };
 }

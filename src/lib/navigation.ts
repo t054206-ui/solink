@@ -76,9 +76,9 @@ const HOMEOWNER_NAV: NavEntry[] = [
 /* ---------------- Provider (role `company`): a workload ---------------- */
 const PROVIDER_NAV: NavEntry[] = [
   link("/dashboard", "Dashboard", LayoutDashboard, { match: exact("/dashboard") }),
-  soon("/provider/requests", "Requests", Inbox, "Incoming requests are listed in the case queue under Maintenance; a separate Requests page is not built yet."),
+  link("/provider/requests", "Requests", Inbox),
   link("/provider/appointments", "Appointments", CalendarDays),
-  soon("/provider/systems", "Systems", Home, "Systems assigned to your company are reached through each case; a Systems page is not built yet."),
+  link("/provider/systems", "Systems", Home),
   link("/provider", "Maintenance", Wrench, { match: any(exact("/provider"), under("/provider/cases")) }),
   link("/provider/services", "Services", Hammer),
   soon("/provider/reports", "Reports", BarChart3, "Provider reports are not built yet."),

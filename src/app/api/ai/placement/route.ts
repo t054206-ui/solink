@@ -2,6 +2,7 @@ import { z } from "zod";
 import { askClaudeJson, isClaudeConfigured } from "@/lib/ai/claude";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { requireUser } from "@/lib/api/auth";
+import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
 
 const Body = z.object({
   roof: z.object({ length_m: z.number().positive(), width_m: z.number().positive(), orientation: z.string().optional(), tilt_deg: z.number().optional(),
@@ -23,6 +24,8 @@ export interface PlacementSuggestion {
 export async function POST(req: Request) {
   const gate = await requireUser();
   if ("response" in gate) return gate.response;
+  const limited = checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/placement"), LIMITS.ai);
+  if (limited) return limited;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
   if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `Smart placement is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });

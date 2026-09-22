@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
@@ -44,7 +45,7 @@ export async function saveProfile(raw: unknown): Promise<SaveProfileResult> {
   if (!user) return { ok: false, reason: "unauthenticated", message: "Sign in to save your profile." };
   const row = { ...parsed.data, user_id: user.id, country_code: parsed.data.country_code ?? "KW", currency: parsed.data.currency ?? "KWD" };
   const { data, error } = await c.from("solar_profiles").upsert(row, { onConflict: "user_id" }).select("*").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   return { ok: true, profile: data as SolarProfile };
 }
 
@@ -68,7 +69,7 @@ export async function uploadRoofPhoto(formData: FormData): Promise<UploadPhotoRe
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
   const path = `${user.id}/${Date.now()}-${safeName}`;
   const { error } = await c.storage.from("roof-photos").upload(path, file, { contentType: file.type, upsert: false });
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   const { data: signed } = await c.storage.from("roof-photos").createSignedUrl(path, 60 * 60);
   return { ok: true, path, signedUrl: signed?.signedUrl ?? null };
 }

@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getManufacturerAccess } from "./_lib/access";
@@ -64,16 +65,16 @@ export async function saveOwnProductAction(input: ProductInput): Promise<ActionR
     let id = input.id ?? null;
     if (id) {
       const { error } = await g.c.from("solar_products").update(row).eq("id", id);
-      if (error) return { ok: false, error: error.message };
+      if (error) return { ok: false, error: friendlyDbError(error) };
     } else {
       const { data, error } = await g.c.from("solar_products").insert({ ...row, created_by: g.userId }).select("id").single();
-      if (error) return { ok: false, error: error.code === "23505" ? "You already have a product with this model number." : error.message };
+      if (error) return { ok: false, error: error.code === "23505" ? "You already have a product with this model number." : friendlyDbError(error) };
       id = data.id as string;
     }
     revalidatePath("/manufacturer/products"); revalidatePath("/admin/verification"); revalidatePath("/marketplace");
     return { ok: true, id, message: wasVerified ? "Saved. Because the product was verified, it is now pending verification again." : "Saved and submitted for verification." };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
+  } catch {
+    return { ok: false, error: "Something went wrong on our side. Please try again." };
   }
 }
 
@@ -105,7 +106,7 @@ export async function updateCompanyAction(input: CompanyProfileInput): Promise<A
     website: url(input.website), logo_url: url(input.logo_url), cover_image_url: url(input.cover_image_url),
     contact_email: input.contact_email?.trim() || null, phone: input.phone?.trim() || null,
   }).eq("id", g.manufacturerId);
-  if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name." : error.message };
+  if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name." : friendlyDbError(error) };
   revalidatePath("/manufacturer/company"); revalidatePath("/marketplace"); revalidatePath("/marketplace/manufacturers"); revalidatePath("/admin/manufacturers");
   return { ok: true, message: "Company profile saved. Verification and availability are unchanged; only Solink's administrators change them." };
 }
@@ -118,7 +119,7 @@ export async function addDatasheetLinkAction(input: { productId: string; title: 
   const { data: p } = await g.c.from("solar_products").select("id, manufacturer_id").eq("id", input.productId).maybeSingle();
   if (!p || p.manufacturer_id !== g.manufacturerId) return { ok: false, error: "That product does not belong to your company." };
   const { data, error } = await g.c.from("product_documents").insert({ product_id: input.productId, kind: "datasheet", title: input.title.trim() || "Datasheet", url, uploaded_by: g.userId }).select("id").single();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/manufacturer/datasheets");
   return { ok: true, id: data.id as string, message: "Datasheet linked. Earlier documents are kept; nothing is deleted." };
 }
@@ -149,9 +150,9 @@ export async function uploadProductDocumentAction(form: FormData): Promise<Actio
   const safeName = file.name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 100) || "file";
   const path = `${productId}/${Date.now()}-${safeName}`;
   const { error: upErr } = await g.c.storage.from("product-documents").upload(path, file, { contentType: file.type, upsert: false });
-  if (upErr) return { ok: false, error: `Upload refused: ${upErr.message}` };
+  if (upErr) return { ok: false, error: friendlyDbError(upErr, "The file could not be stored. Check the type and size and try again.") };
   const { data, error } = await g.c.from("product_documents").insert({ product_id: productId, kind, title: title || file.name, storage_path: path, uploaded_by: g.userId }).select("id").single();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/manufacturer/datasheets"); revalidatePath("/admin/datasheets"); revalidatePath("/marketplace/manufacturers");
   return { ok: true, id: data.id as string, message: "Uploaded and recorded. Earlier documents are kept; nothing is deleted." };
 }
@@ -172,7 +173,7 @@ export async function respondToRequestAction(input: { requestId: string; status:
   const patch: Record<string, unknown> = { status: input.status };
   if (response && response !== r.response) { patch.response = response; patch.responded_at = new Date().toISOString(); if (input.status === "new") patch.status = "responded"; }
   const { error } = await g.c.from("manufacturer_requests").update(patch).eq("id", input.requestId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/manufacturer/requests"); revalidatePath("/dashboard");
   return { ok: true, message: response ? "Answer saved. The requester sees it in Solink." : "Status updated." };
 }

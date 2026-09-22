@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
 import type { SavedDesign } from "./designTypes";
@@ -24,6 +25,6 @@ export async function saveDesignAction(design: Omit<SavedDesign, "id" | "created
     summary: { ...design.summary, panel: design.panel, panel_name: design.panel_name, is_demo_product: design.is_demo_product, modules: design.modules ?? [] },
     is_ai_suggested: design.is_ai_suggested,
   }).select("id").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   return { ok: true, id: data.id as string };
 }

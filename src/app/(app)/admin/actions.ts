@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { isRole, type Role } from "@/lib/roles";
 /**
  * Admin server actions (Supabase mode). Every action re-checks admin access —
@@ -60,7 +61,7 @@ async function resolveManufacturerId(c: NonNullable<Awaited<ReturnType<typeof cr
   const { data } = await c.from("manufacturers").select("id").eq("name", trimmed).maybeSingle();
   if (data?.id) return data.id as string;
   const { data: created, error } = await c.from("manufacturers").insert({ name: trimmed, verification_status: "unverified" }).select("id").single();
-  if (error) throw new Error(`Manufacturer: ${error.message}`);
+  if (error) throw new Error(friendlyDbError(error, "The manufacturer could not be created."));
   return created.id as string;
 }
 
@@ -102,16 +103,16 @@ export async function saveProductAction(input: ProductInput): Promise<ActionResu
     let id = input.id ?? null;
     if (id) {
       const { error } = await a.c.from("solar_products").update(row).eq("id", id);
-      if (error) return { ok: false, error: error.message };
+      if (error) return { ok: false, error: friendlyDbError(error) };
     } else {
       const { data, error } = await a.c.from("solar_products").insert({ ...row, created_by: a.userId }).select("id").single();
-      if (error) return { ok: false, error: error.code === "23505" ? "A product with this manufacturer and model already exists." : error.message };
+      if (error) return { ok: false, error: error.code === "23505" ? "A product with this manufacturer and model already exists." : friendlyDbError(error) };
       id = data.id as string;
     }
     revalidatePath("/admin/products"); revalidatePath("/admin/verification"); revalidatePath("/marketplace");
     return { ok: true, id, message: "Saved. A new product version was snapshotted by the database if specs or price changed." };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
+  } catch {
+    return { ok: false, error: "Something went wrong on our side. Please try again." };
   }
 }
 
@@ -126,7 +127,7 @@ export async function setVerificationAction(input: { productId: string; status: 
   const source = { ...(data.source as Record<string, unknown>), verification_status: input.status, date_last_updated: now,
     ...(input.status === "verified" ? { verified_by: a.userId, verified_at: now, verification_note: input.note!.trim() } : { verified_by: null, verified_at: null, verification_note: input.note?.trim() || null }) };
   const { error } = await a.c.from("solar_products").update({ source }).eq("id", input.productId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/admin/products"); revalidatePath("/admin/verification");
   return { ok: true, message: input.status === "verified" ? "Marked as verified. If validation flags exist the database demotes it to pending for review." : "Status updated." };
 }
@@ -138,7 +139,7 @@ export async function setProductFlagsAction(input: { productId: string; is_outda
   if (typeof input.is_outdated === "boolean") patch.is_outdated = input.is_outdated;
   if (typeof input.is_archived === "boolean") patch.is_archived = input.is_archived;
   const { error } = await a.c.from("solar_products").update(patch).eq("id", input.productId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/admin/products");
   return { ok: true };
 }
@@ -150,7 +151,7 @@ export async function setUserRoleAction(input: { userId: string; role: Role }): 
   if (!isRole(input.role)) return { ok: false, error: "Unknown role." };
   if (input.userId === a.userId && input.role !== "admin") return { ok: false, error: "You cannot remove your own admin role." };
   const { error } = await a.c.from("user_profiles").update({ role: input.role }).eq("user_id", input.userId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/admin/users");
   return { ok: true };
 }
@@ -162,7 +163,7 @@ export async function upsertSettingAction(input: { key: string; value: unknown; 
   if (!input.source.trim()) return { ok: false, error: "A source is required before a value can be saved." };
   if (input.value === null || input.value === undefined || input.value === "") return { ok: false, error: "A value is required." };
   const { error } = await a.c.from("platform_settings").upsert({ key: input.key, value: input.value, source: input.source.trim(), updated_by: a.userId, updated_at: new Date().toISOString() }, { onConflict: "key" });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/admin/settings"); revalidatePath("/calculator"); revalidatePath("/analysis");
   return { ok: true };
 }
@@ -171,7 +172,7 @@ export async function clearSettingAction(input: { key: string }): Promise<Action
   const a = await admin();
   if ("error" in a) return { ok: false, error: a.error };
   const { error } = await a.c.from("platform_settings").update({ value: null, source: null, updated_by: a.userId, updated_at: new Date().toISOString() }).eq("key", input.key);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/admin/settings");
   return { ok: true };
 }
@@ -187,9 +188,9 @@ export async function applyCsvImportAction(input: { fileName: string; headers: s
   const dataSourceName = `CSV import ${input.fileName}`;
   try {
     const { data: ds, error: dsErr } = await a.c.from("data_sources").insert({ name: dataSourceName, kind: "csv", notes: `Columns: ${input.headers.join(", ")}` }).select("id").single();
-    if (dsErr) return { ok: false, error: dsErr.message };
+    if (dsErr) return { ok: false, error: friendlyDbError(dsErr) };
     const { data: imp, error: impErr } = await a.c.from("product_imports").insert({ method: "csv", data_source_id: ds.id, file_path: input.fileName, status: "validating", summary: { mapping: input.mapping, total: input.rows.length }, created_by: a.userId }).select("id").single();
-    if (impErr) return { ok: false, error: impErr.message };
+    if (impErr) return { ok: false, error: friendlyDbError(impErr) };
     let inserted = 0, flagged = 0, duplicates = 0, rejected = 0;
     const now = new Date().toISOString();
     for (const r of input.rows) {
@@ -218,8 +219,8 @@ export async function applyCsvImportAction(input: { fileName: string; headers: s
     await a.c.from("product_imports").update({ status: "applied", applied_at: new Date().toISOString(), summary: { mapping: input.mapping, total: input.rows.length, inserted, flagged, duplicates, rejected } }).eq("id", imp.id);
     revalidatePath("/admin/products"); revalidatePath("/admin/verification"); revalidatePath("/admin/products/import"); revalidatePath("/admin/data-sources");
     return { ok: true, importId: imp.id as string, inserted, flagged, duplicates, rejected };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
+  } catch {
+    return { ok: false, error: "Something went wrong on our side. Please try again." };
   }
 }
 
@@ -272,16 +273,16 @@ export async function saveManufacturerAction(input: ManufacturerInput): Promise<
   try {
     if (input.id) {
       const { error } = await a.c.from("manufacturers").update({ ...row, ...(slug ? { slug } : {}) }).eq("id", input.id);
-      if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name or slug." : error.message };
+      if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name or slug." : friendlyDbError(error) };
       revalidateManufacturers(input.id);
       return { ok: true, id: input.id, message: "Company record saved. A new version was recorded; Solar Passports keep the version they were issued with." };
     }
     const { data, error } = await a.c.from("manufacturers").insert({ ...row, ...(slug ? { slug } : {}), verification_status: "unverified", is_demo: false }).select("id").single();
-    if (error) return { ok: false, error: error.code === "23505" ? "A manufacturer with this name or slug already exists. Open it instead of adding a duplicate." : error.message };
+    if (error) return { ok: false, error: error.code === "23505" ? "A manufacturer with this name or slug already exists. Open it instead of adding a duplicate." : friendlyDbError(error) };
     revalidateManufacturers(data.id as string);
     return { ok: true, id: data.id as string, message: "Manufacturer created as Unverified. Record a source and verify it from its page." };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
+  } catch {
+    return { ok: false, error: "Something went wrong on our side. Please try again." };
   }
 }
 
@@ -316,7 +317,7 @@ export async function setManufacturerVerificationAction(input: {
   if (input.status === "verified") { patch.verified_by = a.userId; patch.verification_date = now.slice(0, 10); }
   else { patch.verified_by = null; patch.verification_date = null; }
   const { error } = await a.c.from("manufacturers").update(patch).eq("id", input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   if (input.status === "verified" && source) {
     // The check itself becomes a source row, so the profile's Sources list shows what verification rested on.
     await a.c.from("manufacturer_sources").insert({ manufacturer_id: input.id, field: "company", source_name: source, source_url: sourceUrl, source_type: "other_verified_source", date_checked: now.slice(0, 10), verification_status: "verified", notes: `Verification note: ${note}`, created_by: a.userId });
@@ -334,7 +335,7 @@ export async function archiveManufacturerAction(input: { id: string; archived: b
   const a = await admin();
   if ("error" in a) return { ok: false, error: a.error };
   const { error } = await a.c.from("manufacturers").update({ is_archived: input.archived }).eq("id", input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidateManufacturers(input.id);
   return { ok: true, message: input.archived ? "Archived. Products and passports that reference this company are unchanged." : "Restored as an active manufacturer." };
 }
@@ -351,7 +352,7 @@ export async function addManufacturerSourceAction(input: { manufacturer_id: stri
     manufacturer_id: input.manufacturer_id, field: input.field === "company" ? null : input.field, source_name: name, source_url: url,
     source_type: input.source_type, date_checked: input.date_checked || null, verification_status: "unverified", notes: input.notes?.trim() || null, created_by: a.userId,
   }).select("id").single();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidateManufacturers(input.manufacturer_id);
   return { ok: true, id: data.id as string, message: "Source recorded as Unverified." };
 }
@@ -361,7 +362,7 @@ export async function setUserManufacturerAction(input: { userId: string; manufac
   const a = await admin();
   if ("error" in a) return { ok: false, error: a.error };
   const { error } = await a.c.from("user_profiles").update({ manufacturer_id: input.manufacturerId }).eq("user_id", input.userId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath("/admin/users");
   return { ok: true };
 }

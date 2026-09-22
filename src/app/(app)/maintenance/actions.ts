@@ -1,4 +1,5 @@
 "use server";
+import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -45,7 +46,7 @@ export async function createMaintenanceCase(raw: unknown): Promise<CreateCaseRes
     detected_issue: d.detected_issue, appointment_at: d.appointment_at, notes: d.notes ?? null,
     cost: { value: null, status: "unavailable" }, is_demo: false,
   }).select("*").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   let appointment: Appointment | null = null;
   if (d.appointment_at) {
     const { data: ap, error: apErr } = await c.from("appointments").insert({
@@ -77,7 +78,7 @@ export async function addMaintenanceNote(raw: unknown): Promise<UpdateCaseResult
   const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
   const notes = `${existing.notes ? `${existing.notes}\n` : ""}[${stamp}] ${parsed.data.note}`;
   const { data, error } = await c.from("maintenance_cases").update({ notes, updated_at: new Date().toISOString() }).eq("id", parsed.data.id).select("*").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   revalidatePath(`/maintenance/${parsed.data.id}`);
   return { ok: true, caseRecord: data as MaintenanceCase };
 }
@@ -94,7 +95,7 @@ export async function cancelMaintenanceCase(raw: unknown): Promise<UpdateCaseRes
   const now = new Date().toISOString();
   const { data, error } = await c.from("maintenance_cases").update({ status: "closed", notes: `Cancelled by homeowner on ${now.slice(0, 10)}.`, updated_at: now })
     .eq("id", parsed.data.id).in("status", ["new", "reviewing", "scheduled"]).select("*").single();
-  if (error) return { ok: false, reason: "error", message: error.message };
+  if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   await c.from("appointments").update({ status: "cancelled" }).eq("system_id", data.system_id).eq("status", "requested").like("notes", `%${parsed.data.id}%`);
   revalidatePath("/maintenance"); revalidatePath(`/maintenance/${parsed.data.id}`);
   return { ok: true, caseRecord: data as MaintenanceCase };
