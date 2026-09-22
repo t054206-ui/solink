@@ -301,8 +301,17 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
         <CardHeader title="What the providers returned" subtitle="The measurements the analysis above was built from, before interpretation." action={<DataBadge cls="source" compact />} />
         <CardBody>
           <dl className="text-[13px]">
+            <Row label="Requested address" value={location.address} />
             <Row label="Resolved address" value={location.formattedAddress ?? "Unavailable"} />
             <Row label="Coordinates" value={`${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`} />
+            <Row
+              label="Match precision"
+              value={
+                location.approximate
+                  ? `Approximate${location.matchPrecision ? ` (${location.matchPrecision})` : ""} — a nearby street or area, not the exact building`
+                  : `Exact building${location.matchPrecision ? ` (${location.matchPrecision})` : ""}`
+              }
+            />
             <Row label="Roof area" value={n(solar.wholeRoofAreaM2, " m²", 1)} />
             <Row label="Roof segments" value={solar.roofSegments.length > 0 ? String(solar.roofSegments.length) : "Unavailable"} />
             <Row

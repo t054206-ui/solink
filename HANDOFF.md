@@ -1797,3 +1797,96 @@ and appointments, installer delete on passports, and three integrity gaps.
 `src/lib/api/auth.ts` gates the AI, weather and geocode routes behind
 sign-in (401 in Supabase mode). Still open: CSP, rate limiting,
 leaked-password toggle, Supabase error text in some action results.
+
+## 2026-09-22 — Solar Site Analysis: three live services, Google Solar made optional
+
+The owner's decision: the working version of Site Analysis runs on **Google
+Geocoding, WeatherAPI and Claude**. Google Solar is no longer required, and
+nothing waits for its key.
+
+**Almost nothing had to change to make Solar optional.** `collectSiteData()`
+only ever treated geocoding as fatal: a missing or empty Solar response already
+became `available: false` with every field null, and the route carried on. What
+did have to change was the prompt, which said *"If the Solar API returned
+nothing, verdict must be insufficient_data"* — with Solar permanently absent
+that would have made every analysis useless.
+
+### What changed (4 files)
+
+- **`src/lib/solar/siteAnalysis.ts`** — the analysis prompt was rewritten. It
+  now states up front that there are no building measurements, defines
+  `feasibility.verdict` as a judgement about **the location's environmental
+  conditions** rather than this building's roof, and requires the summary's
+  first sentence to say no roof measurements were available. It forbids
+  stating or implying roof area, pitch, azimuth, panel count, irradiance or
+  production, and forbids reading `solar.available: false` as a roof measured
+  at zero. Dust, sandstorms and air quality are to be treated as observed
+  conditions, not as a calculated loss figure. Also: `matchPrecision` and
+  `approximate` added to the normalised location, and the "unavailable" wording
+  now distinguishes *not configured* from *no coverage*.
+- **`src/lib/maps/google.ts`** — geocoding was throwing away Google's
+  `partial_match` and `geometry.location_type`, so an exact building and a
+  nearby street looked identical downstream. Both are carried through now.
+  Additive optional fields; `reverseGeocode` untouched.
+- **`src/app/(app)/analysis/SiteAnalysis.tsx`** — two rows added, "Requested
+  address" and "Match precision". No redesign.
+- **`src/lib/config/env.ts`** — the Google Solar integration label now reads
+  "optional: roof measurements, not required for a site analysis".
+
+### Tested live, with real keys, against a real Kuwait address
+
+`Abdullah Al Salem University, Khaldiya, Kuwait`:
+
+- **Google Geocoding — works.** Returns 29.3217476, 47.9719305. It resolves the
+  university to **"Firdous St, Kuwait"** with `location_type: GEOMETRIC_CENTER`
+  — a street, not the building. That is now flagged as approximate and shown to
+  the user, because claiming Google found the building would be false.
+- **WeatherAPI — works.** At those coordinates: 41.7 °C, cloud 0 %, humidity
+  15 %, wind 19.8 kph, condition **Sandstorm**, PM2.5 89.6, **PM10 373.5**, EPA
+  index 4, three-day forecast running Sunny → Dust storm → Severe sandstorm.
+  Exactly the soiling case the analysis exists to discuss.
+- **Claude — blocked.** `Your credit balance is too low to access the Anthropic
+  API.`
+
+### The Claude question, answered properly
+
+**A Claude subscription cannot be used by this application.** `src/lib/ai/claude.ts`
+authenticates with `new Anthropic({ apiKey })` — a pay-as-you-go Anthropic **API**
+credential. There is no OAuth, Bedrock, Vertex or subscription path anywhere in
+`src/lib/ai/`. Claude Pro/Max and Claude Code are separately billed products and
+**do not grant API credit**. The fix is credit on the API account at
+console.anthropic.com, using a key from that same organisation. No code change
+would help.
+
+### Where this leaves the workflow
+
+```
+Address        validated
+  → Google Maps      WORKS (live)
+  → WeatherAPI       WORKS (live, real coordinates from the step above)
+  → normalise        ready, not run end to end
+  → Claude           BLOCKED: no API credit
+  → ai_analyses      not reached
+  → UI               renders
+```
+
+The only blocker is Anthropic credit. Google Solar is not blocking anything any
+more, and nothing needs to wait for it.
+
+### Things Session 9 should know
+
+- Production still has **only Supabase** configured. `GOOGLE_MAPS_API_KEY`,
+  `WEATHER_API_KEY` and `CLAUDE_API_KEY` are set locally in `.env.local` for
+  testing and are **not** on Vercel yet. Set them in Production and redeploy —
+  variables only reach deployments built after the change.
+- The site-analysis route runs the whole pipeline in one request and
+  authenticates before touching any provider, so it cannot be exercised locally
+  without Supabase credentials. Two of four stages were tested through the app's
+  own `/api/geocode` and `/api/weather`.
+- `/api/geocode` and `/api/weather` are now behind `requireUser()` (Session 8's
+  security audit). In demo mode the gate lets calls through, which is why local
+  testing still works.
+- The UI never prints `0 kWh`, `0 m²` or `0 panels` for missing data: `n()` in
+  `SiteAnalysis.tsx` returns "Unavailable" for null. Keep it that way.
+- The three API keys used for testing were pasted into a chat transcript and
+  should be rotated once the workflow is verified.

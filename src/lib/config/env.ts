@@ -78,7 +78,7 @@ export function integrationStatus(): IntegrationStatus[] {
     { key: "claude", label: "Claude API (AI Solar Agent, image inspection)", connected: Boolean(s.claudeApiKey), placeholder: "CLAUDE_API_KEY", envVars: ["CLAUDE_API_KEY", "CLAUDE_MODEL"] },
     { key: "weather", label: "WeatherAPI.com", connected: Boolean(s.weatherApiKey), placeholder: "WEATHER_API_KEY", envVars: ["WEATHER_API_KEY"] },
     { key: "googleMaps", label: "Google Maps Platform", connected: Boolean(s.googleMapsApiKey), placeholder: "GOOGLE_MAPS_API_KEY", envVars: ["GOOGLE_MAPS_API_KEY", "NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY"] },
-    { key: "googleSolar", label: "Google Solar API (site data)", connected: Boolean(s.googleSolarApiKey), placeholder: "GOOGLE_SOLAR_SITE_DATA_SOURCE", envVars: ["GOOGLE_SOLAR_API_KEY"] },
+    { key: "googleSolar", label: "Google Solar API (optional: roof measurements, not required for a site analysis)", connected: Boolean(s.googleSolarApiKey), placeholder: "GOOGLE_SOLAR_SITE_DATA_SOURCE", envVars: ["GOOGLE_SOLAR_API_KEY"] },
     { key: "monitoringHardware", label: "Solar monitoring hardware / inverter API", connected: false, placeholder: "SOLAR_MONITORING_HARDWARE_API", envVars: [] },
     { key: "panelLevelMonitoring", label: "Panel-level monitoring", connected: false, placeholder: "PANEL_LEVEL_MONITORING_DATA_SOURCE", envVars: [] },
     { key: "payment", label: "Payment provider", connected: false, placeholder: "PAYMENT_PROVIDER", envVars: [] },

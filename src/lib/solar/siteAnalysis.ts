@@ -98,6 +98,16 @@ export interface NormalisedLocation {
   longitude: number;
   placeId: string | null;
   country: string | null;
+  /** Google's own precision for the point: ROOFTOP, GEOMETRIC_CENTER, APPROXIMATE… */
+  matchPrecision: string | null;
+  /**
+   * True when Google did not put the point on the requested building: either it
+   * flagged a partial match, or the point is anything less precise than a
+   * rooftop. Asking for a university and receiving a nearby street is exactly
+   * this case, and the analysis has to say so rather than imply the building
+   * was identified.
+   */
+  approximate: boolean;
 }
 
 export interface NormalisedRoofSegment {
@@ -231,7 +241,12 @@ export async function collectSiteData(address: string): Promise<SiteDataResult> 
   const weather = normaliseWeather(weatherResult);
 
   const unavailable: string[] = [];
-  if (!solar.available) unavailable.push("roof and solar potential (Google Solar)");
+  if (!solar.available)
+    unavailable.push(
+      solar.unavailableReason === "not_configured"
+        ? "roof measurements (no roof survey was carried out: the Google Solar API is not part of this analysis)"
+        : "roof measurements (the Google Solar API returned no data for this location)",
+    );
   else {
     if (solar.wholeRoofAreaM2 === null) unavailable.push("roof area");
     if (solar.roofSegments.length === 0) unavailable.push("roof segments (pitch and orientation)");
@@ -251,6 +266,8 @@ export async function collectSiteData(address: string): Promise<SiteDataResult> 
         longitude: hit.lng,
         placeId: hit.place_id ?? null,
         country: hit.components?.country ?? null,
+        matchPrecision: hit.location_type ?? null,
+        approximate: hit.partial_match === true || (hit.location_type ? hit.location_type !== "ROOFTOP" : true),
       },
       solar,
       weather,
@@ -452,19 +469,25 @@ export const SITE_ANALYSIS_SHAPE = `{
 /** The rules Claude is held to. Kept beside the schema so the two stay in step. */
 export function buildAnalysisSystemPrompt(site: NormalisedSite): string {
   return [
-    "You are analysing one specific roof for rooftop solar, for a homeowner in Kuwait.",
+    "You are assessing a location in Kuwait for rooftop solar, for a homeowner.",
     "",
-    "The DATA block below is the complete set of measurements available. It came from Google's Geocoding API, Google's Solar API and WeatherAPI.",
+    "The DATA block below is everything available. It comes from Google's Geocoding API and WeatherAPI.",
+    "",
+    "What this assessment is: the location and the environmental conditions there, and what those conditions mean for running panels and keeping them clean.",
+    "What it is NOT: a survey of this building's roof, or an engineering estimate of what a system here would generate. Nothing in the data measures the building.",
     "",
     "Rules, all of them absolute:",
     "- Use only the values in the DATA block. Do not add figures from general knowledge.",
-    "- Never invent a roof characteristic that is not there. If pitch, orientation or area is null, say it is unavailable.",
-    "- Never fabricate a production figure. Only report annual energy if the data contains one, and name the field it came from.",
+    "- There are no roof or building measurements. Never state, estimate or imply roof area, pitch, azimuth, orientation, panel count, panel placement, irradiance or annual production. Each is unavailable, and saying so is the correct answer.",
+    "- energy.annualEnergyDcKwh must be null unless the data itself contains a modelled figure. It does not when solar.available is false.",
+    "- solar.available false means no roof survey was carried out. It is not a roof measured at zero. Never describe it as zero area, zero panels or zero output.",
+    "- feasibility.verdict describes the LOCATION's environmental conditions for solar, not this building's roof. The first sentence of feasibility.summary must state that no roof measurements were available, so this is not a building-specific judgement.",
+    "- When location.approximate is true, Google resolved the address to a nearby street or area rather than the exact building. Say so, and describe the conditions as the area's.",
     "- Put every number you took straight from a provider in solarPotential.apiProvidedValues, naming the provider.",
     "- Put anything you worked out yourself in solarPotential.calculatedValues, with the arithmetic.",
-    "- List everything that was unavailable in dataCompleteness.missing and in limitations.",
-    "- If the Solar API returned nothing, verdict must be insufficient_data. A weather reading alone cannot establish feasibility.",
+    "- List everything that was unavailable in dataCompleteness.missing and in limitations, roof measurements included.",
     "- Weather here is a short current window, not a climate record. Do not present it as an annual pattern.",
+    "- Dust, sandstorms and air quality are worth real attention: they bear on soiling and cleaning. Treat them as observed conditions, not as a calculated loss figure.",
     "- Write for a homeowner: plain sentences, no jargon without explanation, no marketing language.",
     "- Do not recommend a specific product, price or installer. None are in the data.",
     "",
