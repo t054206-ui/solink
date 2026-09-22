@@ -128,6 +128,44 @@ export interface ProductDocument {
   created_at: ISODate;
 }
 
+export type ProductSourceType = "official_manufacturer_datasheet" | "official_manufacturer_product_page" | "official_manufacturer_website" | "retailer_listing" | "other_verified_source";
+
+/** One document a product's facts came from (table `solar_product_sources`, 0011). */
+export interface ProductSourceDocument {
+  id: UUID;
+  product_id: UUID;
+  source_type: ProductSourceType;
+  source_url: string | null;
+  document_name: string;
+  document_version: string | null;
+  source_date: ISODate | null;
+  retrieved_at: ISODate;
+  /** Specification keys this document supports; empty means the record as a whole. */
+  fields: string[];
+  notes: string | null;
+  created_at: ISODate;
+}
+
+export type PriceAvailability = "listed_by_retailer" | "in_stock" | "on_request" | "unavailable";
+
+/** A supplier's price for a product (table `solar_product_prices`, 0011). Commercial data, kept apart from the datasheet. */
+export interface ProductPrice {
+  id: UUID;
+  product_id: UUID;
+  supplier_id: UUID | null;
+  supplier_name: string;
+  price_kwd: number;
+  currency: string;
+  availability: PriceAvailability | null;
+  source_url: string | null;
+  observed_at: ISODate;
+  verification_status: VerificationStatus;
+  notes: string | null;
+  is_demo: boolean;
+  created_at: ISODate;
+  updated_at: ISODate;
+}
+
 /** An immutable copy of a manufacturer row (table `manufacturer_versions`). */
 export interface ManufacturerVersion {
   id: UUID;
@@ -222,6 +260,8 @@ export interface Product {
   manufacturer_name: string;       // denormalized for display (from the manufacturers relationship)
   manufacturer_slug?: string | null; // for links to the manufacturer profile
   manufacturer_archived?: boolean;   // the company record is archived; the product stays for history
+  /** Manufacturer's product family (Hi-MO 7, Tiger Neo, Vertex S+ …), separate from the exact model. */
+  series?: string | null;
   model: string;
   name: string;
   description?: string | null;

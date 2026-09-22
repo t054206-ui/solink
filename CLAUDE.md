@@ -9,7 +9,7 @@ Session 3 describes the site as it is; Sessions 4, 5, 6, 7 and 8 are additions o
 of it. **Session 2 supersedes Session 1 on anything visual.**
 
 The current position, as of 2026-09-22 (full account: HANDOFF.md,
-"Session 7 closing state"):
+"Session 8 closing state"):
 
 - `main` is deployed to https://solink-nu.vercel.app by Vercel on push;
   Session 7 pushed several times on the owner's word (2026-09-21/22), see
@@ -38,7 +38,7 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   `solar_products` with the manufacturer's renders as images. Supabase-mode
   listings exclude demo rows. Behind sign-in. Import pattern and provenance:
   `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
-- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0008 and 0010 applied (0009 pending the owner's commit), both
+- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0011 applied, both
   environments in Supabase mode, sign-up live, the owner's account is admin.
   Still needed: service-role key, SMTP sender, domain.
 - Platform settings entered with sources on the owner's yes: tariff by MEW
@@ -73,6 +73,12 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   homeowner journey, provider workload, admin platform, manufacturer portal.
   Items with no page are dimmed `[SOON]`, never invented routes. No icon-only
   collapsed mode by the owner's choice.
+- **Products** (Session 8): 11 real panels from official datasheets across the
+  five manufacturers, versions and passport snapshots as before, plus
+  `solar_products.series`, `solar_product_sources` (provenance per document)
+  and `solar_product_prices` (supplier prices apart from datasheet data),
+  migration 0011. Five more series are parsed and waiting to be imported
+  (HANDOFF, Session 8 closing state).
 - **Manufacturer companies** (Session 8, 2026-09-22, migration 0008 applied):
   `manufacturers` is the company record (legal name, slug, logo, HQ, website,
   type and market classification, tri-state Kuwait/GCC availability,

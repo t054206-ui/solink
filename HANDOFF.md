@@ -1900,3 +1900,91 @@ geocode and site-analysis routes per user per instance (a shared store is
 the next step for a hard limit). `src/lib/api/errors.ts` replaces raw
 database messages in every server action. Provider Requests and Systems
 pages now exist (two SOON items fewer); Reports and Settings stay SOON.
+
+---
+
+# SESSION 8 CLOSING STATE — 2026-09-22 (read this first)
+
+Session 8 ran one long day with the owner present, on top of Session 7's
+closing state. The addenda above record each step; this is the
+consolidated position so Session 9 does not have to reconcile them.
+
+## Where things stand
+
+| | |
+|---|---|
+| Production | https://solink-nu.vercel.app serves `main` at `923167d` plus this closing commit, built by Vercel on push. Deploys healthy. |
+| Repository | `main` clean, local = remote. One collaborator commit landed mid-session (`e339a0b`, Google Solar optional); rebased under, no conflicts. Fetch before you work. |
+| Database | Supabase `bgwvztckesuwlydwcfkj`, **migrations 0001–0011 applied** (0007 applied out of order after 0008; the history shows that). Security advisor: only the leaked-password auth toggle remains, which is the owner's dashboard switch. |
+| Manufacturers | Five real companies (`manufacturers`): LONGi, JinkoSolar, Trina Solar, JA Solar, Canadian Solar. All **Unverified**; Kuwait/GCC availability **not yet verified**; HQ cities where an official page stated them (Xi'an, Shanghai, Beijing, Guelph; Trina none); logos for LONGi, JinkoSolar, Canadian Solar from their homepages. `manufacturer_versions`, `manufacturer_sources` hold history and provenance. Verification of the five is prepared in `supabase/imports/2026-09-22_manufacturers_verification.sql` §3 but **not run**: one click per company on `/admin/manufacturers/[id]`. |
+| Products | **11 real panels**, all from official datasheets, all Unverified, zero validation flags, one version each: LONGi Hi-MO 7 ×3 (unchanged from Session 6, with the Kuwait retailer price), JinkoSolar Tiger Neo 54HL4M-BDV 505/520, Trina Vertex S+ NEG9R.28 445/460, JA Solar DeepBlue 4.0 Pro JAM54D40 450/460, Canadian Solar TOPHiKu6 CS6.1-54TM 450/465. Official renders on every row. Reading notes C-001 to C-010 in `docs/DATA-CLEANING-LOG.md`. |
+| Manufacturer system | Directory `/marketplace/manufacturers`, profile by slug, admin `/admin/manufacturers` (+ new, detail with decision panel and history, edit), marketplace filter `?manufacturer=`, links from cards, product page and Compare, AI context block, passport "Manufacturer at installation" card frozen by trigger, portal company form with contact details, Requests inbox, Product Performance and Reports from `product_events`, read API `GET /api/manufacturers[/slug[/products]]`. |
+| Smart Maintenance Agent | `smart_maintenance_runs` (0009) exists, empty, RLS on; enums **UPPERCASE** (`PENDING`, `AWAITING_APPROVAL`, `MAINTENANCE_RECOMMENDED`, `NOT_REQUIRED` …) to match the Agent session's brief. Each row is one run; `id` is the run_id. The Agent is built in another session not visible here. A run needs a real `solar_systems` row; production has none yet. |
+| Security | `docs/SECURITY-AUDIT-2026-09-22.md`. 0010 closed a profile self-link escalation (high), provider FOR ALL policies on cases and appointments, installer passport delete, three integrity gaps. Paid routes (AI ×7, weather, geocode) require sign-in and are rate-limited per instance (`src/lib/api/rateLimit.ts`); server actions return plain sentences (`src/lib/api/errors.ts`); CSP enforced after a report-only pass. |
+| Frontend audit | `docs/AUDIT-2026-09-22.md`. Fixed: notifications route protection, security headers, passport title, error boundaries, one label map, admin label drift, footer admin link. Owner accepted: film once per tab, admin dashboard menu card removed, `ProviderNav` removed, no em dash in the site title. Provider Requests and Systems pages built (two SOON items fewer). Consent is mandatory (no "Prefer not to?"). |
+| Checks | `npx tsc --noEmit`, `npx eslint src`, `npm run build` clean at the closing commit. |
+
+## In progress when the owner asked to close: the real-catalogue brief
+
+The owner's brief "implement REAL solar panel product data throughout"
+was started and stopped at the owner's word mid-way. What exists:
+
+- **Migration 0011 applied**: `solar_products.series`; `solar_product_sources`
+  (one row per document, with version, dates, fields, RLS read-all /
+  admin / manufacturer-own-insert); `solar_product_prices` (supplier
+  prices apart from technical data, RLS read-all / admin / supplier-own,
+  never verified by the supplier). Backfilled: series for the 11 rows,
+  datasheet + product-page source rows for each, and the LONGi Kuwait
+  retailer price as three price rows.
+- **Types and repositories** for `ProductSourceDocument`, `ProductPrice`,
+  `ProductVersion`; `listProductSources`, `listProductPrices`,
+  `listProductVersions`; `Product.series` mapped. Type-checks.
+- **Five official datasheets read and parsed, not yet imported** (texts in
+  the session scratchpad only; re-download from these URLs):
+  LONGi Hi-MO X6 Max Scientist LR7-72HTH 620/625/630M
+  (`https://static.longi.com/LR_7_72_HTH_620_630_M_30_30_and_15_Frame_Scientist_20240511_V2_ea4bd3ee93.pdf`,
+  15-y product / 25-y power, 89.4 % at 25 y, single glass, 28.5 kg, 144 cells);
+  JinkoSolar Tiger Neo 3.0 JKM610–635N-66HL4M-(V), six bins
+  (`https://www.jinkosolar.com/uploads/JKM610-635N-66HL4M-(V)-F2-EN.pdf`, mono-facial, 12-y/30-y);
+  JA Solar DeepBlue 4.0 Pro JAM72D42-625…650/LB, six bins
+  (`https://www.jasolar.eu/fileadmin/data/products/4.0/JAM72D42_LB.pdf`, Global-EN-20241122A, 12-y/30-y, 34.6 kg);
+  Trina Vertex N TSM-NEG21C.20 700–725 W, six bins
+  (`https://static.trinasolar.com/sites/default/files/DT-M-0042%20APAC%20EN%20G%20210Vertex_NEG21C.20_700-725%202024_B_web.pdf`, TSM_APAC_EN_2024_B, 132 cells 2384×1303×33, 38.3 kg, 12-y/30-y);
+  Canadian Solar TOPBiHiKu6 CS6.2-66TB-590…620H, seven bins
+  (`https://www.canadiansolar.com/wp-content/uploads/sites/3/2026/04/CS-Datasheet-TOPBiHiKu6_CS6.2-66TB-H_v1.1_F68_L2B_TX.pdf`, US edition, 12-y/30-y, bifaciality 80 %).
+  The 2025 Trina 715–740 URL returned 404; use the 2024 B sheet above.
+- **Not started**: the import file for those ~28 variants (follow
+  `supabase/imports/2026-09-22_manufacturer_modules.sql` and the compact
+  DO-block form used to run it); marketplace filters for power, efficiency,
+  technology, bifacial and verification; Compare rows for cell count,
+  bifaciality, Voc/Vmp/Isc/Imp and degradation; a catalogue panel picker in
+  the Savings Calculator (it has a free `panelW` field today); showing
+  `solar_product_sources` and `solar_product_prices` on the product page and
+  admin product page; a manufacturer filter on the admin products table.
+  Designer, purchase (`items[].product_id`), passport snapshots and AI
+  context already read the catalogue and need no change.
+
+## Things Session 9 should know
+
+- Testing without an account: `NEXT_PUBLIC_SUPABASE_URL= NEXT_PUBLIC_SUPABASE_ANON_KEY= npm run build`
+  then `npx next start -p 3322`; run a normal `npm run build` before pushing.
+  The intro now plays once per tab; "Skip intro" is top right.
+- The admin's own account will see `/consent` once on the next visit.
+- Datasheets without a text layer (LONGi Hi-MO 7, JA Solar) were rendered
+  with PyMuPDF and read from the image; note it in the cleaning log.
+- `jasolar.com` refuses automated requests; `jasolar.eu` is JA Solar's own
+  European site and serves the same datasheets.
+- The security tooling refused to record a verification decision on the
+  owner's behalf; verification stays a click in the admin UI.
+
+## What to do next, in priority order
+
+1. **Finish the real-catalogue brief**: import the five parsed series
+   (~28 variants), then the frontend items listed above; test the full flow
+   (marketplace → compare → recommend → designer → purchase → passport).
+2. **Owner: verify the five manufacturers** and, when checked, the products.
+3. **Owner: Supabase Auth leaked-password protection** (dashboard toggle).
+4. Rate limiting with a shared store (Upstash / Vercel KV) for a hard limit.
+5. Arabic for the app area (a project); provider Reports and Settings (SOON).
+6. As before: lawyer's review of legal pages, PVWatts losses, domain and
+   email sender, service-role key for n8n and the Agent.

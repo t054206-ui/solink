@@ -11,7 +11,7 @@ import * as demo from "@/lib/demo/data";
 import type { SiteAnalysisRow } from "@/lib/solar/siteAnalysis";
 import type {
   Product, ProviderCompany, SolarSystem, SolarPassport, ProductionRecord, MaintenanceCase, Incident,
-  AiAlert, MonthlyReport, SolarProfile, Appointment, Notification, Manufacturer, ManufacturerSource, ManufacturerVersion, ProductDocument, ManufacturerRequest, ProductEventCount,
+  AiAlert, MonthlyReport, SolarProfile, Appointment, Notification, Manufacturer, ManufacturerSource, ManufacturerVersion, ProductDocument, ManufacturerRequest, ProductEventCount, ProductSourceDocument, ProductPrice, ProductVersion,
 } from "@/lib/types";
 
 export interface Result<T> { data: T; mode: DataMode }
@@ -53,6 +53,37 @@ export async function getProduct(id: string): Promise<Result<Product | null>> {
   const { data, error } = await c.from("solar_products").select(PRODUCT_SELECT).eq("id", id).maybeSingle();
   if (error) throw error;
   return { data: data ? rowToProduct(data) : null, mode };
+}
+
+/* ---------------- product provenance, prices, history ---------------- */
+/** The documents a product's facts came from, newest retrieval first. Demo mode has none: demo products cite nothing. */
+export async function listProductSources(productIds: string[]): Promise<Result<ProductSourceDocument[]>> {
+  const mode = getDataMode();
+  if (mode === "demo" || productIds.length === 0) return { data: [], mode };
+  const c = (await supa())!;
+  const { data, error } = await c.from("solar_product_sources").select("*").in("product_id", productIds).order("retrieved_at", { ascending: false });
+  if (error) throw error;
+  return { data: (data ?? []) as ProductSourceDocument[], mode };
+}
+
+/** Supplier prices on record for the given products, newest observation first. Never estimated; empty means "Price unavailable". */
+export async function listProductPrices(productIds: string[]): Promise<Result<ProductPrice[]>> {
+  const mode = getDataMode();
+  if (mode === "demo" || productIds.length === 0) return { data: [], mode };
+  const c = (await supa())!;
+  const { data, error } = await c.from("solar_product_prices").select("*").in("product_id", productIds).order("observed_at", { ascending: false });
+  if (error) throw error;
+  return { data: (data ?? []) as ProductPrice[], mode };
+}
+
+/** Every frozen version of a product's specs and price, newest first (table product_versions). */
+export async function listProductVersions(productId: string): Promise<Result<ProductVersion[]>> {
+  const mode = getDataMode();
+  if (mode === "demo") return { data: [], mode };
+  const c = (await supa())!;
+  const { data, error } = await c.from("product_versions").select("id, product_id, version, specs, price, source, change_note, created_at").eq("product_id", productId).order("version", { ascending: false });
+  if (error) throw error;
+  return { data: (data ?? []) as ProductVersion[], mode };
 }
 
 /* ---------------- manufacturers ---------------- */
@@ -346,6 +377,7 @@ function rowToProduct(r: any): Product {
   return {
     id: r.id, category: r.category, manufacturer_id: r.manufacturer_id, manufacturer_name: r.manufacturers?.name ?? r.manufacturer_name ?? "Unknown manufacturer",
     manufacturer_slug: r.manufacturers?.slug ?? null, manufacturer_archived: Boolean(r.manufacturers?.is_archived),
+    series: r.series ?? null,
     model: r.model, name: r.name, description: r.description,
     price: r.price ?? { value: null, status: "unavailable" }, currency: r.currency ?? "KWD",
     installation_cost: r.installation_cost ?? { value: null, status: "unavailable" },
