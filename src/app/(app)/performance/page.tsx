@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { warrantyDegradation } from "@/lib/solar/degradation";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { type Classified, unavailable } from "@/lib/classification";
 import { listIncidents, listMaintenance, listProduction } from "@/lib/data/repositories";
@@ -50,6 +51,11 @@ export default async function PerformancePage() {
   const cleaning = cases.filter((c) => c.kind === "cleaning");
   const repairs = [...cases.filter((c) => REPAIR_KINDS.includes(c.kind)), ...incidents];
 
+  // Degradation from the installed panel's own datasheet, frozen in the passport snapshot.
+  const snap = ctx.passport?.panel_snapshot ?? null;
+  const warranty = warrantyDegradation(snap?.specs, snap?.manufacturer);
+  const panelDegradation = warranty ? { value: Math.round(warranty.annualFraction * 100000) / 1000, source: warranty.source } : null;
+
   const prefills = {
     maintenance: perYearFromRecords("maintenance visits", sumRecordedCosts(upkeep), age),
     cleaning: perYearFromRecords("cleaning visits", sumRecordedCosts(cleaning), age),
@@ -69,6 +75,7 @@ export default async function PerformancePage() {
         rows={rows}
         cls={cls}
         settings={ctx.settings}
+        panelDegradation={panelDegradation}
         capacityKwp={capacityKwp}
         systemName={system.name}
         currency={ctx.profile?.currency ?? "KWD"}

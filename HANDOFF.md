@@ -1454,6 +1454,35 @@ The owner asked for the four open legal items to be done here.
 - Banner on the legal pages updated: values set, reviewed against the law,
   still not reviewed by a licensed lawyer.
 
+## 2026-09-22 — the decisions list made honest, degradation per panel, three proposals
+
+The owner saw "Decisions outstanding · 28" on the admin dashboard and asked
+whether these had not already been decided. Four had (tariff, sun hours,
+performance ratio, CO₂), three more the same day (legal values), and the card
+was simply printing the whole registry.
+
+- **`src/lib/config/placeholderStatus.ts`** resolves every registry key
+  against live state: platform settings rows, environment keys, Supabase
+  configured, real products in the catalogue, `LEGAL_VALUES`. Three states:
+  open, partial (a value exists in one form, the platform decision does not),
+  resolved. `AdminDashboard` now shows "N open · N partial · N resolved",
+  sorts open first, strikes through resolved keys, and prints the detail
+  (with the source) for each. A new registry key without a rule shows as open.
+- **Degradation per panel**: `src/lib/solar/degradation.ts` reads the
+  manufacturer's performance-warranty curve from `specs.additional`
+  (`annual_degradation_year_2_30_pct`, `first_year_degradation_pct`, plus the
+  warranty end percentage and years). The Long-term Performance page now takes
+  the installed panel's curve from the passport snapshot as the default
+  degradation, labelled source with the datasheet as origin, falling back to
+  the platform setting. No platform-wide default was entered; the placeholder
+  note says why. Decision 12 marked partly resolved.
+- **Three proposals, not entered**, in `docs/DECISIONS-NEEDED.md` under
+  "Proposed entries awaiting the owner's yes": TCO period 25 years; alert
+  thresholds warn 10 % / alert 20 % on a rolling 30-day total; end-of-life
+  criteria (80 % of nameplate over a year, safety defects, repair > 50 % of
+  replacement, expired warranty plus fault). Each has its reasoning and the
+  SQL ready. They are policy choices, so they wait for the yes.
+
 ## What to do next, in priority order
 
 1. **Owner's call on intro frequency.** Still `"always"`. Recommend `"session"`.

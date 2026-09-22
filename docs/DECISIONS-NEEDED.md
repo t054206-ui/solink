@@ -16,7 +16,7 @@ until decided. Nothing has been assumed silently. Decisions 19 to 21 were added 
 | 9 | **Solar monitoring hardware / inverter API** (which vendors) | `[PLACEHOLDER: SOLAR MONITORING HARDWARE/API]` | ingestion job → `production_records`; `solar_systems.monitoring_source` |
 | 10 | **Panel-level monitoring provider** | `[PLACEHOLDER: PANEL-LEVEL MONITORING DATA SOURCE]` | `panel_production_records` |
 | 11 | **Production alert thresholds** | `[PLACEHOLDER: PRODUCTION ALERT THRESHOLDS]` | platform setting `production_alert_thresholds` |
-| 12 | **Expected degradation rate** (from manufacturer warranty or real source) | `[PLACEHOLDER: EXPECTED PANEL DEGRADATION RATE]` | platform setting / per product spec |
+| 12 | **Expected degradation rate.** **Partly resolved 2026-09-22**: where the panel is known, Solink now uses the manufacturer's performance-warranty curve from the datasheet (`src/lib/solar/degradation.ts`; the LONGi Hi-MO 7 rows carry 1 % in year one, then 0.4 %/year, 87.4 % guaranteed at year 30), labelled source, on the Long-term Performance page from the passport snapshot. Still open: a platform-wide default for panels whose datasheet states nothing. Recommendation: none; leave unavailable rather than assume. | `[PLACEHOLDER: EXPECTED PANEL DEGRADATION RATE]` | per product spec (`specs.additional.annual_degradation_year_2_30_pct`); platform setting only if the owner wants a default |
 | 13 | **TCO period** (years) | `[PLACEHOLDER: TCO PERIOD]` | platform setting `tco_period_years` |
 | 14 | **End-of-life criteria** | `[PLACEHOLDER: END-OF-LIFE CRITERIA]` | platform setting `end_of_life_criteria` |
 | 15 | **Admin permission structure** (roles, who can verify products) | `[PLACEHOLDER: ADMIN AUTHENTICATION / PERMISSIONS]` | `user_profiles.role`, RLS `is_admin()` |
@@ -85,6 +85,71 @@ update platform_settings set
   source = source || ' Full table, fils/kWh: Governmental 25, Residential 2, Investmental & Commercial 5, Industrial & Agriculture 5, Productive Industrial & Agriculture (related facilities) 3, Others 12 (re-read 2026-09-20 with positioned text extraction, p. 113).',
   updated_at = now()
 where key = 'electricity_tariff_per_kwh';
+```
+
+## Proposed entries awaiting the owner's yes (2026-09-22, Session 7)
+
+Three platform values are policy choices rather than facts, so no source can
+settle them. Claude proposes the values below with the reasoning; **none has
+been entered.** Say yes to any of them and the SQL runs as written.
+
+### TCO analysis period (decision 13)
+
+**Proposal: 25 years.** Reasoning: the conventional analysis life for a
+residential PV system; inside the 30-year performance warranty of every panel
+in the catalogue (LONGi Hi-MO 7), so the degradation curve is warranted for the
+whole horizon; long enough to show payback and most of the lifetime saving,
+short enough that tariff and technology assumptions are not absurd. The
+alternative is 30 years (the warranty length itself), which flatters lifetime
+savings by five more years of aged output. Either is defensible; 25 is the
+cautious one.
+
+```sql
+update platform_settings set
+  value = '{"value": 25, "unit": "years"}'::jsonb,
+  source = 'Owner decision 2026-09-22 on Claude''s proposal: 25 years, the conventional residential PV analysis life, within the 30-year performance warranty of the catalogue''s panels. A policy choice, not a measurement.',
+  updated_at = now()
+where key = 'tco_period_years';
+```
+
+### Production alert thresholds (decision 11)
+
+**Proposal: warn at 10 % below expected, alert at 20 % below, measured on a
+rolling 30-day total against the expected curve.** Reasoning: month-to-month
+production normally varies by several percent from weather and dust, so a
+daily or 5 % trigger would cry wolf; a 10 % shortfall over a month is the
+point where cleaning or a string fault becomes the likely cause, and 20 % is a
+shortfall no amount of weather explains. The 30-day window is the shortest
+that smooths weekend dust storms. These numbers are conventional O&M practice,
+not a standard; the page will keep saying "may need cleaning", never "is
+faulty".
+
+```sql
+update platform_settings set
+  value = '{"warn_pct": 10, "alert_pct": 20, "window_days": 30, "basis": "rolling 30-day production vs expected curve"}'::jsonb,
+  source = 'Owner decision 2026-09-22 on Claude''s proposal. Conventional O&M practice; a policy choice, to be tuned once real production data exists.',
+  updated_at = now()
+where key = 'production_alert_thresholds';
+```
+
+### End-of-life criteria (decision 14)
+
+**Proposal: equipment is flagged end-of-life when any one holds:** (a) output
+below 80 % of nameplate over a full year, the level below the classic 25-year
+warranty floor and below LONGi's 87.4 % 30-year guarantee, so it means the
+panel has failed its warranty or outlived it; (b) a safety defect found on
+inspection: glass breakage, backsheet cracking or burn marks, junction-box
+damage, hot spots; (c) a repair quoted at more than half the cost of a
+replacement; (d) the product warranty has expired and a fault has occurred.
+Solink would show the flag with the criterion that triggered it and the
+records behind it, and a licensed installer confirms.
+
+```sql
+update platform_settings set
+  value = '{"min_output_pct_of_nameplate": 80, "output_window": "full calendar year", "safety_defects": ["glass breakage", "backsheet cracking or burn marks", "junction box damage", "hot spots on inspection"], "repair_cost_over_replacement_pct": 50, "warranty_expired_and_fault": true, "rule": "any one criterion"}'::jsonb,
+  source = 'Owner decision 2026-09-22 on Claude''s proposal. 80 % is the classic warranty floor; the rest is inspection practice. A policy choice; the installer confirms every flag.',
+  updated_at = now()
+where key = 'end_of_life_criteria';
 ```
 
 ## Not yet verified

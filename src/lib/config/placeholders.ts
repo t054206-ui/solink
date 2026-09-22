@@ -65,7 +65,7 @@ export const PLACEHOLDER_NOTES: Record<PlaceholderKey, string> = {
   MAINTENANCE_PRICE: "Maintenance providers have not entered prices. No maintenance cost is assumed.",
   TCO_PERIOD: "The Total Cost of Ownership analysis period (e.g. years) has not been chosen.",
   PRODUCTION_ALERT_THRESHOLDS: "Alert thresholds for production deviation have not been defined.",
-  EXPECTED_PANEL_DEGRADATION_RATE: "An annual degradation rate must come from the manufacturer warranty or a real source.",
+  EXPECTED_PANEL_DEGRADATION_RATE: "No platform-wide degradation rate. Where the panel is known and its datasheet states a performance-warranty curve (the LONGi Hi-MO 7 rows do), that manufacturer figure is used as source data. A platform default for unknown panels is still the owner's decision.",
   END_OF_LIFE_CRITERIA: "Criteria for declaring equipment end-of-life have not been defined.",
   GRID_CO2_EMISSION_FACTOR: "The grid emission factor (kg CO2 per kWh) for Kuwait has not been provided from a real source.",
   SYSTEM_LOSS_FACTOR: "The performance ratio / system loss assumption used to convert irradiance to production has not been set.",

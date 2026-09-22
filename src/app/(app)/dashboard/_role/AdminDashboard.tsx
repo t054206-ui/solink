@@ -7,6 +7,8 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PLACEHOLDERS, PLACEHOLDER_NOTES, type PlaceholderKey } from "@/lib/config/placeholders";
 import { listManufacturers, listProducts, listProviders } from "@/lib/data/repositories";
+import { getPlaceholderStatus, type PlaceholderState } from "@/lib/config/placeholderStatus";
+import { cn } from "@/lib/utils";
 
 /**
  * The admin view is deliberately about what is NOT decided yet. The product's
@@ -14,14 +16,18 @@ import { listManufacturers, listProducts, listProviders } from "@/lib/data/repos
  * platform owner's home screen is a list of them.
  */
 export default async function AdminDashboard() {
-  const [{ data: products, mode }, { data: manufacturers }, { data: providers }] = await Promise.all([
+  const [{ data: products, mode }, { data: manufacturers }, { data: providers }, status] = await Promise.all([
     listProducts(),
     listManufacturers(),
     listProviders(),
+    getPlaceholderStatus(),
   ]);
   const isDemo = mode === "demo";
   const queue = products.filter((p) => p.source.verification_status !== "verified");
-  const keys = Object.keys(PLACEHOLDERS) as PlaceholderKey[];
+  // Open first, then partial, then resolved, so the list reads as a to-do list.
+  const order: Record<PlaceholderState, number> = { open: 0, partial: 1, resolved: 2 };
+  const keys = (Object.keys(PLACEHOLDERS) as PlaceholderKey[]).sort((a, b) => order[status[a].state] - order[status[b].state]);
+  const count = (st: PlaceholderState) => keys.filter((k) => status[k].state === st).length;
 
   return (
     <>
@@ -85,16 +91,31 @@ export default async function AdminDashboard() {
 
       <Card className="mt-[var(--grid-gap)]">
         <CardHeader
-          title={`Decisions outstanding · ${keys.length}`}
-          subtitle="Every one of these is a real value Solink refuses to invent. Each is rendered as a placeholder wherever it would otherwise appear."
+          title={`Decisions · ${count("open")} open · ${count("partial")} partial · ${count("resolved")} resolved`}
+          subtitle="Every one of these is a real value Solink refuses to invent. Open ones render as a placeholder wherever they would otherwise appear; resolved ones are checked against the live setting, key or value behind them."
         />
         <CardBody className="grid gap-2 sm:grid-cols-2">
-          {keys.map((k) => (
-            <div key={k} className="rounded-[var(--radius)] border border-dashed border-border-strong p-2.5">
-              <div className="font-mono text-[11px] leading-tight text-[var(--cls-estimated)]">{PLACEHOLDERS[k]}</div>
-              <p className="mt-1 text-[12.5px] leading-snug text-fg-muted">{PLACEHOLDER_NOTES[k]}</p>
-            </div>
-          ))}
+          {keys.map((k) => {
+            const st = status[k];
+            return (
+              <div
+                key={k}
+                className={cn(
+                  "rounded-[var(--radius)] border p-2.5",
+                  st.state === "open" && "border-dashed border-border-strong",
+                  st.state === "partial" && "border-dashed border-[var(--warn)]/60 bg-warn-soft/40",
+                  st.state === "resolved" && "border-border bg-good-soft/40",
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className={cn("font-mono text-[11px] leading-tight", st.state === "resolved" ? "text-fg-muted line-through" : "text-[var(--cls-estimated)]")}>{PLACEHOLDERS[k]}</div>
+                  <Badge tone={st.state === "resolved" ? "good" : st.state === "partial" ? "warn" : "neutral"}>{st.state}</Badge>
+                </div>
+                <p className="mt-1 text-[12.5px] leading-snug text-fg-secondary">{st.detail}</p>
+                {st.state === "open" && <p className="mt-1 text-[12px] leading-snug text-fg-muted">{PLACEHOLDER_NOTES[k]}</p>}
+              </div>
+            );
+          })}
         </CardBody>
       </Card>
     </>

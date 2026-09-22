@@ -11,9 +11,9 @@ of it. **Session 2 supersedes Session 1 on anything visual.**
 The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
 "Session 6 closing state", then "Session 7"):
 
-- `main` at `03e1081` is deployed to https://solink-nu.vercel.app by Vercel on
-  push (Session 7, pushed on the owner's word 2026-09-21, on top of Lolwah's
-  server-side site analysis `2e52d1d`). Git-triggered deploys are healthy. v1 is recoverable with
+- `main` is deployed to https://solink-nu.vercel.app by Vercel on push;
+  Session 7 pushed several times on the owner's word (2026-09-21/22), see
+  `git log`. Git-triggered deploys are healthy. v1 is recoverable with
   `git checkout v1-superseded`.
 - **Direction "Studio"** is recorded in `design-system/solink/DIRECTION.md`;
   read it before touching anything visual.
@@ -43,7 +43,11 @@ The current position, as of 2026-09-21 evening (full account: HANDOFF.md,
 - Platform settings entered with sources on the owner's yes: tariff by MEW
   sector, CO₂ factor, peak sun hours 5.58 (GHI, Kuwait City), performance
   ratio 0.86. Never enter a platform number without the owner's yes;
-  `docs/DECISIONS-NEEDED.md` records what was entered and why.
+  `docs/DECISIONS-NEEDED.md` records what was entered and why, and holds
+  three proposals (TCO period, alert thresholds, end-of-life) awaiting it.
+  Degradation comes from each panel's datasheet warranty curve
+  (`src/lib/solar/degradation.ts`); there is no platform default. The admin
+  dashboard's decisions card checks live state (`placeholderStatus.ts`).
 - Roles: homeowner (includes landlord), manufacturer, company, admin. Light
   theme default. Still placeholders: team roles/bios/photos, team description.
 - **Privacy policy and terms** exist at `/privacy` and `/terms` (Session 7,

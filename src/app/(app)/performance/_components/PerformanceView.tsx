@@ -39,10 +39,12 @@ export interface CostPrefills { maintenance: PrefilledCost; cleaning: PrefilledC
 
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
-export function PerformanceView({ rows, cls, settings, capacityKwp, systemName, currency = "KWD", prefills, trailingYield, totalRecorded, installationDate }: {
+export function PerformanceView({ rows, cls, settings, panelDegradation = null, capacityKwp, systemName, currency = "KWD", prefills, trailingYield, totalRecorded, installationDate }: {
   rows: YearRow[];
   cls: DataClass;
   settings: PlatformSettings;
+  /** The installed panel's warranty degradation in %/year, from its datasheet snapshot, when the passport carries one. Beats the platform-wide setting. */
+  panelDegradation?: { value: number; source: string } | null;
   capacityKwp: number | null;
   systemName: string;
   currency?: string;
@@ -55,9 +57,12 @@ export function PerformanceView({ rows, cls, settings, capacityKwp, systemName, 
   const set = <K extends keyof PerfInputs>(k: K, v: PerfInputs[K]) => setInp((p) => ({ ...p, [k]: v }));
 
   /* ---------- assumptions: platform setting → your own value → nothing ---------- */
-  const degPlatform = settings.expected_panel_degradation_rate
-    ? { value: Math.round(settings.expected_panel_degradation_rate.value * 1000) / 10, source: settings.expected_panel_degradation_rate.source }
-    : null;
+  // The panel actually on the roof, as its manufacturer warrants it, is the
+  // right rate for this system; the platform-wide setting is the fallback.
+  const degPlatform = panelDegradation
+    ?? (settings.expected_panel_degradation_rate
+      ? { value: Math.round(settings.expected_panel_degradation_rate.value * 1000) / 10, source: settings.expected_panel_degradation_rate.source }
+      : null);
   const degPct = resolveAssumption(inp.degradationPct, degPlatform);
   const horizon = resolveAssumption(inp.horizon, settings.tco_period_years);
   const tariff = resolveAssumption(inp.tariff, settings.electricity_tariff_per_kwh);
