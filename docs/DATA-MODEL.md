@@ -12,6 +12,7 @@ auth.users ─1:N─ solar_systems ─1:1─ solar_passports (frozen snapshots)
                  solar_systems ─1:N─ maintenance_cases ─1:N─ cleaning_records / repair_records
                  solar_systems ─1:N─ replacement_records, incidents, ai_alerts, reports
 auth.users ─1:N─ orders, appointments, notifications, ai_conversations, ai_analyses, recommendations
+auth.users ─1:N─ smart_maintenance_runs ─N:1─ solar_systems (one row per Smart Maintenance Agent run; `id` is the run_id; status / decision / approval / n8n_* columns; 0009)
 manufacturers ─1:N─ solar_products ─1:N─ product_versions, product_documents
 manufacturers ─1:N─ manufacturer_versions (immutable copies; current_version_id) · manufacturers ─1:N─ manufacturer_sources (one row per claim)
 user_profiles.manufacturer_id ─N:1─ manufacturers (which company a manufacturer account acts for)
