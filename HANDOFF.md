@@ -1726,3 +1726,24 @@ Solar Passport → admin → manufacturer role. Nothing visual-only.
   companies); everything else renders with the three demo companies.
 - Still unverified and needing a human: every company's verification,
   Kuwait/GCC availability, HQ cities for LONGi/Trina/JA, logos.
+
+## Later the same day — eight real modules for the four new manufacturers
+
+The owner asked for products, then said "do it yourself". Imported by
+`supabase/imports/2026-09-22_manufacturer_modules.sql` (a compact
+equivalent ran against the database), two power bins per company, every
+value from the company's own datasheet, read notes in
+`docs/DATA-CLEANING-LOG.md` (C-006 to C-009):
+
+| Company | Series | Models |
+|---|---|---|
+| JinkoSolar | Tiger Neo 54HL4M-BDV (2025 sheet) | JKM505N-54HL4M-BDV, JKM520N-54HL4M-BDV |
+| Trina Solar | Vertex S+ TSM-NEG9R.28 (2024 C) | TSM-445NEG9R.28, TSM-460NEG9R.28 |
+| JA Solar | DeepBlue 4.0 Pro JAM54D40 LB (Global-EN-20241105A, via jasolar.eu) | JAM54D40-450/LB, JAM54D40-460/LB |
+| Canadian Solar | TOPHiKu6 All-Black CS6.1-54TM-H (April 2025, US edition) | CS6.1-54TM-450H, CS6.1-54TM-465H |
+
+All eight: `price` unavailable (no Kuwait retailer listing found), no images,
+Unverified, zero validation flags from the database validator, one
+product_versions row each. Canadian Solar's end-of-warranty percentage is
+left unavailable because its sheet does not print one. Catalogue is now 11
+real products across 5 manufacturers.

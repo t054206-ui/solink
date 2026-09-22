@@ -137,3 +137,65 @@ flow straight into payback and total-cost figures.
 | **Source URL** | `https://www.longi.com/en/products/modules/hi-mo-7/` (recorded in `source.field_sources.images`) |
 | **Rejected** | The Kuwait retailer's listing photo (`alwansolar.com/cdn/shop/files/HVFCSSDAQ1053*.png`), which shows a 6 × 22 = 132-cell module with a LONGi logo pasted on. The datasheet gives 144 cells (6 × 24); the front render shows 144. Same disagreement as C-003. |
 | **Caveat** | The renders are the manufacturer's for the LR7-72HGD series as a whole, not photographs of a specific power bin. Recorded in `source.image_note` on each row. The images are linked from LONGi's CDN, not copied; if LONGi moves them the card falls back to "No image provided". |
+
+---
+
+## Import 2026-09-22 — one current residential module series per manufacturer (Session 8)
+
+Eight rows, two power bins each, for the four manufacturers added on
+2026-09-22. Every technical value was read from the manufacturer's own
+datasheet. **No Kuwait price or retailer listing was found for any of these
+models on 2026-09-22, so `price` is unavailable and no `kuwait_*` field is
+set.** No image URL was recorded; the cards read "No image provided".
+
+**Sources used**
+
+| Manufacturer | Series and bins | Datasheet (version) | Page linked from |
+|---|---|---|---|
+| JinkoSolar | Tiger Neo 54HL4M-BDV, 505 W and 520 W | `JKM495-520N-54HL4M-BDV-F1-EN`, © 2025 — `https://jinkosolarcdn.shwebspace.com/uploads/JKM495-520N-54HL4M-BDV-F2-EN.pdf` | `https://www.jinkosolar.com/en/site/tigerneo` |
+| Trina Solar | Vertex S+ TSM-NEG9R.28, 445 W and 460 W | `TSM_EN_2024_C` — `https://static.trinasolar.com/sites/default/files/Datasheet_Vertex%20S+_NEG9R.28_EN_2024_C_web.pdf` | `https://www.trinasolar.com/en-glb/` |
+| JA Solar | DeepBlue 4.0 Pro JAM54D40 LB, 450 W and 460 W | `Global-EN-20241105A` — `https://www.jasolar.eu/fileadmin/data/products/4.0/JAM54D40_LB_25y.pdf` | `https://www.jasolar.eu/en/products/jam54d40-lb-25y` |
+| Canadian Solar | TOPHiKu6 All-Black CS6.1-54TM-H, 450 W and 465 W | `V1.4C25_F23_D2_TX`, April 2025 — `https://www.canadiansolar.com/wp-content/uploads/sites/3/2026/01/CS-Datasheet-TOPHiKu6_All-Black_CS6.1-54TM-H_v1.4C25_F23_D2_TX.pdf` | `https://www.canadiansolar.com/na/tophiku6/` |
+
+### C-006 — JinkoSolar: a 2021 sheet found first, replaced by the 2025 one
+
+| | |
+|---|---|
+| **Original** | Web search returned `JKM460-480N-60HL4-(V)-F1-EN` (Tiger Neo 60HL4, © 2021, 12-year product warranty, -40 to +85 °C) |
+| **Stored** | `JKM495-520N-54HL4M-BDV-F1-EN` (© 2025), the sheet the official Tiger Neo page links today |
+| **Decision** | Import the series the manufacturer currently presents, not the first PDF a search engine returns |
+| **Note** | The 2025 sheet states a **15-year** product warranty and an operating range of **-40 to +70 °C**; both stored as printed. The URL says F2, the document F1-EN; recorded in the source note |
+
+### C-007 — Trina Solar: column order in the extracted text
+
+| | |
+|---|---|
+| **Field** | `isc_a`, `vmp_v`, `imp_a`, `voc_v` |
+| **Issue** | The text layer lists each bin's electrical values in the order Isc, Vmp, Imp, Voc, not the label order printed on the page |
+| **Check** | Vmp × Imp must approximate Pmax: 45.4 V × 10.14 A = 460.4 W for the 460 W bin, 44.3 × 10.05 = 445.2 W for the 445 W bin. The alternative pairing (45.4 × 10.81 = 490.8 W) fails, and Isc must exceed Imp |
+| **Stored** | 460 W: Voc 53.8, Isc 10.81, Vmp 45.4, Imp 10.14, 23.0 %. 445 W: Voc 52.6, Isc 10.71, Vmp 44.3, Imp 10.05, 22.3 % |
+| **Note** | Product warranty printed as "up to 25 years" / "25 year Product Workmanship Warranty"; stored as 25 with the wording in the verification note |
+
+### C-008 — JA Solar: official site refuses automated requests; PDF has no text layer
+
+| | |
+|---|---|
+| **Issue** | `jasolar.com` answered HTTP 403/406 to every automated request. The datasheet was taken from `jasolar.eu`, JA Solar's own European site. The PDF has no text layer |
+| **How read** | Both pages rendered with PyMuPDF at 220 dpi and the tables read from the images |
+| **Stored** | 450 W: Voc 39.30, Vmp 32.82, Isc 14.48, Imp 13.71, 22.5 %. 460 W: Voc 39.70, Vmp 33.17, Isc 14.64, Imp 13.87, 23.0 %. Vmp × Imp = 450.0 and 460.1 W |
+
+### C-009 — Canadian Solar: regional sheet, and no printed end-of-warranty percentage
+
+| | |
+|---|---|
+| **Issue 1** | The sheet the official TOPHiKu6 page links is the US (TX) regional edition, "Assembled in the US from imported components". Module electrical and mechanical figures are the module's; certificates and the 25-year product warranty are region-dependent by the sheet's own footnote ("available only for products installed and operating on rooftops in certain regions") |
+| **Stored** | Figures as printed; the footnote verbatim in `specs.additional.product_warranty_note` |
+| **Issue 2** | The sheet states "1st year power degradation no more than 1 %" and "subsequent annual power degradation no more than 0.4 %" over 30 years, but prints no end-of-warranty percentage |
+| **Decision** | `performance_warranty_end_pct` left **unavailable**; the two limits stored in `specs.additional`. Computing 87.4 % would have been a Solink calculation stored as manufacturer data |
+| **Max system voltage** | 1000 V (IEC/UL) as printed, lower than the 1500 V of the other three series |
+
+### Not imported
+
+Nothing was rejected in this batch. Bins other than the two per series were
+left out only to keep the first import small; the datasheets cover every bin
+and the same file can be extended.
