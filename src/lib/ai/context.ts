@@ -89,9 +89,24 @@ export async function buildUserContext(opts: { systemId?: string; includeProduct
   }
 
   if (opts.includeProducts) {
-    const { data: products } = await repo.listProducts({ category: "solar_panel" });
+    const [{ data: products }, { data: manufacturers }] = await Promise.all([repo.listProducts({ category: "solar_panel" }), repo.listManufacturers({ includeArchived: true, includeDemo: true })]);
     used.push("Marketplace panels");
-    blocks.push({ title: "marketplace panels", cls: products.some((p) => p.is_demo) ? "demo" : "source", content: products.map((p) => `${p.id} | ${p.manufacturer_name} ${p.model}${p.is_demo ? " (DEMO PRODUCT — NOT REAL)" : ""} | power ${specText(p.specs.rated_power_w as never)} | eff ${specText(p.specs.module_efficiency_pct as never)} | size ${specText(p.specs.length_mm as never)} × ${specText(p.specs.width_mm as never)} | temp coeff ${specText(p.specs.temperature_coefficient_pmax_pct_per_c as never)} | product warranty ${specText(p.specs.product_warranty_years as never)} | perf warranty ${specText(p.specs.performance_warranty_years as never)} | price ${specText(p.price)} | install ${specText(p.installation_cost)} | maintenance ${specText(p.annual_maintenance_cost)} | verification ${p.source.verification_status}`).join("\n") });
+    blocks.push({ title: "marketplace panels", cls: products.some((p) => p.is_demo) ? "demo" : "source", content: products.map((p) => `${p.id} | manufacturer: ${p.manufacturer_name}${p.manufacturer_id ? ` (manufacturer_id ${p.manufacturer_id})` : " (no manufacturer record linked)"} | model ${p.model}${p.is_demo ? " (DEMO PRODUCT — NOT REAL)" : ""} | power ${specText(p.specs.rated_power_w as never)} | eff ${specText(p.specs.module_efficiency_pct as never)} | size ${specText(p.specs.length_mm as never)} × ${specText(p.specs.width_mm as never)} | temp coeff ${specText(p.specs.temperature_coefficient_pmax_pct_per_c as never)} | product warranty ${specText(p.specs.product_warranty_years as never)} | perf warranty ${specText(p.specs.performance_warranty_years as never)} | price ${specText(p.price)} | install ${specText(p.installation_cost)} | maintenance ${specText(p.annual_maintenance_cost)} | verification ${p.source.verification_status}`).join("\n") });
+
+    // The companies behind those panels, from the manufacturers table. Only
+    // what the record holds; a missing field says "not provided" so the model
+    // reports it as unavailable instead of filling it from memory. The block
+    // is context for trade-offs, not a ranking: verification and availability
+    // describe what Solink has checked, not how good a manufacturer is.
+    const used_ids = new Set(products.map((p) => p.manufacturer_id).filter(Boolean));
+    const relevant = manufacturers.filter((m) => used_ids.has(m.id));
+    used.push("Manufacturer records");
+    const np = (v: string | null | undefined) => (v && v.trim() ? v : "not provided");
+    const avail = (v: boolean | null) => (v === null ? "not yet verified by Solink" : v ? "verified available" : "verified not available");
+    blocks.push({ title: "manufacturers", cls: relevant.some((m) => m.is_demo) ? "demo" : "source", content: relevant.length === 0 ? "No manufacturer records are linked to the panels above; manufacturer information is unavailable." : [
+      "Rules: use only these fields. If a field reads 'not provided' or 'not yet verified', say that the information is unavailable rather than guessing. Do not treat one manufacturer as better than another because of its size, reputation or country; verification and availability below are Solink's checks of the record, not quality judgements. Never state revenue, capacity, market share, certifications or partnerships: none are recorded.",
+      ...relevant.map((m) => `manufacturer_id ${m.id} | name ${m.name}${m.is_demo ? " (DEMO — NOT REAL)" : ""} | legal name ${np(m.legal_name)} | type ${np(m.manufacturer_type)} | headquarters ${np([m.headquarters_city, m.headquarters_country].filter(Boolean).join(", "))} | website ${np(m.website)} | Solink verification of the company record: ${m.verification_status} | Kuwait availability: ${avail(m.kuwait_available)} | GCC availability: ${avail(m.gcc_available)}${m.availability_note ? ` (note: ${m.availability_note})` : ""}${m.is_archived ? " | ARCHIVED manufacturer" : ""}`),
+    ].join("\n") });
   }
 
   return { blocks, used };

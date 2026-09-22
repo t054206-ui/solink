@@ -12,7 +12,8 @@ import { InfoTip } from "@/components/help/InfoTip";
 import type { DataClass } from "@/lib/classification";
 import { getPassport, getSystem, listIncidents, listMaintenance } from "@/lib/data/repositories";
 import { DEMO_BANNER } from "@/lib/demo/data";
-import type { Incident, MaintenanceCase, MaintenanceKind } from "@/lib/types";
+import type { Incident, MaintenanceCase, MaintenanceKind, SolarPassport } from "@/lib/types";
+import { VERIFICATION_LABEL } from "@/app/(app)/marketplace/_components/product-helpers";
 import { formatDate, specText } from "@/lib/utils";
 import { AskSolink } from "../../_operate/components/AskSolink";
 import { PrintButton } from "../_components/PrintButton";
@@ -121,6 +122,7 @@ export default async function PassportPage({ params }: { params: Promise<{ syste
                   ))}
                 </dl>
                 <VersionNote versionId={ps.version_id} />
+                <ManufacturerAtInstallation snapshot={ps} cls={cls} />
               </>
             ) : <p className="text-[13px] text-fg-muted">The panel specification snapshot was not recorded.</p>}
           </CardBody>
@@ -183,6 +185,36 @@ function WarrantyRow({ label, term, years, from, cls, nowIso }: { label: string;
         </div>
       )}
     </li>
+  );
+}
+
+/**
+ * The manufacturer as it stood when the passport was issued: written into the
+ * snapshot by the database (migration 0008) and never updated afterwards, so
+ * a later rename, re-verification or archive of the company changes nothing
+ * here. The link to the current profile is offered as such: current, not
+ * historical.
+ */
+function ManufacturerAtInstallation({ snapshot, cls }: { snapshot: NonNullable<SolarPassport["panel_snapshot"]>; cls: DataClass }) {
+  const ms = snapshot.manufacturer_snapshot ?? null;
+  return (
+    <div className="mt-3 rounded-[var(--radius-md)] border border-border p-3 text-[13px]">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="flex items-center gap-1 font-medium text-fg">Manufacturer at installation <InfoTip term="manufacturer_record" /></span>
+        <DataBadge cls={cls} compact />
+      </div>
+      <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-2">
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Company</dt><dd className="text-right font-medium text-fg">{snapshot.manufacturer}</dd></div>
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Legal name</dt><dd className="text-right text-fg">{ms?.legal_name ?? <span className="text-fg-muted">Not recorded</span>}</dd></div>
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Headquarters</dt><dd className="text-right text-fg">{ms?.headquarters_country ?? <span className="text-fg-muted">Not recorded</span>}</dd></div>
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Company verification then</dt><dd className="text-right text-fg">{ms ? VERIFICATION_LABEL[ms.verification_status] : <span className="text-fg-muted">Not recorded</span>}</dd></div>
+        <div className="flex justify-between gap-2 sm:col-span-2"><dt className="text-fg-muted">Manufacturer data version</dt><dd className="text-right font-mono text-[12px] text-fg">{snapshot.manufacturer_version_id ?? "not recorded (issued before company versioning)"}</dd></div>
+      </dl>
+      <p className="mt-2 text-[12px] leading-relaxed text-fg-muted">
+        Frozen when the passport was issued{snapshot.snapshot_at ? ` on ${formatDate(snapshot.snapshot_at)}` : ""}. Later changes to the company record do not alter this passport.
+        {ms?.slug && <> <Link href={`/marketplace/manufacturers/${encodeURIComponent(ms.slug)}`} className="underline underline-offset-2 hover:text-fg">Current company profile</Link> (may differ).</>}
+      </p>
+    </div>
   );
 }
 

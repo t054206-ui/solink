@@ -5,7 +5,7 @@
 ## Read HANDOFF.md first, before doing anything else
 
 `HANDOFF.md` is the state of this project. Read it at the start of every session.
-Session 3 describes the site as it is; Sessions 4, 5, 6 and 7 are additions on top
+Session 3 describes the site as it is; Sessions 4, 5, 6, 7 and 8 are additions on top
 of it. **Session 2 supersedes Session 1 on anything visual.**
 
 The current position, as of 2026-09-22 (full account: HANDOFF.md,
@@ -37,7 +37,7 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   `solar_products` with the manufacturer's renders as images. Supabase-mode
   listings exclude demo rows. Behind sign-in. Import pattern and provenance:
   `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
-- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0006 applied, both
+- Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0006 and 0008 applied (0007 proposed), both
   environments in Supabase mode, sign-up live, the owner's account is admin.
   Still needed: service-role key, SMTP sender, domain.
 - Platform settings entered with sources on the owner's yes: tariff by MEW
@@ -72,11 +72,22 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   homeowner journey, provider workload, admin platform, manufacturer portal.
   Items with no page are dimmed `[SOON]`, never invented routes. No icon-only
   collapsed mode by the owner's choice.
+- **Manufacturer companies** (Session 8, 2026-09-22, migration 0008 applied):
+  `manufacturers` is the company record (legal name, slug, logo, HQ, website,
+  type and market classification, tri-state Kuwait/GCC availability,
+  verification with source and note, archive) with `manufacturer_versions`
+  and `manufacturer_sources`. Five real companies exist (LONGi with its three
+  Hi-MO 7 products; JinkoSolar, Trina Solar, JA Solar, Canadian Solar with
+  none), all Unverified. Directory `/marketplace/manufacturers`, profile by
+  slug, admin at `/admin/manufacturers`, marketplace filter `?manufacturer=`.
+  Passports freeze the manufacturer version by trigger. A manufacturer
+  account cannot change its own standing (trigger). Never invent a logo, HQ
+  city, availability or verification: decision 23.
 - **Manufacturer portal** at `/manufacturer/*`: own products, add/edit (never
-  self-verifies), datasheet links, company profile; performance, requests,
-  orders, reports and settings are honest empty states pending
+  self-verifies), datasheet links and uploads, company profile; performance,
+  requests, orders, reports and settings are honest empty states pending
   `supabase/migrations/0007_*.sql`, which is written and **not applied**
-  (decision 22).
+  (decision 22, partly superseded by 0008).
 - **Designer is simple by default**; "Show more options" reveals the rest.
   Blocks and obstacles resize; panels never do. `InfoTip` opens on hover.
 - Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch

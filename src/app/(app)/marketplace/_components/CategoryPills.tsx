@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 import { CATEGORY_LABEL, CATEGORY_ORDER } from "./product-helpers";
 
 /** Category filter rendered as links so the server page can filter via searchParams. */
-export function CategoryPills({ active, counts }: { active: ProductCategory | null; counts: Partial<Record<ProductCategory | "all", number>> }) {
+export function CategoryPills({ active, counts, manufacturer = null }: { active: ProductCategory | null; counts: Partial<Record<ProductCategory | "all", number>>; manufacturer?: string | null }) {
+  // The manufacturer filter travels with the category so the two combine.
+  const withM = (qs: string) => manufacturer ? `${qs}${qs.includes("?") ? "&" : "?"}manufacturer=${encodeURIComponent(manufacturer)}` : qs;
   const items: { key: ProductCategory | "all"; label: string; href: string }[] = [
-    { key: "all", label: "All", href: "/marketplace" },
-    ...CATEGORY_ORDER.map((c) => ({ key: c, label: CATEGORY_LABEL[c], href: `/marketplace?category=${c}` })),
+    { key: "all", label: "All", href: withM("/marketplace") },
+    ...CATEGORY_ORDER.map((c) => ({ key: c, label: CATEGORY_LABEL[c], href: withM(`/marketplace?category=${c}`) })),
   ];
   return (
     <nav aria-label="Product category" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">

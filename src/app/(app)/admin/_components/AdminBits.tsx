@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { ShieldCheck, ShieldAlert, Clock, Flag } from "lucide-react";
+import { Flag } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { Placeholder } from "@/components/ui/Placeholder";
 import { cn } from "@/lib/utils";
 import type { VerificationStatus } from "@/lib/types";
 import type { DataMode } from "@/lib/data/mode";
-import { VERIFICATION_LABEL, flagTone } from "./admin-helpers";
+import { flagTone } from "./admin-helpers";
+import { VerificationBadge } from "@/app/(app)/marketplace/_components/VerificationBadge";
 
 /** Compact admin-role notice required on every admin page. */
 export function AdminRoleNotice({ className }: { className?: string }) {
@@ -23,10 +24,9 @@ export function ModeNotice({ mode, detail }: { mode: DataMode; detail?: string }
   return null;
 }
 
+/** The one verification pill, shared with the marketplace so the five states read the same everywhere. */
 export function VerificationPill({ status }: { status: VerificationStatus }) {
-  if (status === "verified") return <Badge tone="good" icon={<ShieldCheck className="size-3" aria-hidden />}>{VERIFICATION_LABEL.verified}</Badge>;
-  if (status === "pending_verification") return <Badge tone="warn" icon={<Clock className="size-3" aria-hidden />}>{VERIFICATION_LABEL.pending_verification}</Badge>;
-  return <Badge tone="neutral" icon={<ShieldAlert className="size-3" aria-hidden />}>{VERIFICATION_LABEL.unverified}</Badge>;
+  return <VerificationBadge status={status} />;
 }
 
 /** Validation flags are displayed, never auto-corrected. */

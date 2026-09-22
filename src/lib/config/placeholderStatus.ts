@@ -48,7 +48,7 @@ export async function getPlaceholderStatus(): Promise<Record<PlaceholderKey, Pla
     TCO_PERIOD: setting(settings.tco_period_years, "No analysis period chosen. A proposal is in docs/DECISIONS-NEEDED.md."),
     PRODUCTION_ALERT_THRESHOLDS: setting(settings.production_alert_thresholds, "No thresholds chosen. A proposal is in docs/DECISIONS-NEEDED.md."),
     END_OF_LIFE_CRITERIA: settings.end_of_life_criteria ? { state: "resolved", detail: "Entered in platform settings." } : { state: "open", detail: "No criteria chosen. A proposal is in docs/DECISIONS-NEEDED.md." },
-    SUPABASE_PROJECT: isSupabaseConfigured() ? { state: "resolved", detail: "Connected. Migrations 0001 to 0006 applied." } : { state: "open", detail: "Not configured; demo mode." },
+    SUPABASE_PROJECT: isSupabaseConfigured() ? { state: "resolved", detail: "Connected. Migrations 0001 to 0006 and 0008 applied (0007 still proposed)." } : { state: "open", detail: "Not configured; demo mode." },
     CLAUDE_API_KEY: key(env.claudeApiKey, "CLAUDE_API_KEY"),
     WEATHER_API_KEY: key(env.weatherApiKey, "WEATHER_API_KEY"),
     GOOGLE_MAPS_API_KEY: key(env.googleMapsApiKey, "GOOGLE_MAPS_API_KEY"),

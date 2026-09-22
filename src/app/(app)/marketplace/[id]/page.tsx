@@ -16,6 +16,7 @@ import { CompareTray } from "../_components/CompareTray";
 import { PriceCell } from "../_components/PriceCell";
 import { CATEGORY_SINGULAR } from "../_components/product-helpers";
 import { VerificationBadge } from "../_components/VerificationBadge";
+import { ManufacturerLink } from "../_components/ManufacturerLink";
 import { CalculatedHelpers } from "./_components/CalculatedHelpers";
 import { ImageGallery } from "./_components/ImageGallery";
 import { SourceCard } from "./_components/SourceCard";
@@ -42,7 +43,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
       <PageHeader
         eyebrow={<span className="inline-flex flex-wrap items-center gap-2">Choose · {CATEGORY_SINGULAR[p.category]}</span>}
         title={p.name}
-        description={<span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1.5"><span>{p.manufacturer_name} · <span className="font-mono">{p.model}</span></span><VerificationBadge status={p.source.verification_status} /><Badge tone="brand">{CATEGORY_SINGULAR[p.category]}</Badge>{p.is_outdated && <Badge tone="warn">Outdated</Badge>}</span>}
+        description={<span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1.5"><span>Manufacturer: <ManufacturerLink product={p} className="font-medium text-fg" /> · <span className="font-mono">{p.model}</span></span><VerificationBadge status={p.source.verification_status} /><Badge tone="brand">{CATEGORY_SINGULAR[p.category]}</Badge>{p.is_outdated && <Badge tone="warn">Outdated</Badge>}</span>}
         actions={
           <>
             <CompareToggle id={p.id} size="md" />

@@ -222,3 +222,150 @@ export async function applyCsvImportAction(input: { fileName: string; headers: s
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
   }
 }
+
+/* ---------------- manufacturers (companies) ---------------- */
+export interface ManufacturerInput {
+  id?: string | null;
+  name: string;
+  legal_name: string | null;
+  slug: string | null;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  description: string | null;
+  manufacturer_type: string | null;
+  headquarters_country: string | null;
+  headquarters_city: string | null;
+  website: string | null;
+  market_regions: string[];
+}
+
+const httpUrl = (v: string | null | undefined): string | null => {
+  const t = v?.trim() ?? "";
+  return t === "" ? null : t;
+};
+function badUrl(v: string | null, label: string): string | null {
+  return v && !/^https?:\/\//i.test(v) ? `${label} must start with https:// (or http://).` : null;
+}
+
+/**
+ * Create or edit a manufacturer company. Profile fields only: verification,
+ * availability and archive state have their own actions below, so that an
+ * edit of the description can never quietly change the company's standing.
+ * The database records a new manufacturer_versions row on every change.
+ */
+export async function saveManufacturerAction(input: ManufacturerInput): Promise<ActionResult> {
+  const a = await admin();
+  if ("error" in a) return { ok: false, error: a.error };
+  const name = input.name.trim();
+  if (!name) return { ok: false, error: "Company name is required." };
+  const website = httpUrl(input.website), logo = httpUrl(input.logo_url), cover = httpUrl(input.cover_image_url);
+  const urlErr = badUrl(website, "Website") ?? badUrl(logo, "Logo URL") ?? badUrl(cover, "Cover image URL");
+  if (urlErr) return { ok: false, error: urlErr };
+  const row = {
+    name, legal_name: input.legal_name?.trim() || null,
+    logo_url: logo, cover_image_url: cover, description: input.description?.trim() || null,
+    manufacturer_type: input.manufacturer_type?.trim() || null,
+    headquarters_country: input.headquarters_country?.trim() || null, headquarters_city: input.headquarters_city?.trim() || null,
+    website, market_regions: Array.from(new Set(input.market_regions.map((r) => r.trim()).filter(Boolean))),
+  };
+  const slug = input.slug?.trim() ? input.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") : null;
+  try {
+    if (input.id) {
+      const { error } = await a.c.from("manufacturers").update({ ...row, ...(slug ? { slug } : {}) }).eq("id", input.id);
+      if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name or slug." : error.message };
+      revalidateManufacturers(input.id);
+      return { ok: true, id: input.id, message: "Company record saved. A new version was recorded; Solar Passports keep the version they were issued with." };
+    }
+    const { data, error } = await a.c.from("manufacturers").insert({ ...row, ...(slug ? { slug } : {}), verification_status: "unverified", is_demo: false }).select("id").single();
+    if (error) return { ok: false, error: error.code === "23505" ? "A manufacturer with this name or slug already exists. Open it instead of adding a duplicate." : error.message };
+    revalidateManufacturers(data.id as string);
+    return { ok: true, id: data.id as string, message: "Manufacturer created as Unverified. Record a source and verify it from its page." };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error." };
+  }
+}
+
+/**
+ * Verification and availability are one decision surface. Verified requires a
+ * source and a note; availability is never set without a note saying what was
+ * checked, because "available in Kuwait" is a claim Solink is making.
+ */
+export async function setManufacturerVerificationAction(input: {
+  id: string; status: VerificationStatus; note: string | null;
+  source: string | null; source_url: string | null;
+  kuwait_available: boolean | null; gcc_available: boolean | null; availability_note: string | null;
+}): Promise<ActionResult> {
+  const a = await admin();
+  if ("error" in a) return { ok: false, error: a.error };
+  const note = input.note?.trim() || null;
+  const source = input.source?.trim() || null, sourceUrl = httpUrl(input.source_url);
+  if (input.status === "verified" && (!note || note.length < 10)) return { ok: false, error: "Verified requires a note (at least 10 characters) saying what was checked." };
+  if (input.status === "verified" && !source) return { ok: false, error: "Verified requires the source it was checked against." };
+  if ((input.status === "needs_changes" || input.status === "rejected") && !note) return { ok: false, error: `${input.status === "rejected" ? "Rejected" : "Needs changes"} requires a note the manufacturer can act on.` };
+  const urlErr = badUrl(sourceUrl, "Source URL");
+  if (urlErr) return { ok: false, error: urlErr };
+  if ((input.kuwait_available !== null || input.gcc_available !== null) && !input.availability_note?.trim()) return { ok: false, error: "Setting Kuwait or GCC availability requires a note naming the source checked." };
+  const { data: before } = await a.c.from("manufacturers").select("verification_status").eq("id", input.id).maybeSingle();
+  if (!before) return { ok: false, error: "Manufacturer not found." };
+  const now = new Date().toISOString();
+  const patch: Record<string, unknown> = {
+    verification_status: input.status, verification_note: note,
+    verification_source: source, verification_source_url: sourceUrl,
+    kuwait_available: input.kuwait_available, gcc_available: input.gcc_available, availability_note: input.availability_note?.trim() || null,
+  };
+  if (input.status === "verified") { patch.verified_by = a.userId; patch.verification_date = now.slice(0, 10); }
+  else { patch.verified_by = null; patch.verification_date = null; }
+  const { error } = await a.c.from("manufacturers").update(patch).eq("id", input.id);
+  if (error) return { ok: false, error: error.message };
+  if (input.status === "verified" && source) {
+    // The check itself becomes a source row, so the profile's Sources list shows what verification rested on.
+    await a.c.from("manufacturer_sources").insert({ manufacturer_id: input.id, field: "company", source_name: source, source_url: sourceUrl, source_type: "other_verified_source", date_checked: now.slice(0, 10), verification_status: "verified", notes: `Verification note: ${note}`, created_by: a.userId });
+  }
+  revalidateManufacturers(input.id);
+  return { ok: true, message: input.status === "verified" ? "Marked Verified with the source and note recorded." : "Status and availability updated." };
+}
+
+/**
+ * Archive, never delete: products, orders and Solar Passports reference the
+ * row. An archived company leaves the marketplace filter and directory; its
+ * page stays reachable and says it is archived.
+ */
+export async function archiveManufacturerAction(input: { id: string; archived: boolean }): Promise<ActionResult> {
+  const a = await admin();
+  if ("error" in a) return { ok: false, error: a.error };
+  const { error } = await a.c.from("manufacturers").update({ is_archived: input.archived }).eq("id", input.id);
+  if (error) return { ok: false, error: error.message };
+  revalidateManufacturers(input.id);
+  return { ok: true, message: input.archived ? "Archived. Products and passports that reference this company are unchanged." : "Restored as an active manufacturer." };
+}
+
+export async function addManufacturerSourceAction(input: { manufacturer_id: string; field: string; source_name: string; source_url: string | null; source_type: string; date_checked: string | null; notes: string | null }): Promise<ActionResult> {
+  const a = await admin();
+  if ("error" in a) return { ok: false, error: a.error };
+  const name = input.source_name.trim();
+  if (!name) return { ok: false, error: "Source name is required." };
+  const url = httpUrl(input.source_url);
+  const urlErr = badUrl(url, "Source URL");
+  if (urlErr) return { ok: false, error: urlErr };
+  const { data, error } = await a.c.from("manufacturer_sources").insert({
+    manufacturer_id: input.manufacturer_id, field: input.field === "company" ? null : input.field, source_name: name, source_url: url,
+    source_type: input.source_type, date_checked: input.date_checked || null, verification_status: "unverified", notes: input.notes?.trim() || null, created_by: a.userId,
+  }).select("id").single();
+  if (error) return { ok: false, error: error.message };
+  revalidateManufacturers(input.manufacturer_id);
+  return { ok: true, id: data.id as string, message: "Source recorded as Unverified." };
+}
+
+/** Link (or unlink) a user account to a manufacturer company. The account's role must be manufacturer for the portal to open. */
+export async function setUserManufacturerAction(input: { userId: string; manufacturerId: string | null }): Promise<ActionResult> {
+  const a = await admin();
+  if ("error" in a) return { ok: false, error: a.error };
+  const { error } = await a.c.from("user_profiles").update({ manufacturer_id: input.manufacturerId }).eq("user_id", input.userId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/users");
+  return { ok: true };
+}
+
+function revalidateManufacturers(id: string) {
+  revalidatePath("/admin/manufacturers"); revalidatePath(`/admin/manufacturers/${id}`); revalidatePath("/marketplace"); revalidatePath("/marketplace/manufacturers"); revalidatePath("/compare"); revalidatePath("/recommend");
+}

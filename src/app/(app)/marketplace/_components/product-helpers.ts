@@ -38,6 +38,8 @@ export const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
   unverified: "Unverified",
   pending_verification: "Pending verification",
   verified: "Verified",
+  needs_changes: "Needs changes",
+  rejected: "Rejected",
 };
 
 /** Maximum products in the comparison tray. */

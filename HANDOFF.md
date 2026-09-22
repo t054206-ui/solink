@@ -1633,3 +1633,96 @@ reconcile them.
    authorised domains, Supabase redirect list and Site URL.
 8. As before: Google Solar, tilt → output, About placeholders, more catalogue,
    the other pages, hero leftovers.
+
+---
+
+# SESSION 8 — 2026-09-22, the manufacturer company system (owner's brief)
+
+The owner asked for a proper manufacturer company system, end to end:
+database → API → frontend → marketplace → compare → AI recommendation →
+Solar Passport → admin → manufacturer role. Nothing visual-only.
+
+## Read this before anything else
+
+- **Migration 0008 is applied** (`supabase/migrations/0008_solink_manufacturer_companies.sql`).
+  The `manufacturers` table from 0001 was reused, not duplicated. `country`
+  was renamed `headquarters_country`; everything else is additive: legal_name,
+  slug (unique, auto from name), logo_url, cover_image_url, description,
+  headquarters_city, manufacturer_type, market_regions, kuwait_available /
+  gcc_available (tri-state, null = not yet verified), availability_note,
+  verification_source/_url/_date, verified_by, verification_note,
+  is_archived/archived_at, current_version_id. New tables
+  `manufacturer_versions` (immutable copies, trigger) and
+  `manufacturer_sources` (one row per claim). Enum `verification_status`
+  gained `needs_changes` and `rejected`.
+- **Five real manufacturers exist**, seeded by `supabase/imports/2026-09-22_manufacturers.sql`:
+  LONGi (the 2026-09-20 row, renamed from "LONGi Green Energy Technology";
+  its three Hi-MO 7 products untouched, versions 1 each, prices intact),
+  JinkoSolar, Trina Solar, JA Solar, Canadian Solar (0 products each, on
+  purpose). All Unverified; Kuwait/GCC availability not yet verified; HQ city
+  only where the official About page stated it (Shanghai, Guelph). No logo
+  URLs: the UI shows initials with "No logo provided". Decision 23.
+- **Triggers worth knowing**: `guard_manufacturer_admin_fields` refuses a
+  non-admin session that changes verification, availability, classification,
+  slug or archive state (tested); `enrich_passport_manufacturer` writes
+  manufacturer_id + manufacturer_version_id + manufacturer_snapshot into
+  `solar_passports.panel_snapshot` at issue (tested); `protect_passport_snapshots`
+  refuses any later change to the three snapshots (tested). The version
+  triggers (`snapshot_manufacturer_version`, and now `snapshot_product_version`)
+  are SECURITY DEFINER: before this, a manufacturer saving its own product
+  would have been refused by RLS on `product_versions`. Found in this
+  session; fixed in 0008.
+- **0007 stays proposed** (decision 22, partly superseded): 0008 took its
+  logo/description columns and its storage upload policy. 0007 is guarded so
+  it still applies; its helper calls are now schema-qualified (`private.`),
+  which they were not.
+
+## What was built
+
+- Types: `Manufacturer` (full record), `ManufacturerSource`, `ManufacturerVersion`,
+  `ManufacturerSnapshot`, `ProductDocument`; `Product.manufacturer_slug/_archived`;
+  passport `panel_snapshot` gained the manufacturer fields.
+- Repositories: `listManufacturers({ q, includeArchived, includeDemo })` with
+  server-side search and `product_count`, `getManufacturer(idOrSlug)`,
+  `listProducts({ manufacturerId })`, `listManufacturerSources`,
+  `listManufacturerVersions`, `listProductDocuments`. Products join
+  `manufacturers(name, slug, is_archived)`.
+- Shared components `src/components/manufacturers/`: `ManufacturerCard`,
+  `ManufacturerProfile` (company info with SOURCE/Solink labels per row,
+  products, documentation, sources), `ManufacturerLogo`, `AvailabilityBadge`,
+  `ManufacturerFilter`. Helpers in `src/lib/manufacturers/helpers.ts`.
+- Public: `/marketplace/manufacturers` directory, `/marketplace/manufacturers/[slug]`
+  profile. Marketplace: `?manufacturer=slug` filters in the database; the
+  dropdown lists the manufacturers table; product cards, product page and the
+  Compare table link the manufacturer name to the profile (`ManufacturerLink`).
+- Admin: `/admin/manufacturers` (cards, GET search, archived toggle),
+  `/new`, `/[id]` (profile + decision panel + record history), `/[id]/edit`.
+  Actions: `saveManufacturerAction`, `setManufacturerVerificationAction`
+  (Verified needs source + note; availability needs a note),
+  `archiveManufacturerAction`, `addManufacturerSourceAction`,
+  `setUserManufacturerAction` (Users page now links an account to a company).
+- Manufacturer portal: `CompanyProfileForm` edits identity, description, HQ,
+  website, logo, cover; reads verification, availability, type, market.
+  `uploadProductDocumentAction` stores a PDF/image under the product in the
+  private bucket (policy from 0008 §8); Datasheets page has the upload form.
+- AI: `buildUserContext` adds a `manufacturers` block (record fields only,
+  "not provided"/"not yet verified" spelled out, no ranking); the recommend
+  prompt tells the model to use it as context only.
+- Passport: "Manufacturer at installation" card from the frozen snapshot,
+  with the manufacturer version id; admin passports table shows it.
+- API: `GET /api/manufacturers[?q=&archived=1]`, `/api/manufacturers/[idOrSlug]`,
+  `/api/manufacturers/[idOrSlug]/products` (read-only, RLS via cookie).
+  Verified against the live database: 5 rows, search, LONGi → 3 products,
+  JinkoSolar → 0, unknown → 404.
+- Glossary: `kuwait_availability`, `market_classification`, `manufacturer_record`.
+
+## Things Session 9 should know
+
+- `manufacturer_type` and `market_regions` are PLATFORM classification; the
+  UI labels them "Solink". Availability is a separate, verified claim.
+- Archived manufacturers keep their products visible (history); they leave
+  the directory and the filter, and their pages say archived.
+- Demo mode: manufacturer forms refuse to save (no local store for
+  companies); everything else renders with the three demo companies.
+- Still unverified and needing a human: every company's verification,
+  Kuwait/GCC availability, HQ cities for LONGi/Trina/JA, logos.

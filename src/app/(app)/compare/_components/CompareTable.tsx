@@ -17,6 +17,7 @@ import type { Product } from "@/lib/types";
 import { cn, specText } from "@/lib/utils";
 import { PriceCell } from "../../marketplace/_components/PriceCell";
 import { VerificationBadge } from "../../marketplace/_components/VerificationBadge";
+import { ManufacturerLink } from "../../marketplace/_components/ManufacturerLink";
 import { COMPARE_MAX, COMPARE_STORE_KEY, dimsSpec, getSpec, getSpecNum, realPrice } from "../../marketplace/_components/product-helpers";
 
 interface UserAssumptions { peakSunHours: string; performanceRatio: string; horizonYears: string }
@@ -65,7 +66,8 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
   const usesUserInput = uPsh !== null || uPr !== null || uHz !== null;
 
   const rows: RowDef[] = [
-    { id: "manufacturer", label: "Manufacturer", cell: (p) => ({ node: p.manufacturer_name, cls: p.is_demo ? "demo" : "source" }) },
+    // From the product's manufacturer relationship (manufacturer_id → manufacturers), never typed here.
+    { id: "manufacturer", label: "Manufacturer", term: "manufacturer_record", cell: (p) => ({ node: <ManufacturerLink product={p} className="text-fg" />, cls: p.is_demo ? "demo" : "source" }) },
     { id: "model", label: "Model", cell: (p) => ({ node: <span className="font-mono">{p.model}</span>, cls: p.is_demo ? "demo" : "source" }) },
     { id: "verification", label: "Verification", cell: (p) => ({ node: <VerificationBadge status={p.source.verification_status} /> }) },
     { id: "price", label: "Price", best: "low", cell: (p) => ({ node: <PriceCell product={p} compact />, num: realPrice(p, "price") }) },
@@ -150,7 +152,7 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <Link href={`/marketplace/${p.id}`} className="block truncate font-semibold text-fg hover:underline underline-offset-2">{p.name}</Link>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12px] font-normal text-fg-muted">{p.manufacturer_name}{p.is_demo && <DataBadge cls="demo" compact />}</div>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12px] font-normal text-fg-muted"><ManufacturerLink product={p} />{p.is_demo && <DataBadge cls="demo" compact />}</div>
                         </div>
                         <button type="button" onClick={() => setIds((prev) => prev.filter((x) => x !== p.id))} aria-label={`Remove ${p.name} from comparison`} className="grid size-7 shrink-0 place-items-center rounded-md text-fg-muted hover:bg-inset hover:text-fg"><X className="size-4" aria-hidden /></button>
                       </div>

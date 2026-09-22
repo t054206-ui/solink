@@ -1,27 +1,27 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ExternalLink, FileText, Link2 } from "lucide-react";
+import { ExternalLink, FileText, Link2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select } from "@/components/ui/Form";
 import { EmptyState } from "@/components/ui/States";
-import { NotBuiltNote } from "@/components/ui/NotBuilt";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import { formatDate } from "@/lib/utils";
 import type { DataMode } from "@/lib/data/mode";
 import type { Product } from "@/lib/types";
 import type { ProductDocumentRow } from "@/app/(app)/admin/_lib/data";
-import { addDatasheetLinkAction } from "../actions";
+import { addDatasheetLinkAction, uploadProductDocumentAction } from "../actions";
 import { InfoTip } from "@/components/help/InfoTip";
 
 interface LocalDoc { id: string; product_id: string; title: string; url: string; created_at: string }
 
 /**
  * Datasheets: every document row attached to the manufacturer's products, plus
- * the datasheet URL recorded on each product itself. Linking by URL works
- * today under RLS. Uploading a file needs the storage policy proposed in
- * migration 0007, so that control is shown as not built. Nothing is ever
+ * the datasheet URL recorded on each product itself. Two ways in: link the
+ * PDF where the company publishes it, or upload it into Solink's private
+ * product-documents bucket under the product (storage policy from migration
+ * 0008 §8; the bucket refuses another company's product). Nothing is ever
  * deleted here: a replaced datasheet is a newer row, and the older one stays
  * for the Solar Passports that cite it.
  */
@@ -33,6 +33,21 @@ export function DatasheetsPanel({ products, docs, mode }: { products: Product[];
   const [url, setUrl] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
+  const [upMsg, setUpMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [upKind, setUpKind] = useState("datasheet");
+  const [upTitle, setUpTitle] = useState("");
+
+  const upload = (form: HTMLFormElement) => {
+    setUpMsg(null);
+    if (mode === "demo") { setUpMsg({ ok: false, text: "Demo mode: files cannot be stored without Supabase. Link the datasheet by URL instead." }); return; }
+    const fd = new FormData(form);
+    fd.set("productId", productId); fd.set("kind", upKind); fd.set("title", upTitle);
+    start(async () => {
+      const r = await uploadProductDocumentAction(fd);
+      if (r.ok) { setUpMsg({ ok: true, text: r.message ?? "Uploaded." }); setUpTitle(""); form.reset(); router.refresh(); }
+      else setUpMsg({ ok: false, text: r.error });
+    });
+  };
 
   const nameOf = (id: string) => products.find((p) => p.id === id)?.name ?? "Unknown product";
   const rows: { id: string; product: string; title: string; url: string | null; created_at: string; origin: "document" | "product record" | "local" }[] = [
@@ -99,7 +114,22 @@ export function DatasheetsPanel({ products, docs, mode }: { products: Product[];
             <Button onClick={submit} disabled={pending || products.length === 0} className="w-full"><Link2 className="size-4" aria-hidden /> {pending ? "Linking…" : "Link datasheet"}</Button>
           </CardBody>
         </Card>
-        <NotBuiltNote title="FILE UPLOAD">Uploading a PDF into Solink’s own storage needs a storage policy that lets manufacturers write under their products. It is proposed in migration 0007 and not applied yet. Until then, link the document where it is published.</NotBuiltNote>
+        <Card>
+          <CardHeader title="Upload a file" subtitle="PDF or image, up to 15 MB, stored privately under the selected product. Only your own products are accepted." />
+          <CardBody>
+            <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); upload(e.currentTarget); }}>
+              <Field label="Kind">
+                <Select value={upKind} onChange={(e) => setUpKind(e.target.value)}>
+                  <option value="datasheet">Datasheet</option><option value="manual">Manual</option><option value="warranty">Warranty</option><option value="certificate">Certificate</option><option value="image">Product image</option><option value="other">Other</option>
+                </Select>
+              </Field>
+              <Field label="Title" help="e.g. Datasheet rev. 2026-03"><Input value={upTitle} onChange={(e) => setUpTitle(e.target.value)} maxLength={120} /></Field>
+              <Field label="File"><Input type="file" name="file" accept="application/pdf,image/png,image/jpeg,image/webp" className="h-auto py-1.5" /></Field>
+              {upMsg && <p role="status" className={upMsg.ok ? "text-[13px] text-good-fg" : "text-[13px] text-critical-fg"}>{upMsg.text}</p>}
+              <Button type="submit" variant="outline" disabled={pending || products.length === 0} className="w-full"><Upload className="size-4" aria-hidden /> {pending ? "Uploading…" : "Upload file"}</Button>
+            </form>
+          </CardBody>
+        </Card>
       </div>
     </div>
   );

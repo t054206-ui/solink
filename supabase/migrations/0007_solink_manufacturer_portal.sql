@@ -9,7 +9,9 @@
 -- and nullable; nothing existing is rewritten.
 -- ============================================================================
 
--- 1. Company profile fields the brief names (logo, description, contact, categories).
+-- 1. Company profile fields. Superseded 2026-09-22: migration 0008 (applied)
+--    added logo_url and description together with the full company record.
+--    Kept here, guarded, for contact details and categories.
 alter table manufacturers
   add column if not exists logo_url text,
   add column if not exists description text,
@@ -20,12 +22,18 @@ alter table manufacturers
 -- 2. Manufacturers may upload files for their own products into the
 --    product-documents bucket, under <product_id>/… of a product they own.
 --    Reading stays open (existing "product docs read"); admins keep full rights.
-create policy "product docs manufacturer write" on storage.objects for insert with check (
-  bucket_id = 'product-documents' and exists (
-    select 1 from public.solar_products p
-    where p.id::text = (storage.foldername(name))[1] and p.manufacturer_id = public.my_manufacturer_id()
-  )
-);
+--    Applied by 0008 §8 on 2026-09-22; guarded so this file still runs.
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'storage' and tablename = 'objects' and policyname = 'product docs manufacturer write') then
+    create policy "product docs manufacturer write" on storage.objects for insert with check (
+      bucket_id = 'product-documents' and exists (
+        select 1 from public.solar_products p
+        where p.id::text = (storage.foldername(name))[1] and p.manufacturer_id = private.my_manufacturer_id()
+      )
+    );
+  end if;
+end $$;
 -- No delete policy on purpose: a replaced datasheet is a new row in
 -- product_documents; the old file stays so a Solar Passport issued against it
 -- can still cite it.
@@ -58,9 +66,9 @@ create trigger trg_manufacturer_requests_updated before update on manufacturer_r
 alter table manufacturer_requests enable row level security;
 create policy "mfr requests requester" on manufacturer_requests for select using (requester_id = auth.uid());
 create policy "mfr requests create" on manufacturer_requests for insert with check (requester_id = auth.uid());
-create policy "mfr requests manufacturer" on manufacturer_requests for select using (manufacturer_id = my_manufacturer_id());
-create policy "mfr requests manufacturer answer" on manufacturer_requests for update using (manufacturer_id = my_manufacturer_id()) with check (manufacturer_id = my_manufacturer_id());
-create policy "mfr requests admin" on manufacturer_requests for all using (is_admin()) with check (is_admin());
+create policy "mfr requests manufacturer" on manufacturer_requests for select using (manufacturer_id = private.my_manufacturer_id());
+create policy "mfr requests manufacturer answer" on manufacturer_requests for update using (manufacturer_id = private.my_manufacturer_id()) with check (manufacturer_id = private.my_manufacturer_id());
+create policy "mfr requests admin" on manufacturer_requests for all using (private.is_admin()) with check (private.is_admin());
 
 -- 4. Product activity, so "Product Performance" can show views and
 --    comparisons without inventing them. Written by the app when a signed-in
@@ -76,6 +84,6 @@ create index on product_events (product_id, kind, created_at);
 alter table product_events enable row level security;
 create policy "product events insert" on product_events for insert with check (auth.uid() is not null);
 create policy "product events manufacturer read" on product_events for select using (
-  exists (select 1 from solar_products p where p.id = product_id and p.manufacturer_id = my_manufacturer_id())
+  exists (select 1 from solar_products p where p.id = product_id and p.manufacturer_id = private.my_manufacturer_id())
 );
-create policy "product events admin" on product_events for all using (is_admin()) with check (is_admin());
+create policy "product events admin" on product_events for all using (private.is_admin()) with check (private.is_admin());

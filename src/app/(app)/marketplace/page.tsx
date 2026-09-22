@@ -7,7 +7,9 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { listProducts } from "@/lib/data/repositories";
+import { getManufacturer, listManufacturers, listProducts } from "@/lib/data/repositories";
+import { ManufacturerFilter } from "@/components/manufacturers/ManufacturerFilter";
+import { manufacturerHref } from "@/lib/manufacturers/helpers";
 import type { ProductCategory } from "@/lib/types";
 import { CategoryPills } from "./_components/CategoryPills";
 import { CompareTray } from "./_components/CompareTray";
@@ -24,10 +26,19 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
   const raw = Array.isArray(sp.category) ? sp.category[0] : sp.category;
   const category: ProductCategory | null = isCategory(raw) ? raw : null;
 
-  const { data: all, mode } = await listProducts();
+  // Manufacturer filter: the slug in the URL is resolved to a company row and
+  // the product query runs by manufacturer_id in the database. The option list
+  // is the active manufacturer table, never a list written into this file.
+  const rawM = Array.isArray(sp.manufacturer) ? sp.manufacturer[0] : sp.manufacturer;
+  const activeManufacturer = rawM ? (await getManufacturer(rawM)).data : null;
+  const [{ data: all, mode }, { data: manufacturerRows }] = await Promise.all([
+    listProducts(activeManufacturer ? { manufacturerId: activeManufacturer.id } : {}),
+    listManufacturers(),
+  ]);
   const counts: Partial<Record<ProductCategory | "all", number>> = { all: all.length };
   for (const p of all) counts[p.category] = (counts[p.category] ?? 0) + 1;
   const products = category ? all.filter((p) => p.category === category) : all;
+  const manufacturerOptions = manufacturerRows.filter((m) => (m.product_count ?? 0) > 0 || m.id === activeManufacturer?.id).map((m) => ({ slug: m.slug, name: m.name, count: m.product_count ?? 0 }));
   // Real records, and where they came from, for the explainer card. In demo
   // mode there are none and the placeholder says so; once real products are
   // in the catalogue the placeholder would be a lie.
@@ -41,7 +52,7 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
         eyebrow="Choose"
         title="Marketplace"
         description="Every product carries its data source, verification status and the date it was last updated. Missing fields are shown as missing: never estimated."
-        actions={<Button href="/compare" variant="outline">Compare panels</Button>}
+        actions={<><Button href="/marketplace/manufacturers" variant="outline">Manufacturers</Button><Button href="/compare" variant="outline">Compare panels</Button></>}
       />
 
       {mode === "demo" && <DemoBanner className="mb-4" text="DEMO CATALOG — NOT REAL" detail="No real product dataset is connected. All products below are labeled demo records." />}
@@ -71,11 +82,22 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
       </Card>
 
       <div className="space-y-4">
-        <CategoryPills active={category} counts={counts} />
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <CategoryPills active={category} counts={counts} manufacturer={activeManufacturer?.slug ?? null} />
+          <ManufacturerFilter options={manufacturerOptions} active={activeManufacturer?.slug ?? null} />
+        </div>
+        {rawM && !activeManufacturer && <p className="text-[13px] text-fg-muted">No manufacturer with the address “{rawM}”. Showing all products.</p>}
+        {activeManufacturer && (
+          <p className="text-[13px] text-fg-secondary">
+            Showing products by <Link href={manufacturerHref(activeManufacturer)} className="font-medium text-fg underline underline-offset-2">{activeManufacturer.name}</Link>
+            {activeManufacturer.is_archived ? " (archived manufacturer)" : ""}.{" "}
+            <Link href={category ? `/marketplace?category=${category}` : "/marketplace"} className="underline underline-offset-2 hover:text-fg">Clear</Link>
+          </p>
+        )}
         <MarketplaceGrid
-          key={category ?? "all"}
+          key={`${category ?? "all"}-${activeManufacturer?.slug ?? "all"}`}
           products={products}
-          emptyTitle={category ? `No ${CATEGORY_LABEL[category].toLowerCase()} yet` : "No products yet"}
+          emptyTitle={activeManufacturer ? `No products have been added for ${activeManufacturer.name} yet.` : category ? `No ${CATEGORY_LABEL[category].toLowerCase()} yet` : "No products yet"}
         />
       </div>
 

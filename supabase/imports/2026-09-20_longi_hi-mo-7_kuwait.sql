@@ -26,9 +26,13 @@ begin;
 -- ---------------------------------------------------------------------------
 -- Manufacturer. `name` is unique, so this is the idempotency key.
 -- ---------------------------------------------------------------------------
-insert into manufacturers (name, country, website, verification_status, is_demo)
-values ('LONGi Green Energy Technology', 'CN', 'https://www.longi.com/', 'unverified', false)
-on conflict (name) do nothing;
+-- 2026-09-22 (migration 0008): the row is now the full company record. Name
+-- shortened to 'LONGi', legal name and slug added, `country` renamed to
+-- `headquarters_country`. Keyed on slug; the company seed in
+-- 2026-09-22_manufacturers.sql fills the rest.
+insert into manufacturers (name, legal_name, slug, headquarters_country, website, verification_status, is_demo)
+values ('LONGi', 'LONGi Green Energy Technology Co., Ltd.', 'longi', 'China', 'https://www.longi.com/', 'unverified', false)
+on conflict (slug) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- The Kuwait supplier whose listing supplied the price and availability.
@@ -157,7 +161,7 @@ select
   ),
   false, false, false
 from manufacturers m
-where m.name = 'LONGi Green Energy Technology'
+where m.slug = 'longi'
 on conflict (manufacturer_id, model) do update set
   name = excluded.name, description = excluded.description, price = excluded.price, currency = excluded.currency,
   specs = excluded.specs, source = excluded.source, provider_id = excluded.provider_id,
@@ -248,7 +252,7 @@ select
   ),
   false, false, false
 from manufacturers m
-where m.name = 'LONGi Green Energy Technology'
+where m.slug = 'longi'
 on conflict (manufacturer_id, model) do update set
   name = excluded.name, description = excluded.description, price = excluded.price, currency = excluded.currency,
   specs = excluded.specs, source = excluded.source, provider_id = excluded.provider_id,
@@ -338,7 +342,7 @@ select
   ),
   false, false, false
 from manufacturers m
-where m.name = 'LONGi Green Energy Technology'
+where m.slug = 'longi'
 on conflict (manufacturer_id, model) do update set
   name = excluded.name, description = excluded.description, price = excluded.price, currency = excluded.currency,
   specs = excluded.specs, source = excluded.source, provider_id = excluded.provider_id,
@@ -357,5 +361,5 @@ commit;
 --   delete from solar_products where model in ('LR7-72HGD-585M','LR7-72HGD-615M','LR7-72HGD-620M');
 --   delete from data_sources where id in ('da100000-0000-4000-8000-000000000001','da100000-0000-4000-8000-000000000002');
 --   delete from provider_companies where id = 'c1000000-0000-4000-8000-000000000001';
---   delete from manufacturers where name = 'LONGi Green Energy Technology';
+--   delete from manufacturers where slug = 'longi';
 -- ----------------------------------------------------------------------------

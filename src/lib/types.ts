@@ -7,7 +7,12 @@ import type { DataClass } from "./classification";
 export type UUID = string;
 export type ISODate = string;
 
-export type VerificationStatus = "unverified" | "pending_verification" | "verified";
+/**
+ * Verification is an administrator's decision, recorded with a note.
+ * 'needs_changes' and 'rejected' were added by migration 0008 for the
+ * manufacturer workflow; the product queue may use them too.
+ */
+export type VerificationStatus = "unverified" | "pending_verification" | "verified" | "needs_changes" | "rejected";
 export type FieldAvailability = "unavailable" | "not_applicable" | "pending_verification";
 
 /** A spec field that may legitimately be missing. Never force fake values in. */
@@ -17,12 +22,98 @@ export type ProductCategory =
   | "solar_panel" | "inverter" | "battery" | "installation_package"
   | "maintenance_package" | "cleaning_service" | "other_service";
 
+/**
+ * A manufacturer company (table `manufacturers`, migration 0001 + 0008).
+ *
+ * Three kinds of field live here and the UI labels them apart:
+ *  - SOURCE data the company or its official site states: legal_name,
+ *    headquarters_*, website, logo, description.
+ *  - PLATFORM data Solink maintains: manufacturer_type, market_regions (the
+ *    market Solink lists the company for; never a claim of presence),
+ *    verification_*, kuwait_available / gcc_available (null = not yet
+ *    verified by Solink), is_archived.
+ *  - History: current_version_id points at the `manufacturer_versions` row
+ *    that Solar Passports freeze at installation.
+ */
 export interface Manufacturer {
   id: UUID;
   name: string;
-  country?: string | null;
-  website?: string | null;
+  legal_name: string | null;
+  slug: string;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  description: string | null;
+  headquarters_country: string | null;
+  headquarters_city: string | null;
+  website: string | null;
+  manufacturer_type: string | null;
+  market_regions: string[];
+  kuwait_available: boolean | null;
+  gcc_available: boolean | null;
+  availability_note: string | null;
+  verification_status: VerificationStatus;
+  verification_source: string | null;
+  verification_source_url: string | null;
+  verification_date: ISODate | null;
+  verified_by: UUID | null;
+  verification_note: string | null;
+  is_archived: boolean;
+  archived_at: ISODate | null;
   is_demo: boolean;
+  current_version_id: UUID | null;
+  created_at: ISODate;
+  updated_at: ISODate;
+  /** Active, non-demo products in Supabase mode; all products in demo mode. Filled by listManufacturers. */
+  product_count?: number;
+}
+
+export type ManufacturerSourceType = "official_manufacturer_website" | "official_manufacturer_datasheet" | "official_manufacturer_documentation" | "other_verified_source";
+
+/** One reference behind one claim about a manufacturer (table `manufacturer_sources`). */
+export interface ManufacturerSource {
+  id: UUID;
+  manufacturer_id: UUID;
+  /** Which claim it supports: website | legal_name | headquarters | kuwait_availability | gcc_availability | company (null). */
+  field: string | null;
+  source_name: string;
+  source_url: string | null;
+  source_type: ManufacturerSourceType;
+  date_checked: ISODate | null;
+  verification_status: VerificationStatus;
+  notes: string | null;
+  created_by: UUID | null;
+  created_at: ISODate;
+}
+
+/** A document attached to a product (table `product_documents`): a link, or a file in the private product-documents bucket. */
+export interface ProductDocument {
+  id: UUID;
+  product_id: UUID;
+  kind: string;               // datasheet | manual | warranty | certificate | image | other
+  title: string | null;
+  storage_path: string | null;
+  url: string | null;
+  created_at: ISODate;
+}
+
+/** An immutable copy of a manufacturer row (table `manufacturer_versions`). */
+export interface ManufacturerVersion {
+  id: UUID;
+  manufacturer_id: UUID;
+  version: number;
+  snapshot: Record<string, unknown>;
+  change_note: string | null;
+  created_by: UUID | null;
+  created_at: ISODate;
+}
+
+/** What a Solar Passport freezes about the manufacturer at installation (written by trigger, migration 0008). */
+export interface ManufacturerSnapshot {
+  name: string;
+  legal_name: string | null;
+  slug: string;
+  headquarters_country: string | null;
+  website: string | null;
   verification_status: VerificationStatus;
 }
 
@@ -96,7 +187,9 @@ export interface Product {
   id: UUID;
   category: ProductCategory;
   manufacturer_id: UUID | null;
-  manufacturer_name: string;       // denormalized for display
+  manufacturer_name: string;       // denormalized for display (from the manufacturers relationship)
+  manufacturer_slug?: string | null; // for links to the manufacturer profile
+  manufacturer_archived?: boolean;   // the company record is archived; the product stays for history
   model: string;
   name: string;
   description?: string | null;
@@ -206,7 +299,11 @@ export interface SolarPassport {
   installation_company: string | null;
   installer_id: UUID | null;
   installation_date: ISODate | null;
-  panel_snapshot: { manufacturer: string; model: string; specs: Product["specs"]; version_id: UUID | null } | null;
+  panel_snapshot: {
+    manufacturer: string; model: string; specs: Product["specs"]; version_id: UUID | null;
+    /** Frozen at issue time by the database (migration 0008); absent on passports issued before it. */
+    manufacturer_id?: UUID | null; manufacturer_version_id?: UUID | null; manufacturer_snapshot?: ManufacturerSnapshot | null; snapshot_at?: ISODate | null;
+  } | null;
   inverter_snapshot: { manufacturer: string; model: string; specs: Record<string, unknown>; version_id: UUID | null } | null;
   panel_count: number | null;
   capacity_kwp: number | null;

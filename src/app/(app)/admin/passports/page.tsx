@@ -14,7 +14,7 @@ export default async function AdminPassportsPage() {
   const passports = (await Promise.all(systems.data.map((s) => safe(() => getPassport(s.id), null)))).map((r, i) => ({ passport: r.data, system: systems.data[i] })).filter((x) => x.passport);
   return (
     <>
-      <PageHeader eyebrow="Admin" title="Solar Passports" description="solar_passports: one permanent record per installed system, frozen to the product version in force at installation." />
+      <PageHeader eyebrow="Admin" title="Solar Passports" description="solar_passports: one permanent record per installed system, frozen to the product version and the manufacturer version in force at installation. The database refuses any later change to a snapshot." />
       <div className="space-y-4">
         <ModeNotice mode={systems.mode} />
         {systems.error ? <ErrorState>{systems.error}</ErrorState> : passports.length === 0 ? <EmptyState title="No passports issued yet">A passport is created when a system reaches Installed.</EmptyState> : (
@@ -24,7 +24,7 @@ export default async function AdminPassportsPage() {
               <tr key={p!.id}>
                 <Td className="font-mono text-[12px] text-fg">{p!.passport_number}{p!.is_demo && <DataBadge cls="demo" compact className="ml-1" />}</Td>
                 <Td>{s.name}</Td>
-                <Td>{p!.panel_snapshot ? `${p!.panel_snapshot.manufacturer} ${p!.panel_snapshot.model}` : "—"}{p!.panel_snapshot?.version_id && <div className="font-mono text-[11px] text-fg-muted">{p!.panel_snapshot.version_id}</div>}</Td>
+                <Td>{p!.panel_snapshot ? `${p!.panel_snapshot.manufacturer} ${p!.panel_snapshot.model}` : "—"}{p!.panel_snapshot?.version_id && <div className="font-mono text-[11px] text-fg-muted">spec {p!.panel_snapshot.version_id}</div>}{p!.panel_snapshot?.manufacturer_version_id && <div className="font-mono text-[11px] text-fg-muted">mfr {p!.panel_snapshot.manufacturer_version_id}</div>}</Td>
                 <Td>{p!.inverter_snapshot ? `${p!.inverter_snapshot.manufacturer} ${p!.inverter_snapshot.model}` : "—"}</Td>
                 <Td className="tabular">{p!.panel_count ?? "—"} / {p!.capacity_kwp !== null ? `${p!.capacity_kwp} kWp` : "—"}</Td>
                 <Td>{p!.installation_company ?? "—"}</Td>

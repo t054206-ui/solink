@@ -33,6 +33,7 @@ Server components ──▶ src/lib/data/repositories.ts ──▶ Supabase │ 
 - `0003_solink_validation.sql` flags missing/invalid/inconsistent specs into `validation_flags` and demotes "verified" to "pending" on flags; it never edits manufacturer data.
 - `product_imports` / `product_import_rows` support CSV/Excel/API/bulk/manual imports; the admin CSV mapper lives at `/admin/products/import`.
 - Swapping demo → real: insert real rows (is_demo=false); the repositories and every UI surface are unchanged.
+- **Manufacturer companies** (0008): `manufacturers` is the company record; every product links to it by `manufacturer_id`. Directory `/marketplace/manufacturers`, profile `/marketplace/manufacturers/[slug]`, admin `/admin/manufacturers[/new|/[id]|/[id]/edit]`, portal `/manufacturer/company`. Read API: `GET /api/manufacturers`, `/api/manufacturers/[idOrSlug]`, `/api/manufacturers/[idOrSlug]/products`; writes are admin server actions (`saveManufacturerAction`, `setManufacturerVerificationAction`, `archiveManufacturerAction`, `addManufacturerSourceAction`, `setUserManufacturerAction`) and the manufacturer's own `updateCompanyAction` / `uploadProductDocumentAction`. Marketplace filters by manufacturer server-side (`?manufacturer=slug` → `manufacturer_id`); the AI context carries a `manufacturers` block; passports freeze the manufacturer version by trigger.
 
 ## Future integrations (no rebuild required)
 | Integration | Hook point |
@@ -52,6 +53,6 @@ src/app/(app)         everything behind the app shell (dashboard … admin)
 src/app/api           server route handlers (ai/*, weather, geocode, integrations)
 src/components        ui kit, charts, layout, help (InfoTip), agent (chat)
 src/lib               config, classification, glossary, calculations, data layer, demo, ai, weather, maps, supabase
-supabase/migrations   0001 core schema · 0002 RLS + storage · 0003 validation
+supabase/migrations   0001 core schema · 0002 RLS + storage · 0003 validation · 0004 hardening · 0005 version trigger · 0006 tariff sector · 0007 (proposed) portal extras · 0008 manufacturer companies
 docs                  this file, ENVIRONMENT, DECISIONS-NEEDED, DATA-MODEL
 ```

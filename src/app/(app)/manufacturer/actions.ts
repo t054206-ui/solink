@@ -77,15 +77,35 @@ export async function saveOwnProductAction(input: ProductInput): Promise<ActionR
   }
 }
 
-export async function updateCompanyAction(input: { name: string; country: string | null; website: string | null }): Promise<ActionResult> {
+export interface CompanyProfileInput {
+  name: string; legal_name: string | null; description: string | null;
+  headquarters_country: string | null; headquarters_city: string | null;
+  website: string | null; logo_url: string | null; cover_image_url: string | null;
+}
+
+/**
+ * The manufacturer's own profile fields, and only those. Verification,
+ * availability, type, market classification and archive state are not in the
+ * input and are never written here; the database trigger from 0008 would
+ * refuse them from this account anyway.
+ */
+export async function updateCompanyAction(input: CompanyProfileInput): Promise<ActionResult> {
   const g = await gate();
   if ("error" in g) return { ok: false, error: g.error };
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Company name is required." };
-  const { error } = await g.c.from("manufacturers").update({ name, country: input.country?.trim() || null, website: input.website?.trim() || null }).eq("id", g.manufacturerId);
+  const url = (v: string | null) => { const t = v?.trim() ?? ""; return t === "" ? null : t; };
+  for (const [label, v] of [["Website", url(input.website)], ["Logo URL", url(input.logo_url)], ["Cover image URL", url(input.cover_image_url)]] as const) {
+    if (v && !/^https?:\/\//i.test(v)) return { ok: false, error: `${label} must start with https://.` };
+  }
+  const { error } = await g.c.from("manufacturers").update({
+    name, legal_name: input.legal_name?.trim() || null, description: input.description?.trim() || null,
+    headquarters_country: input.headquarters_country?.trim() || null, headquarters_city: input.headquarters_city?.trim() || null,
+    website: url(input.website), logo_url: url(input.logo_url), cover_image_url: url(input.cover_image_url),
+  }).eq("id", g.manufacturerId);
   if (error) return { ok: false, error: error.code === "23505" ? "Another manufacturer already uses that name." : error.message };
-  revalidatePath("/manufacturer/company"); revalidatePath("/marketplace");
-  return { ok: true, message: "Company profile saved. Verification status is unchanged; only Solink's administrators change it." };
+  revalidatePath("/manufacturer/company"); revalidatePath("/marketplace"); revalidatePath("/marketplace/manufacturers"); revalidatePath("/admin/manufacturers");
+  return { ok: true, message: "Company profile saved. Verification and availability are unchanged; only Solink's administrators change them." };
 }
 
 export async function addDatasheetLinkAction(input: { productId: string; title: string; url: string }): Promise<ActionResult> {
@@ -99,4 +119,37 @@ export async function addDatasheetLinkAction(input: { productId: string; title: 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/manufacturer/datasheets");
   return { ok: true, id: data.id as string, message: "Datasheet linked. Earlier documents are kept; nothing is deleted." };
+}
+
+const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
+const ALLOWED_UPLOAD = new Set(["application/pdf", "image/png", "image/jpeg", "image/webp"]);
+
+/**
+ * Upload a datasheet, document or product image into Solink's own storage,
+ * under <product_id>/… of a product this manufacturer owns. The storage
+ * policy "product docs manufacturer write" (0008 §8) enforces the same
+ * ownership at the bucket; a product_documents row records the file. Nothing
+ * is ever deleted here: a replaced datasheet is a newer row.
+ */
+export async function uploadProductDocumentAction(form: FormData): Promise<ActionResult> {
+  const g = await gate();
+  if ("error" in g) return { ok: false, error: g.error };
+  const productId = String(form.get("productId") ?? "");
+  const kind = String(form.get("kind") ?? "datasheet");
+  const title = String(form.get("title") ?? "").trim();
+  const file = form.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Choose a file to upload." };
+  if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: "The file is larger than 15 MB." };
+  if (!ALLOWED_UPLOAD.has(file.type)) return { ok: false, error: "Only PDF, PNG, JPEG or WebP files can be uploaded." };
+  if (!["datasheet", "manual", "warranty", "certificate", "image", "other"].includes(kind)) return { ok: false, error: "Unknown document kind." };
+  const { data: p } = await g.c.from("solar_products").select("id, manufacturer_id").eq("id", productId).maybeSingle();
+  if (!p || p.manufacturer_id !== g.manufacturerId) return { ok: false, error: "That product does not belong to your company." };
+  const safeName = file.name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 100) || "file";
+  const path = `${productId}/${Date.now()}-${safeName}`;
+  const { error: upErr } = await g.c.storage.from("product-documents").upload(path, file, { contentType: file.type, upsert: false });
+  if (upErr) return { ok: false, error: `Upload refused: ${upErr.message}` };
+  const { data, error } = await g.c.from("product_documents").insert({ product_id: productId, kind, title: title || file.name, storage_path: path, uploaded_by: g.userId }).select("id").single();
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/manufacturer/datasheets"); revalidatePath("/admin/datasheets"); revalidatePath("/marketplace/manufacturers");
+  return { ok: true, id: data.id as string, message: "Uploaded and recorded. Earlier documents are kept; nothing is deleted." };
 }

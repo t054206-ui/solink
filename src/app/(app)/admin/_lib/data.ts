@@ -30,7 +30,7 @@ async function query<T>(table: string, select: string, order?: { column: string;
   return { data: (data ?? []) as unknown as T[], mode, error: null };
 }
 
-export const listUserProfiles = () => query<UserProfileRow>("user_profiles", "user_id, full_name, role, provider_company_id, created_at", { column: "created_at", ascending: false });
+export const listUserProfiles = () => query<UserProfileRow>("user_profiles", "user_id, full_name, role, provider_company_id, manufacturer_id, created_at", { column: "created_at", ascending: false });
 export const listProductDocuments = () => query<ProductDocumentRow>("product_documents", "id, product_id, kind, title, storage_path, url, created_at", { column: "created_at", ascending: false });
 export const listDataSources = () => query<DataSourceRow>("data_sources", "id, name, kind, url, notes, created_at", { column: "created_at", ascending: false });
 export const listProductImports = () => query<ProductImportRow>("product_imports", "id, method, file_path, status, summary, created_at, applied_at", { column: "created_at", ascending: false });

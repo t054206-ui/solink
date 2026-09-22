@@ -11,7 +11,7 @@
  */
 import type {
   Product, Manufacturer, ProviderCompany, SolarSystem, SolarPassport, ProductionRecord,
-  MaintenanceCase, Incident, AiAlert, MonthlyReport, SolarProfile, Appointment, Notification,
+  MaintenanceCase, Incident, AiAlert, MonthlyReport, SolarProfile, Appointment, Notification, ManufacturerSource,
 } from "@/lib/types";
 
 export const DEMO_USER_ID = "00000000-0000-0000-0000-00000000d3a0";
@@ -28,11 +28,23 @@ const src = (overrides: Partial<Product["source"]> = {}): Product["source"] => (
 const v = (value: number, unit?: string) => ({ value, unit });
 const na = { value: null, status: "unavailable" as const };
 
+function demoManufacturer(id: string, name: string, slug: string): Manufacturer {
+  return {
+    id, name, slug, legal_name: null, logo_url: null, cover_image_url: null, description: null,
+    headquarters_country: null, headquarters_city: null, website: null, manufacturer_type: null, market_regions: [],
+    kuwait_available: null, gcc_available: null, availability_note: null,
+    verification_status: "unverified", verification_source: null, verification_source_url: null, verification_date: null, verified_by: null, verification_note: null,
+    is_archived: false, archived_at: null, is_demo: true, current_version_id: null,
+    created_at: "2025-01-01T00:00:00Z", updated_at: "2025-01-01T00:00:00Z",
+  };
+}
 export const DEMO_MANUFACTURERS: Manufacturer[] = [
-  { id: "m-demo-a", name: "Demo Manufacturer A", country: null, website: null, is_demo: true, verification_status: "unverified" },
-  { id: "m-demo-b", name: "Demo Manufacturer B", country: null, website: null, is_demo: true, verification_status: "unverified" },
-  { id: "m-demo-c", name: "Demo Manufacturer C", country: null, website: null, is_demo: true, verification_status: "unverified" },
+  demoManufacturer("m-demo-a", "Demo Manufacturer A", "demo-manufacturer-a"),
+  demoManufacturer("m-demo-b", "Demo Manufacturer B", "demo-manufacturer-b"),
+  demoManufacturer("m-demo-c", "Demo Manufacturer C", "demo-manufacturer-c"),
 ];
+/** Demo mode records no sources: there is nothing real to cite. */
+export const DEMO_MANUFACTURER_SOURCES: ManufacturerSource[] = [];
 
 export const DEMO_PRODUCTS: Product[] = [
   {

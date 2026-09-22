@@ -26,6 +26,8 @@ export const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
   unverified: "Unverified",
   pending_verification: "Pending verification",
   verified: "Verified",
+  needs_changes: "Needs changes",
+  rejected: "Rejected",
 };
 export const VERIFICATION_STATUSES = Object.keys(VERIFICATION_LABEL) as VerificationStatus[];
 
@@ -331,6 +333,6 @@ export function csvTemplate(): string {
   return IMPORT_FIELDS.map((f) => f.key).join(",") + "\n";
 }
 
-export function verificationTone(s: VerificationStatus): "good" | "warn" | "neutral" {
-  return s === "verified" ? "good" : s === "pending_verification" ? "warn" : "neutral";
+export function verificationTone(s: VerificationStatus): "good" | "warn" | "neutral" | "serious" | "critical" {
+  return s === "verified" ? "good" : s === "pending_verification" ? "warn" : s === "needs_changes" ? "serious" : s === "rejected" ? "critical" : "neutral";
 }
