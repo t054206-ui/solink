@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Rocket, Home, Calculator, Store, GitCompare, PencilRuler, ShoppingCart, Bot,
+  Rocket, Home, Calculator, Store, GitCompare, PencilRuler, Hammer, Bot,
   Activity, Wrench, Coins, FileText, FileBadge,
 } from "lucide-react";
 import type { PlaceholderKey } from "@/lib/config/placeholders";
@@ -126,17 +126,21 @@ export const SECTIONS: GuideSection[] = [
   },
   {
     id: "purchase-and-installation",
-    title: "Purchase and Installation",
-    icon: ShoppingCart,
-    lead: "This is where a choice becomes a request: the equipment, an installer and a date you would like.",
+    title: "Panels and Installation",
+    icon: Hammer,
+    lead: "Two separate things: buying the panels, which happens at the supplier, and arranging the installation, which happens here.",
     body: [
-      "It runs in order: choose the system (from a saved design or a quick pick), review the itemised list, request a quote, select an installer from the registered companies, then propose a date and time window. You cannot skip ahead, and you can go back.",
-      "What you end up with is a saved request you can adjust or show to a company. Once a system is actually installed, it becomes the basis of your Solar Passport.",
+      "Solink does not sell panels and cannot take a payment. There is no cart and no checkout in it. Each product page lists the supplier listings on record, with the price as it was observed and a link to that supplier's own website, and says plainly when no listing has been recorded rather than sending you somewhere invented.",
+      "Installation is what this page arranges. It runs in order: choose the system (from a saved design or a quick pick), review the itemised list, request a quote, select an installer from the registered companies, then propose a date and time window. You cannot skip ahead, and you can go back.",
+      "What you end up with is a saved request you can adjust or show to a company. Any price you agree is between you and that installer. Once a system is actually installed, it becomes the basis of your Solar Passport.",
     ],
-    links: [{ href: "/purchase", label: "Go to Purchase & Install" }],
+    links: [
+      { href: "/purchase", label: "Go to Panels & Installation" },
+      { href: "/marketplace", label: "Browse panels and their suppliers" },
+    ],
     note: {
-      text: "No payment provider is connected, so nothing here can take money: the payment card is switched off and the button says so. Never type real card details into it. Installation prices are missing until providers enter them, no email or message is sent to anyone, and if no installer company is registered there will be none to choose. Treat this as preparing a request, not buying.",
-      keys: ["PAYMENT_PROVIDER", "INSTALLATION_PRICE", "EMAIL_NOTIFICATION_PROVIDER"],
+      text: "Installation prices are missing until providers enter them, no email or message is sent to anyone, and if no installer company is registered there will be none to choose. Panel prices come from supplier listings an administrator or the supplier recorded, so a model with no listing shows no price and no purchase link.",
+      keys: ["INSTALLATION_PRICE", "EMAIL_NOTIFICATION_PROVIDER"],
     },
   },
   {

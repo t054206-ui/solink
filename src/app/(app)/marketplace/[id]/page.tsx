@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calculator, LibraryBig, PencilRuler, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Calculator, LibraryBig, PencilRuler, Wrench } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +12,7 @@ import { SourceReferences } from "@/components/ui/SourceReferences";
 import { DEMO_PRODUCT_BANNER } from "@/lib/demo/data";
 import { getProduct, listProductPrices, listProductSources } from "@/lib/data/repositories";
 import { PricesCard, SourceDocumentsCard } from "../_components/ProvenanceCards";
+import { SupplierPurchase } from "../_components/SupplierPurchase";
 import { CompareToggle } from "../_components/CompareToggle";
 import { CompareTray } from "../_components/CompareTray";
 import { PriceCell } from "../_components/PriceCell";
@@ -52,7 +53,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
           <>
             <CompareToggle id={p.id} size="md" />
             {isPanel && <Button href={`/designer?panel=${encodeURIComponent(p.id)}`} variant="outline"><PencilRuler className="size-4" aria-hidden /> Use in Designer</Button>}
-            <Button href={`/purchase?panel=${encodeURIComponent(p.id)}`}><ShoppingCart className="size-4" aria-hidden /> Request this system</Button>
+            <Button href={`/purchase?panel=${encodeURIComponent(p.id)}`} variant="outline"><Wrench className="size-4" aria-hidden /> Plan installation</Button>
           </>
         }
       />
@@ -67,8 +68,9 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
               <div className="space-y-4">
                 {p.description && <p className="text-[14px] leading-relaxed text-fg-secondary">{p.description}</p>}
                 <div className="rounded-[10px] border border-border bg-inset p-3">
-                  <div className="text-[12px] text-fg-muted">Price</div>
+                  <div className="text-[12px] text-fg-muted">Price on record</div>
                   <div className="mt-1"><PriceCell product={p} /></div>
+                  <SupplierPurchase prices={prices} className="mt-3 border-t border-border/70 pt-3" />
                 </div>
                 <div className="flex flex-wrap gap-1.5 text-[12px] text-fg-muted">
                   <span>Data class of manufacturer fields:</span>
@@ -108,7 +110,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
             <CardBody className="flex flex-col gap-2">
               <CompareToggle id={p.id} size="md" className="w-full" />
               {isPanel && <Button href={`/designer?panel=${encodeURIComponent(p.id)}`} variant="outline" className="w-full"><PencilRuler className="size-4" aria-hidden /> Use in Designer</Button>}
-              <Button href={`/purchase?panel=${encodeURIComponent(p.id)}`} className="w-full"><ShoppingCart className="size-4" aria-hidden /> Request this system</Button>
+              <Button href={`/purchase?panel=${encodeURIComponent(p.id)}`} variant="outline" className="w-full"><Wrench className="size-4" aria-hidden /> Plan installation</Button>
               <Link href="/recommend" className="mt-1 text-center text-[13px] text-fg-secondary underline underline-offset-2 hover:text-fg">Ask the AI how this compares</Link>
             </CardBody>
           </Card>
