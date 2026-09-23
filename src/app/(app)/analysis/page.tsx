@@ -22,7 +22,11 @@ export default async function AnalysisPage() {
   // through. It was valid when it was saved, so this only matters for a row
   // that arrived some other way, and such a row is dropped rather than rendered
   // into a crash: the page then shows the empty form, which is the truth.
-  const latest = await listSiteAnalyses(1)
+  //
+  // Several rows are read, not one: a failed run is stored as a row too, so
+  // asking for only the most recent one would hide a good analysis behind the
+  // next attempt that went wrong. The newest completed run is the one to show.
+  const latest = await listSiteAnalyses(10)
     .then((r) => r.data.find((a) => a.output?.status === "completed" && SiteAnalysisSchema.safeParse(a.output.analysis).success) ?? null)
     .catch(() => null);
 
