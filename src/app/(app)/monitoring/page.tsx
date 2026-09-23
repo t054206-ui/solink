@@ -2,7 +2,8 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { UnavailableState } from "@/components/ui/States";
 import { InfoTip } from "@/components/help/InfoTip";
-import { listProduction } from "@/lib/data/repositories";
+import { getProduct, listProduction } from "@/lib/data/repositories";
+import { specNum } from "@/lib/utils";
 import { AskSolink } from "../_operate/components/AskSolink";
 import { NoSystemState } from "../_operate/components/NoSystemState";
 import { ProductionCharts } from "../_operate/components/ProductionCharts";
@@ -10,13 +11,17 @@ import { SignalsCard } from "../_operate/components/SignalsCard";
 import { buildProductionChartData } from "../_operate/chartData";
 import { loadOperateContext, profileLocation } from "../_operate/loadSystem";
 import { AiMonitorPanel } from "./_components/AiMonitorPanel";
+import { DemoPanelLayout } from "./_components/DemoPanelLayout";
 
 export const metadata = { title: "Monitoring" };
 
 export default async function MonitoringOverviewPage() {
   const ctx = await loadOperateContext();
   if (!ctx.system) return <NoSystemState feature="Monitoring" />;
-  const { data: production } = await listProduction(ctx.system.id, 400);
+  const [{ data: production }, panelProduct] = await Promise.all([
+    listProduction(ctx.system.id, 400),
+    ctx.system.panel_product_id ? getProduct(ctx.system.panel_product_id).then((r) => r.data).catch(() => null) : Promise.resolve(null),
+  ]);
   const chart = buildProductionChartData(production);
 
   return (
@@ -25,6 +30,19 @@ export default async function MonitoringOverviewPage() {
         <CardHeader title={<>Production <InfoTip term="energy_production" /></>} subtitle={`${ctx.system.name} · daily records aggregated by Solink.`} />
         <CardBody><ProductionCharts data={chart} /></CardBody>
       </Card>
+
+      {ctx.system.panel_count !== null && (
+        <Card>
+          <CardHeader title="Panel layout" subtitle="What per-panel monitoring will look like once hardware reports it." />
+          <CardBody>
+            <DemoPanelLayout
+              count={ctx.system.panel_count}
+              panelLabel={panelProduct ? `${panelProduct.manufacturer_name} ${panelProduct.model}` : null}
+              ratedW={panelProduct ? specNum(panelProduct.specs.rated_power_w) : null}
+            />
+          </CardBody>
+        </Card>
+      )}
 
       <section className="grid gap-4 lg:grid-cols-5" aria-label="Assessment">
         <div className="lg:col-span-3"><AiMonitorPanel systemId={ctx.system.id} location={profileLocation(ctx.profile)} /></div>

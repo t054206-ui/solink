@@ -2127,3 +2127,28 @@ basket" still works and the header count updates.
 
 Session 10: if this pairing reads as cluttered once real people use it,
 that is a design call for the owner, not something to silently simplify.
+
+## Addendum, 2026-09-23 — a demo panel layout on Monitoring's Overview tab
+
+The owner asked for a visual shape of the system on Monitoring, with each
+panel cell showing its own production and performance — in their own words,
+"I create a demo." `/monitoring/panels` already has a strong, deliberate
+stance against this: every cell there is drawn "unknown" because no
+panel-level data source is connected, and the page says plainly that
+inventing numbers "would make a faulty panel look healthy, or a healthy one
+look faulty." That page and its reasoning are untouched.
+
+Built instead as `DemoPanelLayout` (`monitoring/_components/`), a new card
+at the top of Monitoring's Overview tab, right after Production. The
+array's own facts are real — panel count and the panel's manufacturer/model,
+read from the signed-in system (`solar_systems.panel_count`,
+`panel_product_id` → `solar_products`). Only the per-panel production and
+performance figures are illustrative: generated deterministically from the
+panel index (not `Math.random()`, so the card renders the same way twice),
+carrying a `DemoBanner` and `DataBadge cls="demo"` throughout, and a link
+back to the honest `/monitoring/panels` page. Checked by hand: `tsc`,
+`eslint`, `npm run build` clean, and the deterministic math run standalone
+against Maria's real array (10 panels, LONGi LR8-66HGD-625M) — no NaN,
+all three example states (normal/underperforming/fault) appear. Not
+clicked through signed in as her account, same limitation as the basket's
+checkout path above: this session never handles a real password.
