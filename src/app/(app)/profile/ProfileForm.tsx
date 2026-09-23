@@ -96,7 +96,7 @@ export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; m
       } else if (res.reason === "demo") {
         setLocal(toSave);
         setDraft(null);
-        setSave({ tone: "warn", message: `Saved on this device (demo mode: Supabase not connected).${photoNote}` });
+        setSave({ tone: "warn", message: "Saved on this device (demo mode: Supabase not connected)." });
       } else {
         setSave({ tone: "critical", message: res.message });
       }
