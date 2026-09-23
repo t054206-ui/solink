@@ -1,14 +1,14 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, CreditCard, FileText, CalendarDays, Wrench, Building2, PencilRuler, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Store, FileText, CalendarDays, Wrench, Building2, PencilRuler, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
 import { Metric } from "@/components/ui/Metric";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
+import { Placeholder } from "@/components/ui/Placeholder";
 import { EmptyState } from "@/components/ui/States";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTip } from "@/components/help/InfoTip";
@@ -179,32 +179,36 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
       {s.step === 2 && (
         <div className="grid gap-4 md:grid-cols-2">
           <Card className={cn(s.request_kind === "quote" && "ring-2 ring-[var(--brand)]")}>
-            <CardHeader title={<><FileText className="size-4" aria-hidden /> Request a quote <InfoTip term="quote_request" /></>} subtitle="Send your itemised system to installers. They reply with real prices. Nothing is charged." />
+            <CardHeader title={<><FileText className="size-4" aria-hidden /> Request a quote <InfoTip term="quote_request" /></>} subtitle="Send your equipment list to installers. They reply with real prices for the work. Nothing is charged, and Solink is not a party to what you agree with them." />
             <CardBody className="space-y-3">
               <ul className="list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">
-                <li>Creates an order with status <Badge>requested</Badge>.</li>
+                <li>Records a quote request with status <Badge>requested</Badge>.</li>
                 <li>Installers see the equipment list and your roof design.</li>
                 <li>Prices arrive as a quote; you decide afterwards.</li>
               </ul>
               {s.request_kind === "quote" ? (
-                <div className="flex items-center gap-2 rounded-md bg-good-soft px-3 py-2 text-[13px] text-good-fg"><Check className="size-4"  aria-hidden /> Quote requested (order {s.order_id}). Continue to select an installer.</div>
+                <div className="flex items-center gap-2 rounded-md bg-good-soft px-3 py-2 text-[13px] text-good-fg"><Check className="size-4"  aria-hidden /> Quote requested (reference {s.order_id}). Continue to select an installer.</div>
               ) : (
                 <Button onClick={requestQuote} disabled={busy || !items.length} className="w-full">{busy ? "Creating request…" : "Request a quote"}</Button>
               )}
             </CardBody>
           </Card>
-          <Card className="opacity-95">
-            <CardHeader title={<><CreditCard className="size-4" aria-hidden /> Pay now</>} subtitle="Shown for completeness only." />
-            <CardBody className="space-y-3">
-              <DemoBanner text="DEMO PAYMENT — NOT FUNCTIONAL" detail="Do not enter real card details anywhere in Solink." />
-              <PlaceholderNote k="PAYMENT_PROVIDER" />
-              <fieldset disabled aria-disabled className="grid grid-cols-2 gap-2 opacity-60">
-                <legend className="sr-only">Disabled demo card form</legend>
-                <Field label="Card number" className="col-span-2"><Input disabled readOnly placeholder="•••• •••• •••• ••••" /></Field>
-                <Field label="Expiry"><Input disabled readOnly placeholder="MM / YY" /></Field>
-                <Field label="Security code"><Input disabled readOnly placeholder="•••" /></Field>
-              </fieldset>
-              <Button variant="outline" disabled className="w-full" aria-disabled>Payment provider not connected</Button>
+          <Card>
+            <CardHeader title={<><Store className="size-4" aria-hidden /> Buying the equipment</>} subtitle="Solink does not sell it." />
+            <CardBody className="space-y-3 text-[13px] leading-relaxed text-fg-secondary">
+              <p>
+                Solink is a solar planning and product discovery platform. It does not sell panels, take payments or
+                place orders, and there is no checkout anywhere in it. When you are ready to buy, you buy from the
+                supplier.
+              </p>
+              <p>
+                Each product page lists the supplier listings on record, with the price observed and a link straight to
+                that supplier. Where no listing has been recorded, the page says so rather than sending you somewhere
+                invented.
+              </p>
+              <Button href="/marketplace" variant="outline" className="w-full">
+                Find a supplier in the Marketplace <ArrowRight className="size-4" aria-hidden />
+              </Button>
             </CardBody>
           </Card>
         </div>

@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  LayoutDashboard, Home, Sun, Calculator, Store, GitCompare, Sparkles, PencilRuler, ShoppingCart, FileBadge,
+  LayoutDashboard, Home, Sun, Calculator, Store, GitCompare, Sparkles, PencilRuler, FileBadge,
   Activity, Wrench, AlertOctagon, FileText, TrendingUp, Recycle, Bot, ShieldCheck, HelpCircle,
   Inbox, CalendarDays, Hammer, Settings, BarChart3, Users, Package, Building2, Plug, Database, SprayCan, Search,
   ClipboardList, Coins, CalendarClock, Upload, FileSpreadsheet, Factory, Bell, Import, PackagePlus, Compass,
@@ -53,7 +53,7 @@ const HOMEOWNER_NAV: NavEntry[] = [
     link("/compare", "Compare Panels", GitCompare),
     link("/recommend", "AI Recommendation", Sparkles),
     link("/designer", "Solar Designer", PencilRuler),
-    link("/purchase", "Purchase & Install", ShoppingCart),
+    link("/purchase", "Panels & Installation", Hammer),
   ]),
   group("my-system", "My Solar System", Activity, [
     link("/passport", "Solar Passport", FileBadge),
@@ -160,4 +160,4 @@ export function findActive(pathname: string, entries: NavEntry[]): { link: NavLi
   return null;
 }
 
-export const QUICK_START = ["Analyze Home", "Calculate Needs", "Choose System", "Design", "Purchase / Install", "Monitor", "Maintain", "Optimize"];
+export const QUICK_START = ["Analyze Home", "Calculate Needs", "Choose System", "Design", "Buy & Install", "Monitor", "Maintain", "Optimize"];

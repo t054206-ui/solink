@@ -32,10 +32,12 @@ const sizes: Record<Size, string> = {
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant; size?: Size; href?: string; children: ReactNode;
+  /** With `href`: opens elsewhere. Used for links that leave Solink, which always say so. */
+  target?: string; rel?: string;
 }
 
-export function Button({ variant = "primary", size = "md", href, className, children, ...rest }: ButtonProps) {
+export function Button({ variant = "primary", size = "md", href, className, children, target, rel, ...rest }: ButtonProps) {
   const cls = cn(base, variants[variant], sizes[size], "max-[767px]:min-h-11", className);
-  if (href) return <Link href={href} className={cls}>{children}</Link>;
+  if (href) return <Link href={href} className={cls} target={target} rel={rel}>{children}</Link>;
   return <button className={cls} {...rest}>{children}</button>;
 }

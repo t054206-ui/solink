@@ -7,7 +7,7 @@ import type { SavedDesign } from "../designer/designTypes";
 import { PurchaseFlow } from "./PurchaseFlow";
 import type { CatalogItem } from "./purchaseTypes";
 
-export const metadata = { title: "Purchase & Installation" };
+export const metadata = { title: "Panel Purchase & Installation" };
 
 function toItem(p: Product): CatalogItem {
   const len = specNum(p.specs.length_mm), wid = specNum(p.specs.width_mm);
@@ -50,9 +50,19 @@ export default async function PurchasePage({ searchParams }: { searchParams: Pro
     <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6">
       <PageHeader
         eyebrow="Choose"
-        title="Purchase & Installation"
-        description="Turn a design into a request: review the equipment, ask installers for a quote, pick an installer and propose an installation date. Nothing here charges money. No payment provider is connected."
+        title="Panel Purchase & Installation"
+        description="Two separate things. Choosing and comparing equipment happens here; buying the equipment happens on the supplier's own website, from the listing on each product page. What this page arranges is the installation: an equipment list sent to installers for a quote, then a date with the one you pick."
       />
+
+      <div className="mb-5 rounded-[var(--radius-lg)] border border-border bg-inset p-4">
+        <h2 className="text-[14px] font-semibold text-fg">Solink does not sell panels</h2>
+        <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-fg-secondary">
+          Solink is a solar planning and product discovery platform. It does not sell panels or process payments, and
+          there is no cart or checkout anywhere in it. Once you have chosen a panel, the product page links to the
+          supplier listing on record so you can buy it there. Installation is arranged directly with a qualified
+          installer, and any price you agree is between you and them.
+        </p>
+      </div>
       <PurchaseFlow mode={mode} catalog={catalog} providers={providers.map((p) => ({ id: p.id, name: p.name, kind: p.kind, is_demo: p.is_demo, service_area: p.service_area ?? null, verification_status: p.verification_status }))} serverDesigns={serverDesigns} preselectDesignId={sp.design ?? null} />
     </div>
   );

@@ -1,7 +1,14 @@
-/** Feature 10 — Purchase & Installation workflow types (client + server action inputs). */
+/**
+ * Panel Purchase & Installation workflow types (client + server action inputs).
+ *
+ * "Order" here means a quote request to an installer, which is what the
+ * `orders` table has always held: no payment provider, no totals owed to
+ * anyone, no sale. Solink does not sell equipment; the panels themselves are
+ * bought from the supplier listed on the product page.
+ */
 
 export type PurchaseStep = 0 | 1 | 2 | 3 | 4 | 5;
-export const STEP_LABELS = ["Choose System", "Review", "Purchase / Request", "Select Installation", "Schedule"] as const;
+export const STEP_LABELS = ["Choose System", "Review", "Request a Quote", "Select Installation", "Schedule"] as const;
 
 /** A catalog product reduced to what the flow needs — prices are never invented. */
 export interface CatalogItem {
