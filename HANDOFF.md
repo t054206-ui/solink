@@ -2019,7 +2019,7 @@ what changed is listed.
 - Supplier prices: the only price rows are the three LONGi Hi-MO 7 retailer observations. `solar_product_prices` is ready for more; the marketplace still reads `price` on the product row for the card.
 - The technology-family filter groups by datasheet wording only (`technologyFamily` in `product-helpers.ts`). The LONGi X6 rows read "HPBC" from the product page, not the datasheet (C-011), and are sourced accordingly.
 - Trina Vertex N: the product page `/en-glb/NEG21C.20/` and render were added 2026-09-23 (C-017). That page links a 2025 C datasheet (up to 740 W) that has not been read; the rows follow the 2024 B edition.
-- 2026-09-23: production broke because someone pressed "Harden Data API" in Supabase (exposed schemas became `api, graphql_public`; every `public` read was refused with 406 from 17:12 UTC on 2026-09-22). `public` was added back on the owner's word and the site recovered. The empty `api` schema is still first in the list; clients that name no schema land on it. Remove it or build views in it.
+- 2026-09-23: production broke because someone pressed "Harden Data API" in Supabase (exposed schemas became `api, graphql_public`; every `public` read was refused with 406 from 17:12 UTC on 2026-09-22). `public` was added back on the owner's word and the site recovered. The empty `api` schema was removed from the exposed list on 2026-09-23 on the owner's word ("fix it"), so `public` is the default again for clients that name no schema (the n8n Supabase node). The schema itself still exists, empty; drop it or build views in it.
 
 ## What to do next, in priority order
 

@@ -42,6 +42,8 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   environments in Supabase mode, sign-up live, the owner's account is admin.
   Still needed: service-role key, SMTP sender, domain. Leaked-password
   protection needs the Pro plan (Session 9 tried the toggle; Supabase refused).
+  **Never press "Harden Data API"** in Supabase: it removes `public` from the
+  exposed schemas and every read in the app fails (2026-09-22 outage).
 - Platform settings entered with sources on the owner's yes: tariff by MEW
   sector, CO₂ factor, peak sun hours 5.58 (GHI, Kuwait City), performance
   ratio 0.86. Never enter a platform number without the owner's yes;
