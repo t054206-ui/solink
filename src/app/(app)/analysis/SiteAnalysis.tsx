@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, ExternalLink, Loader2, MapPin, Satellite, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, ExternalLink, Loader2, MapPin, Satellite, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -9,6 +9,7 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
 import { formatDate } from "@/lib/utils";
+import { forgetPlacementLocation, readPlacementLocation, type CarriedLocation } from "@/lib/solar/placementHandoff";
 import type {
   AnalysisSources,
   EnvironmentAssessment,
@@ -117,6 +118,27 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
   const saved = fromRow(latest);
   const [address, setAddress] = useState("");
   const [state, setState] = useState<State>(saved ? { status: "done", result: saved } : { status: "idle" });
+  /**
+   * A location settled on in the Placement Guide, if the person came from
+   * there in this tab. Read after mount, never during render: it lives in
+   * sessionStorage, which the server render cannot see, and reading it here
+   * keeps the two renders in agreement.
+   */
+  const [carried, setCarried] = useState<CarriedLocation | null>(null);
+
+  useEffect(() => {
+    const c = readPlacementLocation();
+    if (!c) return;
+    setCarried(c);
+    // The address it resolved goes straight into the field, so the same place
+    // is not looked up twice. Anything the person has already typed wins.
+    setAddress((current) => (current.length === 0 && c.address ? c.address : current));
+  }, []);
+
+  function dropCarried() {
+    forgetPlacementLocation();
+    setCarried(null);
+  }
 
   const running = state.status === "running";
   /** A run completed in this visit, as opposed to one restored from the database. */
@@ -157,6 +179,8 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
 
   return (
     <div className="space-y-5">
+      {carried && <CarriedLocationCard location={carried} onDismiss={dropCarried} />}
+
       <Card>
         <CardHeader
           title={
@@ -202,6 +226,64 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
 
       {state.status === "done" && <Result result={state.result} isSaved={saved?.id === state.result.id} />}
     </div>
+  );
+}
+
+/**
+ * The location carried over from the Placement Guide.
+ *
+ * It states what was resolved and how precisely, in the guide's own words, so
+ * the person can see they are still talking about the same place. It is a
+ * starting point, not a result: the analysis below still resolves the address
+ * itself through Google, and reports what that run found.
+ */
+function CarriedLocationCard({ location, onDismiss }: { location: CarriedLocation; onDismiss: () => void }) {
+  const ns = location.latitude >= 0 ? "N" : "S";
+  const ew = location.longitude >= 0 ? "E" : "W";
+  const coords = `${Math.abs(location.latitude).toFixed(2)}° ${ns}, ${Math.abs(location.longitude).toFixed(2)}° ${ew}`;
+
+  return (
+    <Card>
+      <CardHeader
+        title={
+          <>
+            <MapPin className="size-4 text-[var(--brand-strong)]" aria-hidden="true" /> Location
+          </>
+        }
+        subtitle="Carried over from the Placement Guide, in this browser."
+        action={
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="press inline-flex items-center gap-1 rounded-[var(--radius)] px-2 py-1 text-[12.5px] text-fg-secondary hover:bg-inset hover:text-fg"
+          >
+            <X className="size-3.5" aria-hidden="true" /> Use a different place
+          </button>
+        }
+      />
+      <CardBody>
+        <p className="text-[17px] font-semibold leading-snug text-fg">
+          {location.address ?? "Your device's location"}
+        </p>
+        <p className="figure mt-0.5 text-[13.5px] text-fg-secondary">{coords}</p>
+
+        {location.source === "address" ? (
+          <p className="mt-2 text-[12.5px] leading-relaxed text-fg-muted">
+            {location.typed && location.typed !== location.address ? <>You entered &ldquo;{location.typed}&rdquo;. </> : null}
+            Google Maps resolved it{location.precision ? ` (${location.precision})` : ""}
+            {location.approximate
+              ? ", which is a nearby street or area rather than the building itself."
+              : "."}{" "}
+            The address is already in the field below, so you do not have to find it again.
+          </p>
+        ) : (
+          <p className="mt-2 text-[12.5px] leading-relaxed text-fg-muted">
+            These coordinates came from your browser, and Solink did not look up an address for them. The analysis
+            below works from an address, so enter one for this area to run it.
+          </p>
+        )}
+      </CardBody>
+    </Card>
   );
 }
 
