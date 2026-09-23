@@ -51,6 +51,7 @@ export const SECTIONS: GuideSection[] = [
     links: [
       { href: "/profile", label: "Go to Solar Profile" },
       { href: "/analysis", label: "Go to Solar Potential" },
+      { href: "/workflow", label: "How a site analysis works" },
     ],
     note: {
       text: "Roof direction, tilt and shading are recorded but not yet used in the maths. Until a site data source is connected, every roof is treated the same, so treat the result as a rough size guide. Sunlight figures for your exact address need a solar resource source, and the map view needs a Google Maps key. Without the map you can still type your coordinates by hand.",

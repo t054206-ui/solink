@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { ExternalLink, Loader2, MapPin, Satellite } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Circle, ExternalLink, Loader2, MapPin, Satellite, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -34,13 +35,35 @@ import type {
  * "something went wrong".
  */
 
-const STAGES = [
-  "Finding location…",
-  "Checking weather and air quality…",
-  "Reading the forecast…",
-  "Applying Solink analysis rules…",
-  "Saving analysis…",
-] as const;
+/**
+ * The run, as the six things that actually happen on the server, in order.
+ *
+ * The whole pipeline is one request, so while it is in flight the
+ * browser knows only that the address was sent: no step is ticked on a timer,
+ * because a tick is a claim that the work finished. When the request returns,
+ * a success ticks all six and a failure ticks the ones the reported stage
+ * proves were reached, marks that stage as the one that stopped, and leaves
+ * the rest untouched.
+ */
+const RUN_STEPS: { key: string; label: string }[] = [
+  { key: "input", label: "Address sent" },
+  { key: "geocoding", label: "Location found" },
+  { key: "weather", label: "Environmental data retrieved" },
+  { key: "analysis", label: "Conditions analysed" },
+  { key: "persistence", label: "Analysis saved" },
+  { key: "done", label: "Results ready" },
+];
+
+/** Where a failed run stopped, in the order the steps above run. */
+const FAILED_AT: Record<string, number> = {
+  input: 0,
+  auth: 0,
+  geocoding: 1,
+  google_solar: 2,
+  weather: 2,
+  analysis: 3,
+  persistence: 4,
+};
 
 const STAGE_LABEL: Record<string, string> = {
   input: "the address you entered",
@@ -48,7 +71,7 @@ const STAGE_LABEL: Record<string, string> = {
   geocoding: "finding the location",
   google_solar: "reading the roof",
   weather: "checking the weather",
-  analysis: "generating the analysis",
+  analysis: "analysing the conditions",
   persistence: "saving the analysis",
 };
 
@@ -96,19 +119,20 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
   const [state, setState] = useState<State>(saved ? { status: "done", result: saved } : { status: "idle" });
 
   const running = state.status === "running";
+  /** A run completed in this visit, as opposed to one restored from the database. */
+  const freshRun = state.status === "done" && saved?.id !== state.result.id;
+  /**
+   * Which step a failed run stopped at, when the server named a stage this
+   * list knows. A failure it cannot place (a rate limit, say) leaves the list
+   * out altogether rather than drawing a half-finished run that never ran.
+   */
+  const failedAt = state.status === "error" ? (FAILED_AT[state.stage] ?? null) : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (running || address.trim().length < 3) return;
 
-    // The stage counter walks forward on a timer because the server does the
-    // whole pipeline in one request. It is a progress indication, not a claim
-    // about which call is in flight; the real stage only matters on failure,
-    // and that comes back from the server.
     setState({ status: "running", stage: 0 });
-    const ticks = [1, 2, 3, 4].map((i) =>
-      setTimeout(() => setState((s) => (s.status === "running" ? { status: "running", stage: i } : s)), i * 2500),
-    );
 
     try {
       const res = await fetch("/api/analysis/site", {
@@ -121,13 +145,13 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
       else
         setState({
           status: "error",
-          stage: body?.stage ?? "analysis",
+          // A 429 from the rate limiter carries no stage. Naming a stage we
+          // were not told about would be a guess, so it stays unnamed.
+          stage: body?.stage ?? "unknown",
           message: body?.message ?? `The analysis could not be completed (HTTP ${res.status}).`,
         });
     } catch {
-      setState({ status: "error", stage: "analysis", message: "Could not reach the analysis service. Check your connection and try again." });
-    } finally {
-      ticks.forEach(clearTimeout);
+      setState({ status: "error", stage: "network", message: "Could not reach the analysis service. Check your connection and try again." });
     }
   }
 
@@ -162,9 +186,13 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
             </Button>
           </form>
 
-          <p className="mt-2 text-[12px] text-fg-muted" aria-live="polite">
-            {running ? STAGES[Math.min((state as { stage: number }).stage, STAGES.length - 1)] : " "}
+          <p className="mt-2 text-[12.5px] text-fg-muted">
+            <Link href="/workflow" className="inline-flex items-center gap-1 font-medium text-data underline underline-offset-2 hover:opacity-80">
+              See how this analysis works <ArrowRight className="size-3.5" aria-hidden="true" />
+            </Link>
           </p>
+
+          {(running || freshRun || failedAt !== null) && <RunProgress complete={freshRun} failedAt={failedAt} />}
         </CardBody>
       </Card>
 
@@ -173,6 +201,54 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
       )}
 
       {state.status === "done" && <Result result={state.result} isSaved={saved?.id === state.result.id} />}
+    </div>
+  );
+}
+
+/**
+ * What the run has actually done, while it is doing it.
+ *
+ * A tick here means the step is confirmed. While the request is in flight only
+ * the first line is ticked, because sending the address is the only thing the
+ * browser has done: the rest happen on the server inside one request, and
+ * ticking them on a timer would be a guess dressed up as progress. When a run
+ * fails, the server names the stage it stopped at; the steps before it are
+ * ticked, that one is marked, and the ones after it stay untouched.
+ */
+function RunProgress({ failedAt, complete }: { failedAt: number | null; complete: boolean }) {
+  const failed = failedAt !== null;
+  // Ticked: everything, once the server returned a completed run; everything
+  // before the stage it named, when it failed; otherwise only the send.
+  const through = complete ? RUN_STEPS.length : failed ? failedAt : 1;
+  return (
+    <div className="mt-3 rounded-[var(--radius)] border border-border bg-inset p-3" aria-live="polite">
+      <ol className="space-y-1.5">
+        {RUN_STEPS.map((step, i) => {
+          const done = i < through;
+          const stopped = failed && i === failedAt;
+          return (
+            <li key={step.key} className="flex items-center gap-2 text-[13px]">
+              {done ? (
+                <CheckCircle2 className="size-4 shrink-0 text-good-fg" aria-hidden="true" />
+              ) : stopped ? (
+                <XCircle className="size-4 shrink-0 text-critical-fg" aria-hidden="true" />
+              ) : (
+                <Circle className="size-4 shrink-0 text-fg-muted" aria-hidden="true" />
+              )}
+              <span className={done ? "text-fg-secondary" : stopped ? "font-medium text-fg" : "text-fg-muted"}>
+                {step.label}
+                {stopped ? " — stopped here" : ""}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      {!failed && !complete && (
+        <p className="mt-2.5 flex items-center gap-2 border-t border-border/70 pt-2.5 text-[12px] text-fg-muted">
+          <Loader2 className="size-3.5 shrink-0 animate-spin" aria-hidden="true" />
+          Running on the server. Each step is ticked when it is confirmed, not before.
+        </p>
+      )}
     </div>
   );
 }
@@ -460,10 +536,21 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
                     : "Generated from the data above"
               }
             />
-            <Row label="Saved" value={`${formatDate(result.completedAt)}${isSaved ? " (restored from your saved analyses)" : ""}`} />
+            <Row
+              label="Stored"
+              value={`Saved to your Solink account on ${formatDate(result.completedAt)}${isSaved ? ", and restored here from your saved analyses" : ""}. Only you can read it.`}
+            />
           </dl>
           <p className="mt-3 text-[12px] leading-relaxed text-fg-muted">
-            The analysis applies Solink&apos;s environmental rules to the provider data. It is not a survey, and it does not measure this building: a roof still has to be inspected before anything is installed.
+            The analysis applies Solink&apos;s environmental rules to the provider data. No AI model takes part in it, and
+            roof measurements are optional: when they are unavailable the rest of the analysis still runs, and the
+            roof rows above read &ldquo;Unavailable&rdquo; rather than zero. It is not a survey and it does not measure this
+            building: a roof still has to be inspected before anything is installed.
+          </p>
+          <p className="mt-2 text-[12px] leading-relaxed text-fg-muted">
+            <Link href="/workflow" className="inline-flex items-center gap-1 font-medium text-data underline underline-offset-2 hover:opacity-80">
+              See how this analysis works <ArrowRight className="size-3.5" aria-hidden="true" />
+            </Link>
           </p>
         </CardBody>
       </Card>
