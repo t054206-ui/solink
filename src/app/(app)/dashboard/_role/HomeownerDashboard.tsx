@@ -137,7 +137,7 @@ export default async function HomeownerDashboard() {
         </section>
       )}
 
-      <section className="grid gap-4 lg:grid-cols-3" aria-label="Quick links">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3" aria-label="Quick links">
         <div className="lg:col-span-2 grid gap-2 sm:grid-cols-2">
           <QuickLink href="/monitoring" icon={Activity} title="Monitoring" text="Charts, AI assessment, weather, cleaning, inspection." />
           <QuickLink href={`/passport/${system.id}`} icon={FileBadge} title="Solar Passport" text="Equipment, warranties and full history." />

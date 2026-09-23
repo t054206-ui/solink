@@ -69,8 +69,8 @@ export function SystemStage({ eyebrow, title, description, actions, sun, array, 
 function Node({ node }: { node: FlowNode }) {
   return (
     <li className="min-w-0 px-5 py-4 sm:px-7 lg:px-9">
-      <div className="flex items-center gap-2">
-        <span className="micro">{node.label}</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="micro whitespace-nowrap">{node.label}</span>
         <DataBadge cls={node.cls} compact />
       </div>
       <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
