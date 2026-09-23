@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Home, Sun, Calculator, Store, GitCompare, Sparkles, PencilRuler, ShoppingCart, FileBadge,
   Activity, Wrench, AlertOctagon, FileText, TrendingUp, Recycle, Bot, ShieldCheck, HelpCircle,
   Inbox, CalendarDays, Hammer, Settings, BarChart3, Users, Package, Building2, Plug, Database, SprayCan, Search,
-  ClipboardList, Coins, CalendarClock, Upload, FileSpreadsheet, Factory, Bell, Import, PackagePlus,
+  ClipboardList, Coins, CalendarClock, Upload, FileSpreadsheet, Factory, Bell, Import, PackagePlus, Compass,
 } from "lucide-react";
 import type { Role } from "@/lib/roles";
 
@@ -46,6 +46,7 @@ const HOMEOWNER_NAV: NavEntry[] = [
   link("/dashboard", "Home", Home, { match: exact("/dashboard") }),
   group("go-solar", "Go Solar", Sun, [
     link("/profile", "Solar Profile", Home),
+    link("/placement", "Placement Guide", Compass),
     link("/analysis", "Solar Potential", Sun),
     link("/calculator", "Savings Calculator", Calculator),
     link("/marketplace", "Marketplace", Store),
