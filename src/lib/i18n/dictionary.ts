@@ -116,7 +116,7 @@ const en = {
   "audience.manufacturer": "I make panels",
   "audience.manufacturerSub": "Publish your products and keep their specs current.",
 
-  "journey.title": "Ten steps, one place",
+  "journey.title": "Nine steps, one place",
   "journey.sub": "Most people arrive at step one and have no idea what step four involves. Solink keeps all of it in a single account.",
   "journey.1": "Analyze", "journey.1d": "Your roof, your consumption, your shading.",
   "journey.2": "Calculate", "journey.2d": "What a system would produce and save.",
@@ -484,7 +484,7 @@ const ar: Dict = {
   "audience.manufacturer": "أنا أصنّع ألواح",
   "audience.manufacturerSub": "انشر منتجاتك وخلّ مواصفاتها محدّثة.",
 
-  "journey.title": "عشر خطوات، بمكان واحد",
+  "journey.title": "تسع خطوات، بمكان واحد",
   "journey.sub": "أغلب الناس يوصلون للخطوة الأولى وما يدرون شنو الخطوة الرابعة. سولينك يجمعهن كلهن بحساب واحد.",
   "journey.1": "تحليل", "journey.1d": "سطحك، استهلاكك، والظل عندك.",
   "journey.2": "حساب", "journey.2d": "شكثر بينتج النظام وشكثر بيوفّر.",

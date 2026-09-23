@@ -124,10 +124,13 @@ export default function LandingPage() {
           <p className="mt-4 max-w-xl text-[15.5px] text-fg-secondary">{t("journey.sub")}</p>
 
           <ol className="mt-12 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-5">
-            {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((n) => (
+            {/* Purchase (step 5) removed on the owner's word, 2026-09-23. The remaining
+                steps keep their own journey.N content keys but are numbered 01–09 in
+                display order, so there is no gap where 05 used to be. */}
+            {([1, 2, 3, 4, 6, 7, 8, 9, 10] as const).map((n, i) => (
               <li key={n} className="border-t border-border pt-3">
                 <span className="micro text-[color:var(--sun-ink)]">
-                  {String(n).padStart(2, "0")}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-1.5 text-[15.5px] font-semibold text-fg">
                   {t(`journey.${n}` as const)}
