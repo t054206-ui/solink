@@ -83,22 +83,25 @@ export function mountFilm(root, opts){
   ];
   var jBtns = JOURNEY.map(function(){
     var s = document.createElement("span");
-    s.className = "jstep"; s.innerHTML = '<b></b>';
+    s.className = "jstep"; s.appendChild(document.createElement("b"));
     journey.appendChild(s); return s;
   });
   var tags = LAYERS.map(function(){
     var d = document.createElement("div");
-    d.className = "tag"; d.innerHTML = '<i></i><span></span>';
+    d.className = "tag"; d.appendChild(document.createElement("i")); d.appendChild(document.createElement("span"));
     root.appendChild(d); return d;
   });
   var ecoTags = [0,1,2].map(function(){
     var d = document.createElement("div");
-    d.className = "tag eco"; d.innerHTML = '<span></span>';
+    d.className = "tag eco"; d.appendChild(document.createElement("span"));
     root.appendChild(d); return d;
   });
   var railBtns = LAYERS.map(function(L,i){
     var b = document.createElement("button");
-    b.type = "button"; b.innerHTML = '<span class="dot"></span><span class="name"></span>';
+    b.type = "button";
+    var dot = document.createElement("span"); dot.className = "dot";
+    var name = document.createElement("span"); name.className = "name";
+    b.appendChild(dot); b.appendChild(name);
     b.addEventListener("click", function(){ jumpToStep(i); });
     rail.appendChild(b); return b;
   });
