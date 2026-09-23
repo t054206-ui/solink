@@ -344,6 +344,62 @@ summary, label[for], select:not(:disabled) { cursor: pointer; touch-action: mani
 .panel-canvas { cursor: grab; }
 .panel-canvas:active { cursor: grabbing; }
 
+/* ── Inside the app ──────────────────────────────────────────────────────
+   The landing page's vocabulary, for the authenticated pages. The room
+   itself is <Stage> (src/components/layout/Stage.tsx): bone, one hairline,
+   the plotted grid. These are the two moving parts that go with it.
+
+   .flow — the path energy takes between two stops. Still and dashed by
+   default. data-live="true" only when a real production figure exists: it
+   turns amber (an energy mark, so amber is allowed) and moves, slowly.
+   Horizontal from 640px, vertical below, and reversed under RTL so it still
+   runs from the sun toward the home.
+
+   .lift — cards and links rise 2px on hover. Pointer devices only; they
+   never fade (banned). */
+:root { --dur-ambient: 2200ms; }
+
+@keyframes flow-x { to { background-position: 20px 0 } }
+@keyframes flow-y { to { background-position: 0 20px } }
+
+.flow {
+  display: block;
+  width: 1px;
+  min-height: 28px;
+  align-self: stretch;
+  background-image: repeating-linear-gradient(180deg, var(--border-strong) 0 5px, transparent 5px 10px);
+}
+.flow[data-live="true"] {
+  width: 2px;
+  background-image: repeating-linear-gradient(180deg, var(--sun) 0 10px, transparent 10px 20px);
+  background-size: 100% 20px;
+  animation: flow-y var(--dur-ambient) linear infinite;
+}
+@media (min-width: 640px) {
+  .flow {
+    width: 100%;
+    height: 1px;
+    min-height: 0;
+    align-self: auto;
+    background-image: repeating-linear-gradient(90deg, var(--border-strong) 0 5px, transparent 5px 10px);
+  }
+  .flow[data-live="true"] {
+    width: 100%;
+    height: 2px;
+    background-image: repeating-linear-gradient(90deg, var(--sun) 0 10px, transparent 10px 20px);
+    background-size: 20px 100%;
+    animation-name: flow-x;
+  }
+  [dir="rtl"] .flow[data-live="true"] { animation-direction: reverse; }
+}
+
+.lift {
+  transition: transform var(--dur-base) var(--ease-out), border-color var(--dur-fast) linear, background-color var(--dur-fast) linear;
+}
+@media (hover: hover) {
+  .lift:hover { transform: translate3d(0, -2px, 0); border-color: var(--border-strong); }
+}
+
 /* ── The opening ──────────────────────────────────────────────────────────
    The film itself is the owner's artifact, styled by
    src/components/intro/film/film.css. Only the curtain lives here: a

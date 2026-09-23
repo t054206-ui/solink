@@ -10,7 +10,7 @@
  */
 import Link from "next/link";
 import { Activity, FileBadge, Wrench, AlertOctagon, FileText, ArrowRight, Sparkles, CalendarClock, SprayCan } from "lucide-react";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { Stage } from "@/components/layout/Stage";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
@@ -33,8 +33,10 @@ import { MonthlyTotalsChart } from "../../_operate/components/MonthlyTotalsChart
 import { StatusPill } from "../../_operate/components/StatusPill";
 import { CurrentConditions } from "../../_operate/components/WeatherSummary";
 import { loadWeatherForProfile } from "../../_operate/loadWeather";
+import { WEATHER_SOURCE, type WeatherState } from "../../_operate/weather";
 import { deriveStatus, inheritCls, lastCleaning, lastDays, monthToDateKwh, monthlyTotals, productionCls, sevenVsThirty, todayKwh, trailingKwh } from "../../_operate/production";
 import { JourneyProgress, type JourneyStep } from "../_components/JourneyProgress";
+import { SystemStage, type FlowNode } from "../_components/SystemStage";
 
 export default async function HomeownerDashboard() {
   const [{ data: systems, mode }, { data: profile }, settings] = await Promise.all([listSystems(), getProfile(), getPlatformSettings()]);
@@ -71,8 +73,11 @@ export default async function HomeownerDashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Overview" title={`Hello${isDemo ? ", demo homeowner" : ""}`} description={<>Your system <span className="font-medium text-fg">{system.name}</span> at a glance. Every figure says where it comes from.</>}
-        actions={<><Button href="/monitoring" variant="outline" size="sm"><Activity className="size-4" aria-hidden /> Monitoring</Button><Button href="/agent" size="sm"><Sparkles className="size-4" aria-hidden /> Ask Solink</Button></>} />
+      <SystemStage eyebrow="Overview" title={`Hello${isDemo ? ", demo homeowner" : ""}`} description={<>Your system <span className="font-medium text-fg">{system.name}</span> at a glance. Every figure says where it comes from.</>}
+        actions={<><Button href="/monitoring" variant="outline" size="sm"><Activity className="size-4" aria-hidden /> Monitoring</Button><Button href="/agent" size="sm"><Sparkles className="size-4" aria-hidden /> Ask Solink</Button></>}
+        sun={sunNode(weather)} array={arrayNode(capacity, system.panel_count)} home={homeNode(today, system.monitoring_source)}
+        live={today.value !== null} idleLabel={system.monitoring_source === null ? "No monitoring connected" : "No reading today"}
+        moduleNote="A generic module, drawn to show the parts. Not your installation." />
 
       {isDemo && <DemoBanner text={DEMO_BANNER} detail="This dashboard is built from a demo system and a simulated production series so you can see how Solink works." />}
 
@@ -149,9 +154,40 @@ export default async function HomeownerDashboard() {
 
 /* ---------------- pieces ---------------- */
 
+/* The three stops on the Overview's energy path. Each reads a value the page
+   already loaded and nothing else; a missing value stays missing. */
+
+function sunNode(weather: WeatherState): FlowNode {
+  if (weather.status !== "ok") {
+    const text = weather.status === "no_location" ? "No location on record" : weather.status === "not_configured" ? "Weather is not connected" : "Weather could not be loaded";
+    return { label: "Sun", cls: "unavailable", text };
+  }
+  const { current: c, location } = weather.bundle;
+  return {
+    label: "Sun",
+    cls: "source",
+    figure: c.temp_c === null ? undefined : { value: c.temp_c, decimals: 0, unit: "°C" },
+    text: c.condition ?? (c.temp_c === null ? "No reading" : undefined),
+    detail: `${location.name} · ${WEATHER_SOURCE}`,
+  };
+}
+
+function arrayNode(capacity: Classified, panelCount: number | null): FlowNode {
+  const panels = panelCount ? `${panelCount} panels` : null;
+  if (capacity.value === null) return { label: "Panels", cls: capacity.cls, text: "Capacity not recorded", detail: panels ?? undefined };
+  return { label: "Panels", cls: capacity.cls, figure: { value: capacity.value, decimals: 1, unit: "kWp" }, detail: [panels, capacity.source].filter(Boolean).join(" · ") };
+}
+
+function homeNode(today: Classified, monitoringSource: string | null): FlowNode {
+  if (today.value === null) {
+    return { label: "Home, today", cls: today.cls, text: "No reading today", detail: monitoringSource === null ? "No monitoring hardware is connected." : "Nothing has been recorded for today yet." };
+  }
+  return { label: "Home, today", cls: today.cls, figure: { value: today.value, decimals: 1, unit: "kWh" }, energy: true, detail: "Production recorded today" };
+}
+
 function StatusCard({ title, icon: Icon, href, status, cls, lines, statusLabelOverride }: { title: string; icon: typeof Wrench; href: string; status: Parameters<typeof StatusPill>[0]["status"]; cls: Parameters<typeof DataBadge>[0]["cls"]; lines: string[]; statusLabelOverride?: string }) {
   return (
-    <Link href={href} className="flex min-w-0 flex-col gap-2 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
+    <Link href={href} className="lift flex min-w-0 flex-col gap-2 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-fg-secondary truncate"><Icon className="size-3.5 text-fg-muted" aria-hidden />{title}</div>
         <DataBadge cls={cls} compact />
@@ -164,7 +200,7 @@ function StatusCard({ title, icon: Icon, href, status, cls, lines, statusLabelOv
 
 function QuickLink({ href, icon: Icon, title, text }: { href: string; icon: typeof Wrench; title: string; text: string }) {
   return (
-    <Link href={href} className="group flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-elevated px-3.5 py-3 hover:bg-inset">
+    <Link href={href} className="lift group flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-elevated px-3.5 py-3 hover:bg-inset">
       <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[8px] bg-inset text-fg-secondary group-hover:bg-elevated"><Icon className="size-4" aria-hidden /></span>
       <span className="min-w-0 flex-1"><span className="block text-[13.5px] font-medium text-fg">{title}</span><span className="block text-[12.5px] text-fg-muted">{text}</span></span>
       <ArrowRight className="mt-1 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -214,11 +250,15 @@ function Onboarding({ profile }: { profile: SolarProfile | null }) {
   ];
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Overview" title="Welcome to Solink" description="You don't have a solar system on record yet. Follow the journey below; your dashboard fills in as you go." />
+      <Stage label="Welcome" focus="80% 30%" className="px-5 py-7 sm:px-7 sm:py-9 lg:px-9">
+        <p className="micro wipe">Overview</p>
+        <h1 className="display wipe mt-3 text-[clamp(2rem,4.6vw,3.25rem)] text-fg" style={{ animationDelay: "90ms" }}>Welcome to Solink</h1>
+        <p className="wipe mt-4 max-w-xl text-[15px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>You don&apos;t have a solar system on record yet. Follow the journey below; your dashboard fills in as you go.</p>
+      </Stage>
       <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {steps.map((s) => (
           <li key={s.href}>
-            <Link href={s.href} className="group flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
+            <Link href={s.href} className="lift group flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
               <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${s.done ? "bg-good text-white" : "bg-brand-soft text-[var(--brand-strong)]"}`}>{s.done ? "✓" : s.title[0]}</span>
               <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold text-fg">{s.title}</span><span className="mt-0.5 block text-[13px] text-fg-secondary">{s.text}</span></span>
               <ArrowRight className="mt-1 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
