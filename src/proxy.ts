@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasCurrentConsent } from "@/lib/legal/consent";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/placement", "/analysis", "/calculator", "/marketplace", "/compare",
+const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/placement", "/analysis", "/calculator",
   "/recommend", "/designer", "/purchase", "/passport", "/monitoring", "/maintenance", "/incidents",
   "/reports", "/performance", "/replacement", "/agent", "/notifications", "/provider", "/manufacturer", "/admin"];
 

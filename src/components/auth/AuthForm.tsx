@@ -182,8 +182,12 @@ export function AuthForm({
           <Link href={login ? signupHref : loginHref} className="text-fg underline underline-offset-2">{login ? t("auth.createOne") : t("auth.signin")}</Link>
         </p>
         {/* The site is not locked behind an account. A real link, readable at a
-            glance, one step quieter than the two buttons above it. */}
-        <Link href="/" className="press inline-flex items-center gap-1.5 text-[13.5px] font-medium text-fg-secondary hover:text-fg">
+            glance, one step quieter than the two buttons above it. When the
+            gate sent them here with a real destination (nextPath is not the
+            plain-visit default of /dashboard), browsing returns them there
+            instead of the homepage — otherwise a guest hitting a protected
+            page and clicking this loops straight back to the same gate. */}
+        <Link href={nextPath !== "/dashboard" ? nextPath : "/"} className="press inline-flex items-center gap-1.5 text-[13.5px] font-medium text-fg-secondary hover:text-fg">
           {t("auth.browse")}
           <ArrowRight className="size-3.5 rtl:rotate-180" aria-hidden="true" />
         </Link>
