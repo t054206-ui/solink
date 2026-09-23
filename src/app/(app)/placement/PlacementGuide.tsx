@@ -12,6 +12,7 @@ import {
   recommendPlacement,
   type PlacementRecommendation,
 } from "@/lib/solar/placement";
+import { rememberPlacementLocation } from "@/lib/solar/placementHandoff";
 
 /**
  * Which way to face a panel, from where the person is standing.
@@ -140,21 +141,30 @@ export function PlacementGuide() {
         return;
       }
       const rec = recommendPlacement(hit.lat, hit.lng);
-      setState(
-        rec
-          ? {
-              status: "ready",
-              rec,
-              source: {
-                kind: "address",
-                typed: q,
-                resolved: hit.formatted_address ?? null,
-                precision: hit.location_type ?? null,
-                approximate: isApproximate(hit),
-              },
-            }
-          : { status: "error", kind: "unusable" },
-      );
+      if (!rec) {
+        setState({ status: "error", kind: "unusable" });
+        return;
+      }
+      const source: Source = {
+        kind: "address",
+        typed: q,
+        resolved: hit.formatted_address ?? null,
+        precision: hit.location_type ?? null,
+        approximate: isApproximate(hit),
+      };
+      // Carried to Solar Potential so the same place does not have to be found
+      // twice. Stays in this browser; see placementHandoff.ts.
+      rememberPlacementLocation({
+        address: hit.formatted_address ?? null,
+        typed: q,
+        latitude: hit.lat,
+        longitude: hit.lng,
+        precision: hit.location_type ?? null,
+        approximate: isApproximate(hit),
+        source: "address",
+        at: new Date().toISOString(),
+      });
+      setState({ status: "ready", rec, source });
     } catch {
       setState({ status: "error", kind: "address_failed" });
     }
@@ -169,7 +179,21 @@ export function PlacementGuide() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const rec = recommendPlacement(pos.coords.latitude, pos.coords.longitude);
-        setState(rec ? { status: "ready", rec, source: { kind: "browser" } } : { status: "error", kind: "unusable" });
+        if (!rec) {
+          setState({ status: "error", kind: "unusable" });
+          return;
+        }
+        rememberPlacementLocation({
+          address: null,
+          typed: null,
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          precision: null,
+          approximate: false,
+          source: "browser",
+          at: new Date().toISOString(),
+        });
+        setState({ status: "ready", rec, source: { kind: "browser" } });
       },
       (err) => {
         const kind =
