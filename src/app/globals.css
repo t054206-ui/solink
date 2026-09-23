@@ -393,6 +393,18 @@ summary, label[for], select:not(:disabled) { cursor: pointer; touch-action: mani
   [dir="rtl"] .flow[data-live="true"] { animation-direction: reverse; }
 }
 
+/* .sun-glow — the sun behind a scene: warm light falling off to nothing, not
+   a coloured fill. It drifts a few percent over sixteen seconds, which is the
+   whole of the "light movement"; reduced motion holds it still. */
+@keyframes sun-drift { to { transform: translate3d(-4%, 3%, 0) scale(1.04) } }
+.sun-glow {
+  background: radial-gradient(circle,
+    color-mix(in oklab, var(--sun) 38%, transparent) 0%,
+    color-mix(in oklab, var(--sun) 14%, transparent) 38%,
+    transparent 68%);
+  animation: sun-drift 16s ease-in-out infinite alternate;
+}
+
 .lift {
   transition: transform var(--dur-base) var(--ease-out), border-color var(--dur-fast) linear, background-color var(--dur-fast) linear;
 }

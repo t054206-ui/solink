@@ -9,9 +9,7 @@
  * arrives through the design tokens it already uses.
  */
 import Link from "next/link";
-import { Activity, FileBadge, Wrench, AlertOctagon, FileText, ArrowRight, Sparkles, CalendarClock, SprayCan } from "lucide-react";
-import { Stage } from "@/components/layout/Stage";
-import { Button } from "@/components/ui/Button";
+import { Activity, FileBadge, Wrench, AlertOctagon, FileText, ArrowRight, Sparkles, CalendarClock, SprayCan, Bot, UserRound, SunMedium, LayoutGrid, PencilRuler, ClipboardList } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
@@ -36,6 +34,7 @@ import { loadWeatherForProfile } from "../../_operate/loadWeather";
 import { WEATHER_SOURCE, type WeatherState } from "../../_operate/weather";
 import { deriveStatus, inheritCls, lastCleaning, lastDays, monthToDateKwh, monthlyTotals, productionCls, sevenVsThirty, todayKwh, trailingKwh } from "../../_operate/production";
 import { JourneyProgress, type JourneyStep } from "../_components/JourneyProgress";
+import { OverviewHero } from "../_components/OverviewHero";
 import { SystemStage, type FlowNode } from "../_components/SystemStage";
 
 export default async function HomeownerDashboard() {
@@ -74,10 +73,10 @@ export default async function HomeownerDashboard() {
   return (
     <div className="space-y-6">
       <SystemStage eyebrow="Overview" title={`Hello${isDemo ? ", demo homeowner" : ""}`} description={<>Your system <span className="font-medium text-fg">{system.name}</span> at a glance. Every figure says where it comes from.</>}
-        actions={<><Button href="/monitoring" variant="outline" size="sm"><Activity className="size-4" aria-hidden /> Monitoring</Button><Button href="/agent" size="sm"><Sparkles className="size-4" aria-hidden /> Ask Solink</Button></>}
+        actions={[{ href: "/monitoring", label: "Monitoring", icon: <Activity className="size-4" aria-hidden /> }, { href: "/agent", label: "Ask Solink", icon: <Sparkles className="size-4" aria-hidden />, primary: true }]}
         sun={sunNode(weather)} array={arrayNode(capacity, system.panel_count)} home={homeNode(today, system.monitoring_source)}
         live={today.value !== null} idleLabel={system.monitoring_source === null ? "No monitoring connected" : "No reading today"}
-        moduleNote="A generic module, drawn to show the parts. Not your installation." />
+        caption="An illustrative rooftop, not your installation." />
 
       {isDemo && <DemoBanner text={DEMO_BANNER} detail="This dashboard is built from a demo system and a simulated production series so you can see how Solink works." />}
 
@@ -242,31 +241,51 @@ function Onboarding({ profile }: { profile: SolarProfile | null }) {
   // The pre-installation journey, one real page per step. The owner chose five
   // steps (2026-09-22) so that no two steps point at the same page.
   const steps = [
-    { href: "/profile", title: "1. Complete Profile", text: profile ? "Your home details are saved. Review or update them." : "Tell Solink about your home, roof and electricity use.", done: Boolean(profile) },
-    { href: "/analysis", title: "2. Solar Potential", text: "See what your roof could produce, save and avoid, and what each figure rests on.", done: false },
-    { href: "/marketplace", title: "3. Explore Systems", text: "Browse real panels with source-labelled specifications, and compare them.", done: false },
-    { href: "/designer", title: "4. Design System", text: "Lay panels on a drawing of your roof and save your first design.", done: false },
-    { href: "/purchase", title: "5. Request Installation", text: "Turn a saved design into a quote request and pick an installer.", done: false },
+    { href: "/profile", icon: UserRound, title: "1. Complete Profile", text: profile ? "Your home details are saved. Review or update them." : "Tell Solink about your home, roof and electricity use.", done: Boolean(profile) },
+    { href: "/analysis", icon: SunMedium, title: "2. Solar Potential", text: "See what your roof could produce, save and avoid, and what each figure rests on.", done: false },
+    { href: "/marketplace", icon: LayoutGrid, title: "3. Explore Systems", text: "Browse real panels with source-labelled specifications, and compare them.", done: false },
+    { href: "/designer", icon: PencilRuler, title: "4. Design System", text: "Lay panels on a drawing of your roof and save your first design.", done: false },
+    { href: "/purchase", icon: ClipboardList, title: "5. Request Installation", text: "Turn a saved design into a quote request and pick an installer.", done: false },
   ];
+  // "Get started" is the first step not yet done: a shortcut to a card below, not a new destination.
+  const next = steps.find((s) => !s.done) ?? steps[0];
   return (
     <div className="space-y-6">
-      <Stage label="Welcome" focus="80% 30%" className="px-5 py-7 sm:px-7 sm:py-9 lg:px-9">
-        <p className="micro wipe">Overview</p>
-        <h1 className="display wipe mt-3 text-[clamp(2rem,4.6vw,3.25rem)] text-fg" style={{ animationDelay: "90ms" }}>Welcome to Solink</h1>
-        <p className="wipe mt-4 max-w-xl text-[15px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>You don&apos;t have a solar system on record yet. Follow the journey below; your dashboard fills in as you go.</p>
-      </Stage>
-      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {steps.map((s) => (
-          <li key={s.href}>
-            <Link href={s.href} className="lift group flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
-              <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${s.done ? "bg-good text-white" : "bg-brand-soft text-[var(--brand-strong)]"}`}>{s.done ? "✓" : s.title[0]}</span>
-              <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold text-fg">{s.title}</span><span className="mt-0.5 block text-[13px] text-fg-secondary">{s.text}</span></span>
-              <ArrowRight className="mt-1 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
-            </Link>
-          </li>
-        ))}
+      <OverviewHero
+        label="Welcome"
+        eyebrow="Overview"
+        title={<>Welcome to <span className="text-[color:var(--sun-ink)]">Solink</span></>}
+        description="You don't have a solar system on record yet. Follow the journey below; your dashboard fills in as you go."
+        actions={[{ href: next.href, label: "Get started", icon: <SunMedium className="size-4" aria-hidden />, primary: true }, { href: "/agent", label: "Ask Solink", icon: <Bot className="size-4" aria-hidden /> }]}
+        caption="An illustrative rooftop, not your home."
+      />
+      <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Your solar journey">
+        {steps.map((s) => {
+          const [, n, label] = s.title.match(/^(\d+)\.\s*(.*)$/) ?? [null, "", s.title];
+          const Icon = s.icon;
+          return (
+            <li key={s.href}>
+              <Link href={s.href} className="lift group relative flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-5 shadow-[var(--shadow)] hover:bg-inset">
+                <span className={`figure mt-2 grid size-7 shrink-0 place-items-center rounded-full border text-[12px] font-medium ${s.done ? "border-transparent bg-good text-white" : "border-border bg-inset text-fg-secondary"}`}>{s.done ? "✓" : n}<span className="sr-only">{s.done ? " (done)" : ""}</span></span>
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Icon className="size-5" aria-hidden /></span>
+                <span className="min-w-0 flex-1 pe-5 pt-0.5">
+                  <span className="block text-[16px] font-semibold tracking-[-0.01em] text-fg">{label}</span>
+                  <span className="mt-1.5 block text-[13.5px] leading-relaxed text-fg-secondary">{s.text}</span>
+                </span>
+                <ArrowRight className="absolute end-5 top-5 size-4 text-fg-muted transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
+              </Link>
+            </li>
+          );
+        })}
       </ol>
-      <AskSolink topic="Not sure where to start? Ask the AI Solar Agent." />
+      <Link href="/agent" className="lift group flex items-center gap-4 rounded-[var(--radius-lg)] border border-border bg-brand-soft px-5 py-4 hover:border-border-strong sm:px-6 sm:py-5">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-elevated text-[var(--brand-strong)] shadow-[var(--shadow)]"><Bot className="size-5" aria-hidden /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15.5px] font-semibold text-fg">Ask Solink about this</span>
+          <span className="mt-0.5 block text-[13.5px] text-fg-secondary">Not sure where to start? Ask the AI Solar Agent.</span>
+        </span>
+        <ArrowRight className="size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
+      </Link>
     </div>
   );
 }
