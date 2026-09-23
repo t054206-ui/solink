@@ -1,3 +1,5 @@
+"use client";
+import { useSyncExternalStore } from "react";
 import { isUsableCoordinate } from "./placement";
 
 /**
@@ -14,6 +16,10 @@ import { isUsableCoordinate } from "./placement";
  * Nothing here is authoritative. Solar Potential still runs its own analysis
  * from the address, through the same Google lookup as always; what this
  * carries is the starting point and the provenance to show beside it.
+ *
+ * Read it with `usePlacementLocation()`. It goes through useSyncExternalStore,
+ * as `useLocalStore` does, so the server render and the first client render
+ * agree and no state is set inside an effect.
  */
 
 const KEY = "solink:placement-location";
@@ -35,6 +41,15 @@ export interface CarriedLocation {
   at: string;
 }
 
+const listeners = new Set<() => void>();
+
+/** Cached so getSnapshot returns a stable reference while the stored text is unchanged. */
+let cache: { raw: string | null; value: CarriedLocation | null } = { raw: null, value: null };
+
+function emit() {
+  for (const l of listeners) l();
+}
+
 /** Stores the location for the next page. Storage may be unavailable; that is not an error. */
 export function rememberPlacementLocation(loc: CarriedLocation): void {
   try {
@@ -43,6 +58,7 @@ export function rememberPlacementLocation(loc: CarriedLocation): void {
     // Private windows, blocked site data, or a full quota. The hand-off is a
     // convenience: losing it means the person types the address, as before.
   }
+  emit();
 }
 
 /**
@@ -86,4 +102,37 @@ export function forgetPlacementLocation(): void {
   } catch {
     // Nothing to do: if it cannot be removed it could not have been read either.
   }
+  emit();
+}
+
+function subscribe(onChange: () => void): () => void {
+  listeners.add(onChange);
+  // Another tab writing the same key: sessionStorage is per tab, but the event
+  // costs nothing to listen for and keeps this consistent with useLocalStore.
+  window.addEventListener("storage", onChange);
+  return () => {
+    listeners.delete(onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function getSnapshot(): CarriedLocation | null {
+  let raw: string | null = null;
+  try {
+    raw = sessionStorage.getItem(KEY);
+  } catch {
+    raw = null;
+  }
+  if (raw !== cache.raw) cache = { raw, value: readPlacementLocation() };
+  return cache.value;
+}
+
+/** The server has no sessionStorage, so it renders as though nothing was carried. */
+function getServerSnapshot(): CarriedLocation | null {
+  return null;
+}
+
+/** The carried location, or null. Re-renders when it is stored or dropped. */
+export function usePlacementLocation(): CarriedLocation | null {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
