@@ -75,6 +75,8 @@ function classifiedCell(c: Classified, format: (v: number) => string): Cell {
  */
 /** Column letters, in selection order: the bench, the vs line and the table all use them. */
 const LETTERS = ["A", "B", "C", "D"];
+/** One tone per column, from the Solink palette: navy, amber ink, lighter navy, grey. Identity only; never a ranking. */
+const LETTER_BG = ["var(--brand)", "var(--sun-ink)", "var(--brand-hover)", "var(--fg-secondary)"];
 
 export function CompareTable({ panels, platformAssumptions, heading }: { panels: Product[]; platformAssumptions: SolarAssumptions; heading: { eyebrow: string; title: string; description: string; actions: React.ReactNode } }) {
   const [ids, setIds, loaded] = useLocalStore<string[]>(COMPARE_STORE_KEY, []);
@@ -179,7 +181,7 @@ export function CompareTable({ panels, platformAssumptions, heading }: { panels:
               <li key={p.id} className="flex items-center gap-2">
                 {i > 0 && <span className="micro" aria-hidden="true">vs</span>}
                 <span className="flex min-w-0 max-w-[16rem] items-center gap-2 rounded-[var(--radius)] border border-border bg-elevated px-2.5 py-1.5 shadow-[var(--shadow-sm)]">
-                  <span className="figure grid size-6 shrink-0 place-items-center rounded-full bg-brand text-[12px] text-brand-fg">{LETTERS[i]}</span>
+                  <span className="figure grid size-6 shrink-0 place-items-center rounded-full text-[12px] text-white" style={{ background: LETTER_BG[i] }}>{LETTERS[i]}</span>
                   <span className="min-w-0">
                     <span className="block truncate text-[13px] font-semibold text-fg">{p.name}</span>
                     <span className="block truncate text-[11.5px] text-fg-muted">{p.manufacturer_name}</span>
@@ -227,7 +229,7 @@ export function CompareTable({ panels, platformAssumptions, heading }: { panels:
                     <th key={p.id} scope="col" className="min-w-44 px-4 py-3 text-left align-top">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <span className="figure mb-1 grid size-6 place-items-center rounded-full bg-brand text-[12px] text-brand-fg" aria-label={`Panel ${LETTERS[i]}`}>{LETTERS[i]}</span>
+                          <span className="figure mb-1 grid size-6 place-items-center rounded-full text-[12px] text-white" style={{ background: LETTER_BG[i] }} aria-label={`Panel ${LETTERS[i]}`}>{LETTERS[i]}</span>
                           <Link href={`/marketplace/${p.id}`} className="block truncate font-semibold text-fg hover:underline underline-offset-2">{p.name}</Link>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12px] font-normal text-fg-muted"><ManufacturerLink product={p} />{p.is_demo && <DataBadge cls="demo" compact />}</div>
                         </div>

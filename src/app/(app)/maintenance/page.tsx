@@ -10,10 +10,9 @@ import { productionDeviation } from "@/lib/solar/calculations";
 import { type Classified, unavailable } from "@/lib/classification";
 import { ageYears, meanDaily, seriesClass } from "../_ops/production";
 import { MaintenanceList } from "./_components/MaintenanceList";
-import { MaintenanceCostsCard } from "./_components/MaintenanceCostsCard";
 import { PredictiveCard, type PredictiveSignals } from "./_components/PredictiveCard";
 
-export const metadata: Metadata = { title: "Maintenance", description: "Maintenance cases, bookings, costs and predictive signals for your solar system." };
+export const metadata: Metadata = { title: "Maintenance", description: "Maintenance cases, bookings and predictive signals for your solar system." };
 
 export default async function MaintenancePage() {
   const [{ data: cases, mode }, { data: appointments }, { data: providers }, { data: systems }, { data: incidents }] = await Promise.all([
@@ -33,7 +32,7 @@ export default async function MaintenancePage() {
         label="Maintenance"
         eyebrow="Operate"
         title="Maintenance"
-        description="Every cleaning, inspection and repair on your system, from first signal to closed record. Nothing here is assumed: costs appear only when a provider enters them."
+        description="Every cleaning, inspection and repair on your system, from first signal to closed record. Nothing here is assumed."
         actions={<Button href="/maintenance/book"><CalendarPlus className="size-4" aria-hidden /> Book maintenance</Button>}
         visual={<CareVisual caption="An illustration of what a cleaning does: dust on the glass, a cleared swath. It is not a picture of your panels and measures nothing." />}
         focus="80% 40%"
@@ -46,9 +45,9 @@ export default async function MaintenancePage() {
         <EmptyState title="No installed system yet">Maintenance cases belong to an installed system. Once your system is recorded in the Solar Passport, cases and bookings appear here.</EmptyState>
       )}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      {/* Maintenance costs are no longer shown on these pages (owner, 2026-09-24). The data model is unchanged. */}
+      <div className="mt-6">
         <PredictiveCard signals={signals} systemId={system?.id} />
-        <MaintenanceCostsCard providers={providers} />
       </div>
     </div>
   );

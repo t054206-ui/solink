@@ -7,7 +7,8 @@ import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
 import { SolarModule } from "./SolarModule";
 import { Sky } from "./RoofScene";
-import { rng } from "./roofDetails";
+import { plasterTexture, rng } from "./roofDetails";
+import { LogoDecal } from "./LogoDecal";
 
 /**
  * Maintenance's scene: close up on one corner of a module, the way a
@@ -91,6 +92,50 @@ function Brush() {
   );
 }
 
+/** The roof around the close-up: a parapet and a second row, softened by distance haze for depth. */
+function Context({ cells }: { cells: THREE.Texture }) {
+  const plaster = useMemo(() => plasterTexture(), []);
+  useEffect(() => () => plaster.dispose(), [plaster]);
+  return (
+    <group>
+      <mesh position={[0, -0.002, -1.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[9, 9]} />
+        <meshStandardMaterial map={plaster} color="#e2dccf" roughness={0.95} />
+      </mesh>
+      <mesh position={[-0.6, 0.45, -3.6]} castShadow receiveShadow>
+        <boxGeometry args={[7, 0.9, 0.22]} />
+        <meshStandardMaterial map={plaster} roughness={0.9} />
+      </mesh>
+      {[-1.9, -0.75, 0.4].map((x) => (
+        <group key={x} position={[x, 0.25 + (Math.sin(TILT) * H) / 2, -2.2]} rotation={[-(Math.PI / 2 - TILT), 0, 0]}>
+          <SolarModule w={W} h={H} cells={cells} />
+        </group>
+      ))}
+    </group>
+  );
+}
+
+/** A maintenance case standing on the roof by the module, the Solink plate on its lid. */
+function ToolCase() {
+  return (
+    <group position={[-0.95, 0, 0.55]} rotation={[0, 0.5, 0]}>
+      <mesh position={[0, 0.13, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.52, 0.26, 0.34]} />
+        <meshStandardMaterial color="#e9e6df" roughness={0.45} metalness={0.05} />
+      </mesh>
+      <mesh position={[0, 0.265, 0]} castShadow>
+        <boxGeometry args={[0.54, 0.02, 0.36]} />
+        <meshStandardMaterial color="#1a3a63" roughness={0.5} />
+      </mesh>
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <boxGeometry args={[0.2, 0.03, 0.03]} />
+        <meshStandardMaterial color="#9aa0a8" metalness={0.8} roughness={0.3} />
+      </mesh>
+      <LogoDecal position={[0, 0.13, 0.172]} w={0.28} />
+    </group>
+  );
+}
+
 function Close({ still }: { still: boolean }) {
   const cells = useMemo(() => { const t = makeCellTexture(); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 16; return t; }, []);
   const mask = useMemo(() => dustMask(), []);
@@ -104,6 +149,8 @@ function Close({ still }: { still: boolean }) {
   });
   return (
     <group>
+      <Context cells={cells} />
+      <ToolCase />
       <group position={[0, 0.25 + (Math.sin(TILT) * H) / 2, 0]} rotation={[-(Math.PI / 2 - TILT), 0, 0]}>
         <SolarModule w={W} h={H} cells={cells} />
         {/* Dust, just above the glass. */}
@@ -136,6 +183,8 @@ export default function CareScene({ paused = false, still = false, economy = fal
       camera={{ position: [1.35, 1.05, 1.25], fov: 34, near: 0.05, far: 30 }}
       gl={{ antialias: true, alpha: true }}
     >
+      {/* Distance haze: the roof behind softens, so the close-up reads with depth. */}
+      <fog attach="fog" args={["#eee7da", 3.2, 9]} />
       {/* Low morning sun raking across the glass, which is when dust shows. */}
       <hemisphereLight args={["#eef2f6", "#cdbfa6", 0.6]} />
       <directionalLight position={[3, 1.6, -1.2]} intensity={2.8} color="#ffe2bc" castShadow shadow-mapSize={[1024, 1024]} shadow-radius={3} shadow-bias={-0.0004} />

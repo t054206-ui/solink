@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
 import { SolarModule } from "./SolarModule";
 import { Sky } from "./RoofScene";
+import { LogoDecal } from "./LogoDecal";
 
 /**
  * Compare's test bench: the selected panels standing side by side on a rack,
@@ -49,6 +50,8 @@ function Bench({ panels, cells }: { panels: BenchPanel[]; cells: THREE.Texture }
         <boxGeometry args={[total + 0.9, 0.04, 0.5]} />
         <meshStandardMaterial color="#e6e1d8" roughness={0.8} />
       </mesh>
+      {/* A small plate on the bench base, front right. */}
+      <LogoDecal position={[total / 2 + 0.1, 0.041, 0.24]} rotation={[-Math.PI / 2, 0, 0]} w={0.3} />
       {sized.map((p, i) => {
         const cx = centres[i];
         const y = 0.08 + (Math.cos(LEAN) * p.h) / 2;

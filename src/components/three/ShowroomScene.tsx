@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
 import { SolarModule } from "./SolarModule";
 import { Sky } from "./RoofScene";
+import { LogoDecal } from "./LogoDecal";
 
 /**
  * The Marketplace's showroom: one module standing on a turntable plinth, the
@@ -40,6 +41,8 @@ function Turntable({ still }: { still: boolean }) {
         <ringGeometry args={[0.86, 0.95, 64]} />
         <meshStandardMaterial color="#d9d3c8" roughness={0.7} />
       </mesh>
+      {/* The maker's plate on the plinth's top, in front of the module. */}
+      <LogoDecal position={[0, 0.127, 0.62]} rotation={[-Math.PI / 2, 0, 0]} w={0.36} />
       {/* The module on a slim stand, leaning back a little. */}
       <group position={[0, 0.13 + (Math.cos(LEAN) * H) / 2 + 0.04, 0]} rotation={[-LEAN, 0, 0]}>
         <SolarModule w={W} h={H} cells={cells} />

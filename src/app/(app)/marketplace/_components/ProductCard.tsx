@@ -46,16 +46,17 @@ export function ProductCard({ product: p }: { product: Product }) {
       <div className="flex flex-1 flex-col gap-3 border-t border-border p-4">
         {p.is_demo && <DemoBanner text={DEMO_PRODUCT_BANNER} className="py-1.5 text-[12px]" />}
         <div className="min-w-0">
-          <div className="micro truncate"><ManufacturerLink product={p} />{p.series ? <> · {p.series}</> : null}</div>
+          <div className="micro truncate" style={{ color: "var(--data)" }}><ManufacturerLink product={p} />{p.series ? <> · {p.series}</> : null}</div>
           <h3 className="mt-1 text-[16px] font-semibold leading-snug tracking-[-0.01em] text-fg"><Link href={href} className="hover:underline underline-offset-2">{p.name}</Link></h3>
           <div className="mt-0.5 font-mono text-[12px] text-fg-muted">{p.model}</div>
         </div>
         {headline.length > 0 && (
           <dl className="grid grid-cols-2 gap-2">
-            {headline.map((s) => (
+            {headline.map((s, i) => (
               <div key={s.label} className="rounded-[var(--radius)] border border-border bg-inset px-2.5 py-2">
                 <dt className="micro flex items-center gap-1">{s.label}{s.term && <InfoTip term={s.term} />}</dt>
-                <dd className="figure mt-0.5 text-[18px] font-medium text-fg">{specText(s.spec)}</dd>
+                {/* The first headline figure is the energy one (rated power / capacity): amber. The second is technical: navy. */}
+                <dd className="figure mt-0.5 text-[18px] font-medium" style={{ color: i === 0 ? "var(--sun-ink)" : "var(--brand-strong)" }}>{specText(s.spec)}</dd>
               </div>
             ))}
           </dl>
@@ -78,7 +79,7 @@ export function ProductCard({ product: p }: { product: Product }) {
           <div className="flex items-baseline justify-between gap-2 text-[13px]"><span className="micro">Price</span><span className="text-right"><PriceCell product={p} compact /></span></div>
           {(p.source.kuwait_supplier || p.source.kuwait_availability) && (
             <p className="text-[12px] leading-snug text-fg-muted">
-              {p.source.kuwait_supplier ? <>Kuwait supplier: <span className="text-fg-secondary">{p.source.kuwait_supplier}</span></> : null}
+              {p.source.kuwait_supplier ? <>Kuwait supplier: <span className="font-medium text-[color:var(--data)]">{p.source.kuwait_supplier}</span></> : null}
               {p.source.kuwait_availability === "listed_by_retailer" ? <>{p.source.kuwait_supplier ? " · " : ""}Listed by retailer, not independently verified</> : null}
               {p.source.kuwait_availability === "unavailable" ? <>{p.source.kuwait_supplier ? " · " : ""}Not available in Kuwait per the source</> : null}
               {p.source.kuwait_price_observed_at ? <> · price observed {formatDate(p.source.kuwait_price_observed_at)}</> : null}

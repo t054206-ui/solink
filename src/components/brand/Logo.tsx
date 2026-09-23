@@ -21,6 +21,17 @@ export function SolinkMark({ className }: { className?: string }) {
   );
 }
 
+/**
+ * The same mark as `SolinkMark`, as a standalone SVG string, for places that
+ * cannot render React: the 3D scenes print it onto plinths, benches, the
+ * inverter and the report title block through a canvas texture. Identical
+ * geometry to the component above; only the two colours are passed in, since
+ * a texture cannot read CSS variables.
+ */
+export function solinkMarkSvg(ink = "#1a3a63", sun = "#f0a02a"): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect x="3.5" y="1.5" width="17" height="21" rx="1" fill="none" stroke="${ink}" stroke-width="1.6"/><rect x="4.3" y="2.3" width="5.1" height="6.1" fill="${sun}"/><path d="M9.4 1.5v21M14.6 1.5v21M3.5 8.5h17M3.5 15.5h17" stroke="${ink}" stroke-width="1" opacity=".55"/></svg>`;
+}
+
 export function Logo({ href = "/", className, compact = false }: { href?: string; className?: string; compact?: boolean }) {
   return (
     <Link href={href} className={cn("inline-flex items-center gap-2 text-fg", className)} aria-label="Solink home">

@@ -18,7 +18,7 @@ import { isLocalId, mergeRecords, upsertRecord, useLocalIncidents, useLocalMaint
 import { buildMonthlyReport } from "./buildReport";
 import { saveReport } from "../actions";
 import { PageHero } from "@/components/layout/PageHero";
-import { RecordSheet } from "./RecordSheet";
+import { ReportDeskVisual } from "@/components/three/PageVisuals";
 
 export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems, production, cases, incidents, assumptions, months }: {
   heading: { eyebrow: string; title: string; description: string };
@@ -56,7 +56,7 @@ export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems
         {...heading}
         layout="reverse"
         focus="30% 50%"
-        visual={<RecordSheet systemName={systems[0]?.name ?? "Your system"} panelCount={systems[0]?.panel_count ?? null} reportCount={reports.length} monthCount={months.length} />}
+        visual={<ReportDeskVisual systemName={systems[0]?.name ?? "Your system"} panelCount={systems[0]?.panel_count ?? null} reportCount={reports.length} monthCount={months.length} />}
       />
       {demoNotice}
       <Card>
@@ -91,8 +91,8 @@ export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems
                   <div className="flex items-start justify-between gap-2 border-b border-border pb-3">
                     <div>
                       <div className="micro">Monthly report</div>
-                      <div className="display mt-1 text-[20px] text-fg">{monthLabel(r.month)}</div>
-                      <div className="text-[12px] text-fg-muted">{systemName(r.system_id)}</div>
+                      <div className="display mt-1 text-[20px] text-[color:var(--brand-strong)]">{monthLabel(r.month)}</div>
+                      <div className="text-[12px] text-[color:var(--data)]">{systemName(r.system_id)}</div>
                     </div>
                     <ChevronRight className="mt-5 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
                   </div>

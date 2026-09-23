@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { makeCellTexture } from "./panelTexture";
 import { SolarModule } from "./SolarModule";
 import { Sky } from "./RoofScene";
+import { LogoDecal } from "./LogoDecal";
 
 /**
  * The Recommendation's reveal: the top match presented on an angled display
@@ -41,6 +42,7 @@ function Presentation({ w, h, still }: { w: number; h: number; still: boolean })
         <boxGeometry args={[w + 0.5, 0.18, depth + 0.5]} />
         <meshStandardMaterial color="#ece7de" roughness={0.55} />
       </mesh>
+      <LogoDecal position={[0, 0.09, (depth + 0.5) / 2 + 0.002]} w={0.34} />
       <mesh position={[0, 0.183, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[w + 0.5, depth + 0.5]} />
         <meshStandardMaterial color="#e3ddd2" roughness={0.7} />

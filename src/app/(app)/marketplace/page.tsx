@@ -65,9 +65,9 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
             caption="An illustrative module. The figures beside it are this catalogue's own, counted from its records."
             overlay={panelRows.length > 0 ? (
               <>
-                <Callout className="start-2 top-3 sm:start-4" label="Panels" value={String(panelRows.length)} cls={calloutCls} />
-                {watts.length > 0 && <Callout className="end-2 top-3 text-end sm:end-4" label="Rated power" value={Math.min(...watts) === Math.max(...watts) ? `${Math.min(...watts)} W` : `${Math.min(...watts)}–${Math.max(...watts)} W`} cls={calloutCls} />}
-                <Callout className="bottom-10 start-2 sm:start-4" label="Manufacturers" value={String(panelMakers)} cls={calloutCls} />
+                <Callout className="start-2 top-3 sm:start-4" label="Panels" value={String(panelRows.length)} cls={calloutCls} color="var(--brand-strong)" />
+                {watts.length > 0 && <Callout className="end-2 top-3 text-end sm:end-4" label="Rated power" value={Math.min(...watts) === Math.max(...watts) ? `${Math.min(...watts)} W` : `${Math.min(...watts)}–${Math.max(...watts)} W`} cls={calloutCls} color="var(--sun-ink)" />}
+                <Callout className="bottom-10 start-2 sm:start-4" label="Manufacturers" value={String(panelMakers)} cls={calloutCls} color="var(--data)" />
               </>
             ) : undefined}
           />
@@ -126,11 +126,11 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
 }
 
 /** A catalogue figure parked beside the showroom object, with its data class. */
-function Callout({ label, value, cls, className }: { label: string; value: string; cls: "calculated" | "demo"; className: string }) {
+function Callout({ label, value, cls, className, color }: { label: string; value: string; cls: "calculated" | "demo"; className: string; color: string }) {
   return (
     <div className={`pointer-events-none absolute rounded-[var(--radius)] border border-border bg-elevated/90 px-2.5 py-1.5 shadow-[var(--shadow-sm)] ${className}`}>
       <span className="micro block">{label}</span>
-      <span className="figure block text-[15px] font-medium text-fg">{value}</span>
+      <span className="figure block text-[15px] font-medium" style={{ color }}>{value}</span>
       <DataBadge cls={cls} compact className="mt-1" />
     </div>
   );

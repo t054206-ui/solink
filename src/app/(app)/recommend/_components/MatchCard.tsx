@@ -48,19 +48,19 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
     // The top of the ranked list, presented. The same facts, flags, reasons and
     // actions as every other card; only the arrangement differs.
     return (
-      <Card className="overflow-hidden border-border-strong shadow-[var(--shadow)]">
-        <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          <div className="relative border-b border-border bg-bg md:border-b-0 md:border-e">
+      <Card className="@container overflow-hidden border-border-strong shadow-[var(--shadow)]">
+        <div className="grid @2xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+          <div className="relative border-b border-border bg-bg @2xl:border-b-0 @2xl:border-e">
             <div className="grid-rule pointer-events-none absolute inset-0 opacity-40" aria-hidden="true" />
-            <div className="relative p-3">
+            <div className="relative mx-auto max-w-md p-3 @2xl:max-w-none">
               <RevealVisual
                 w={widthMm !== null ? widthMm / 1000 : null}
                 h={lengthMm !== null ? lengthMm / 1000 : null}
                 caption={lengthMm !== null && widthMm !== null ? "Drawn at the size its record states." : "Its record does not state a size, so a nominal module is drawn."}
                 overlay={
                   <>
-                    <FactChip className="start-2 top-2" label="Rated power" value={facts[0].value} muted={facts[0].muted} />
-                    <FactChip className="end-2 top-2 text-end" label="Efficiency" value={facts[1].value} muted={facts[1].muted} />
+                    <FactChip className="start-2 top-2" label="Rated power" value={facts[0].value} muted={facts[0].muted} color="var(--sun-ink)" />
+                    <FactChip className="end-2 top-2 text-end" label="Efficiency" value={facts[1].value} muted={facts[1].muted} color="var(--brand-strong)" />
                   </>
                 }
               />
@@ -72,14 +72,14 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
                 <span className="micro rounded-full bg-brand px-2.5 py-1" style={{ color: "var(--brand-fg)" }}>Your top match · #{rank}</span>
                 <VerificationBadge status={p.source.verification_status} />
               </div>
-              <h3 className="display mt-3 text-[26px] leading-tight text-fg">
+              <h3 className="display mt-3 text-[26px] leading-tight text-[color:var(--brand-strong)]">
                 <Link href={`/marketplace/${p.id}`} className="underline-offset-2 hover:underline">{p.name}</Link>
               </h3>
               <p className="mt-1 text-[12.5px] text-fg-muted">{p.manufacturer_name} · <span className="font-mono">{p.model}</span></p>
               <p className="mt-1.5 text-[12px] text-fg-muted">First in the list ordered by what you said matters. Not an objective best.</p>
             </div>
             <Flags match={match} />
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-3">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 @lg:grid-cols-3 @2xl:grid-cols-2 @4xl:grid-cols-3">
               {facts.map((f) => (
                 <div key={f.label}>
                   <dt className="micro">{f.label}</dt>
@@ -95,7 +95,7 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
               <ol className="mt-2 space-y-1.5">
                 {match.reasons.map((r, i) => (
                   <li key={r} className="flex gap-2.5 rounded-[var(--radius)] border border-border bg-inset px-3 py-2 text-[13px] leading-relaxed text-fg-secondary">
-                    <span className="figure grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-[11px] text-[var(--brand-strong)]" aria-hidden="true">{i + 1}</span>
+                    <span className="figure grid size-5 shrink-0 place-items-center rounded-full bg-sun-soft text-[11px] text-[var(--sun-ink)]" aria-hidden="true">{i + 1}</span>
                     <span>{r}</span>
                   </li>
                 ))}
@@ -209,11 +209,11 @@ function Actions({ p, openSources, setOpenSources }: { p: Match["product"]; open
 }
 
 /** One of the match's own facts, parked beside the presented module. */
-function FactChip({ label, value, muted, className }: { label: string; value: string; muted?: boolean; className: string }) {
+function FactChip({ label, value, muted, className, color }: { label: string; value: string; muted?: boolean; className: string; color: string }) {
   return (
     <div className={`pointer-events-none absolute rounded-[var(--radius)] border border-border bg-elevated/90 px-2.5 py-1.5 shadow-[var(--shadow-sm)] ${className}`}>
       <span className="micro block">{label}</span>
-      <span className={`figure block text-[15px] font-medium ${muted ? "text-fg-muted" : "text-fg"}`}>{value}</span>
+      <span className="figure block text-[15px] font-medium" style={{ color: muted ? "var(--fg-muted)" : color }}>{value}</span>
     </div>
   );
 }

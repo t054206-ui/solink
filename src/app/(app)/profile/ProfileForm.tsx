@@ -1,7 +1,9 @@
 "use client";
 import { useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { CheckCircle2, LoaderCircle, Sun } from "lucide-react";
+import { CheckCircle2, Home, LoaderCircle, Ruler, Sun, Wallet, Zap } from "lucide-react";
+import { PageHero } from "@/components/layout/PageHero";
+import { ProfileVisual } from "@/components/three/PageVisuals";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
@@ -50,7 +52,7 @@ function toDraft(p: SolarProfile | null): ProfileDraft {
   return rest;
 }
 
-export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; mode: DataMode }) {
+export function ProfileForm({ profile, mode, heading }: { profile: SolarProfile | null; mode: DataMode; heading: { eyebrow: string; title: string; description: string } }) {
   const [local, setLocal, localLoaded] = useLocalStore<ProfileDraft | null>(PROFILE_STORE_KEY, null);
   // `draft` is null until the user edits; until then the form shows the stored values (server profile merged with local edits in demo mode).
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
@@ -112,8 +114,47 @@ export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; m
     setSave({ tone: "warn", message: "Local edits cleared; showing the demo profile again." });
   }
 
+  // The profile's own values, as the overview and the hero read them. Missing stays missing.
+  const houseLabel = HOUSE_TYPES.find((h) => h.value === values.house_type)?.label ?? null;
+  const orientationLabel = ORIENTATIONS.find((o) => o.value === values.roof_orientation)?.label ?? null;
+  const fmt = (v: number, d = 0) => v.toLocaleString("en-US", { maximumFractionDigits: d });
+  const roofText = roofArea !== null ? `${fmt(roofArea, 1)} m²` : null;
+  const useText = typeof values.monthly_consumption_kwh === "number" ? `${fmt(values.monthly_consumption_kwh)} kWh / month`
+    : typeof values.monthly_bill === "number" ? `${fmt(values.monthly_bill, 3)} ${values.currency ?? "KWD"} / month` : null;
+  const homeText = [houseLabel, values.governorate].filter(Boolean).join(" · ") || null;
+
   return (
     <form onSubmit={onSubmit} noValidate className="grid gap-5">
+      <PageHero
+        label="Solar Profile"
+        {...heading}
+        focus="75% 35%"
+        visual={
+          <ProfileVisual
+            caption="An illustration of a Kuwaiti home, not a picture of yours. The labels on it are your profile's own values."
+            notes={[
+              { label: "Home", value: homeText, tone: "brand", className: "start-3 top-3" },
+              { label: "Roof area", value: roofText, tone: "data", className: "bottom-12 start-3" },
+              { label: "Electricity", value: useText, tone: "sun", className: "bottom-12 end-3 text-end" },
+            ]}
+          />
+        }
+      >
+        <p className="text-[12.5px] leading-relaxed text-fg-muted">What you enter here feeds Solar Potential, the Solar Designer, the recommendation and your savings estimates.</p>
+      </PageHero>
+
+      {/* The overview: the profile at a glance, each tile a way into its section below. */}
+      <section aria-label="Profile overview" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <OverviewTile icon={Home} label="Your home" href="#home" value={homeText} color="var(--brand-strong)"
+          detail={typeof values.lat === "number" && typeof values.lng === "number" ? (values.address ?? "A location is on record") : "No location on record yet"} detailColor="var(--data)" />
+        <OverviewTile icon={Ruler} label="Roof" href="#roof" value={roofText} color="var(--data)"
+          detail={[typeof values.roof_length_m === "number" && typeof values.roof_width_m === "number" ? `${fmt(values.roof_length_m, 1)} × ${fmt(values.roof_width_m, 1)} m` : null, orientationLabel, typeof values.available_roof_area_m2 === "number" ? `${fmt(values.available_roof_area_m2, 1)} m² usable` : null].filter(Boolean).join(" · ") || null} />
+        <OverviewTile icon={Zap} label="Electricity" href="#energy" value={useText} color="var(--sun-ink)"
+          detail={values.tariff_category ? TARIFF_CATEGORY_LABELS[values.tariff_category] : null} />
+        <OverviewTile icon={Wallet} label="Budget" href="#energy" value={typeof values.budget === "number" ? `${fmt(values.budget)} ${values.currency ?? "KWD"}` : null} color="var(--brand-strong)"
+          detail={completeness.readyForAnalysis ? "Ready for Solar Potential" : null} detailColor="var(--good-fg)" />
+      </section>
+
       {mode === "demo" && (
         <DemoBanner detail={hasLocalEdits ? "You have edited this profile on this device; your edits are labeled user-provided and never leave the browser." : "This is a sample profile. Edit it and your values are saved on this device only."} />
       )}
@@ -124,7 +165,7 @@ export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; m
           2026-09-23: Solar Potential and the Placement Guide resolve a location
           properly, and what they resolve is saved to this profile. What stays
           here is what only the owner can say. */}
-      <Card>
+      <Card id="home" className="scroll-mt-20">
         <CardHeader title="Your home" subtitle="What kind of property it is, and where in Kuwait. The exact location comes from Solar Potential or the Placement Guide, so it is not asked for twice." />
         <CardBody className="grid gap-4 sm:grid-cols-2">
           <Field label="Governorate" hint={<DataBadge cls="user" compact />}>
@@ -149,7 +190,7 @@ export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; m
       </Card>
 
       {/* Roof */}
-      <Card>
+      <Card id="roof" className="scroll-mt-20">
         <CardHeader title={<>Roof <InfoTip term="roof_size" /></>} subtitle="Size, orientation and anything that casts shade. Roof area is required. To work from a photo of the roof instead, use the Solar Designer: it reads a picture and traces what is on it." />
         <CardBody className="grid gap-4">
           <div role="radiogroup" aria-label="How to enter roof area" className="inline-flex w-fit rounded-[10px] border border-border bg-inset p-0.5 text-[13px]">
@@ -201,7 +242,7 @@ export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; m
       </Card>
 
       {/* Electricity & budget */}
-      <Card>
+      <Card id="energy" className="scroll-mt-20">
         <CardHeader title={<>Electricity and budget <InfoTip term="monthly_consumption" /></>} subtitle="Enter your monthly consumption in kWh or your monthly bill. One is required." />
         <CardBody className="grid gap-4">
           <Field label="Electricity tariff sector" hint={<DataBadge cls="user" compact />} className="sm:max-w-md"
@@ -218,7 +259,7 @@ export function ProfileForm({ profile, mode }: { profile: SolarProfile | null; m
             <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={<>Converting a bill to kWh needs the tariff: <Placeholder k="ELECTRICITY_TARIFF" /></>}>
               <div className="flex gap-2">
                 <Input id="monthly_bill" aria-label="Monthly bill" type="number" inputMode="decimal" step="0.001" min={0} value={show(values.monthly_bill)} onChange={(e) => update({ monthly_bill: toNum(e.target.value) })} />
-                <Select id="currency" aria-label="Currency" value={values.currency ?? "KWD"} onChange={(e) => update({ currency: e.target.value })} className="w-24 shrink-0"><option value="KWD">KWD</option></Select>
+                <Select id="currency" aria-label="Currency" value={values.currency ?? "KWD"} onChange={(e) => update({ currency: e.target.value })} className="w-24! shrink-0"><option value="KWD">KWD</option></Select>
               </div>
             </Field>
             <Field label="Budget" hint={<DataBadge cls="user" compact />} help="Optional. Helps the recommendation stay realistic.">
@@ -275,5 +316,26 @@ function CompletenessCard({ completeness }: { completeness: ReturnType<typeof pr
         </ul>
       </CardBody>
     </Card>
+  );
+}
+
+/** One part of the profile at a glance. A value the profile does not have reads "Not set", never a sample. */
+function OverviewTile({ icon: Icon, label, value, detail, href, color, detailColor }: {
+  icon: typeof Home; label: string; value: string | null; detail?: string | null; href: string; color: string; detailColor?: string;
+}) {
+  return (
+    <div className="lift flex flex-col rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-[var(--shadow-sm)]">
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft" style={{ color }}><Icon className="size-4" aria-hidden /></span>
+        <span className="micro">{label}</span>
+      </div>
+      <div className="mt-3 min-h-[1.75rem]">
+        {value !== null
+          ? <span className="figure text-[17px] font-medium leading-snug" style={{ color }}>{value}</span>
+          : <span className="text-[13.5px] font-medium text-fg-muted">Not set</span>}
+      </div>
+      {detail ? <p className="mt-1 text-[12px] leading-snug" style={{ color: detailColor ?? "var(--fg-muted)" }}>{detail}</p> : null}
+      <a href={href} className="mt-auto pt-3 text-[12.5px] font-medium text-fg-secondary underline decoration-border-strong underline-offset-2 hover:text-fg">Edit</a>
+    </div>
   );
 }

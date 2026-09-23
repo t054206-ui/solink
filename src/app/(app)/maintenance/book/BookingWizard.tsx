@@ -81,7 +81,6 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
             <Row k="Provider" v={provider ? <span className="inline-flex items-center gap-1.5">{provider.name}{provider.is_demo && <DataBadge cls="demo" compact />}</span> : "To be assigned"} />
             <Row k="Requested slot" v={c.appointment_at ? `${formatDate(c.appointment_at)} · ${WINDOWS.find((w) => w.id === draft.window)?.label}` : "Not requested"} />
             <Row k="Status" v={<Badge tone="data">New</Badge>} />
-            <Row k="Cost" v={<span className="inline-flex items-center gap-1.5">Unavailable <Placeholder k="MAINTENANCE_PRICE" /></span>} />
           </dl>
           <div className="flex flex-wrap gap-2">
             <Button href={`/maintenance/${c.id}`}>Open case</Button>
@@ -158,7 +157,6 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
                   className={cn("rounded-[10px] border p-3 text-left text-[13.5px]", draft.provider_id === p.id ? "border-brand bg-brand-soft" : "border-border hover:bg-inset")}>
                   <span className="flex flex-wrap items-center gap-1.5 font-medium text-fg">{p.name}{p.is_demo && <DataBadge cls="demo" compact />}<Badge tone={p.verification_status === "verified" ? "good" : "neutral"}>{p.verification_status.replace("_", " ")}</Badge></span>
                   <span className="block text-fg-muted">{p.kind.join(", ")}{p.service_area ? ` · ${p.service_area}` : ""}</span>
-                  <span className="mt-1 inline-flex items-center gap-1.5 text-fg-muted">Price: <Placeholder k="MAINTENANCE_PRICE" /></span>
                 </button>
               ))}
               {eligible.length === 0 && <p className="text-[13px] text-fg-muted">No provider currently offers this service type.</p>}
@@ -183,7 +181,6 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
               <Row k="Urgency (your assessment)" v={URGENCY[draft.urgency].label} />
               <Row k="Provider" v={provider ? <span className="inline-flex items-center gap-1.5">{provider.name}{provider.is_demo && <DataBadge cls="demo" compact />}</span> : "No preference"} />
               <Row k="Requested slot" v={appointmentIso ? `${formatDate(appointmentIso)} · ${WINDOWS.find((w) => w.id === draft.window)?.label}` : "—"} />
-              <Row k="Cost" v={<span className="inline-flex items-center gap-1.5">Unavailable <Placeholder k="MAINTENANCE_PRICE" /></span>} />
               <div className="sm:col-span-2"><dt className="text-fg-muted">Problem</dt><dd className="mt-0.5 whitespace-pre-wrap text-fg">{draft.description}</dd></div>
               {files.length > 0 && <Row k="Images" v={`${files.length} attached (preview only)`} />}
               <p className="text-[12.5px] text-fg-muted sm:col-span-2">Submitting opens a case with status <em>New</em> and requests the appointment. {mode === "demo" ? "In demo mode nothing is sent anywhere." : "The provider is notified in-app only: "}{mode !== "demo" && <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" />}</p>

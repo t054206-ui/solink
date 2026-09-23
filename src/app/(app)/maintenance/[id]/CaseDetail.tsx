@@ -17,7 +17,7 @@ import { productionDeviation } from "@/lib/solar/calculations";
 import { cn, formatDate } from "@/lib/utils";
 import { MAINT_KIND, MAINT_STATUS, MAINT_STATUS_ORDER, stageIndexForCase } from "../../_ops/meta";
 import { isLocalId, upsertRecord, useLocalMaintenance } from "../../_ops/localRecords";
-import { CostCell, KindBadge, MaintStatusPill, UrgencyBadge } from "../../_ops/Pills";
+import { KindBadge, MaintStatusPill, UrgencyBadge } from "../../_ops/Pills";
 import { WorkflowStrip } from "../../_ops/WorkflowStrip";
 import { addMaintenanceNote, cancelMaintenanceCase } from "../actions";
 import { InfoTip } from "@/components/help/InfoTip";
@@ -140,12 +140,11 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
           </CardBody>
         </Card>
         <Card>
-          <CardHeader title="Work, parts & cost" />
+          <CardHeader title="Work & parts" />
           <CardBody>
             <dl className="grid gap-3 text-[13.5px]">
               <Row k="Work performed" v={c.work_performed ?? <span className="text-fg-muted">Not recorded yet</span>} />
               <Row k="Parts" v={c.parts ?? <span className="text-fg-muted">None recorded</span>} />
-              <Row k="Cost" v={<CostCell cost={c.cost} />} />
             </dl>
           </CardBody>
         </Card>

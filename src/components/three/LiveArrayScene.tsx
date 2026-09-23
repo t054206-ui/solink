@@ -5,6 +5,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { SolarModule } from "./SolarModule";
 import { Sky, makeRoofKit, type Kit } from "./RoofScene";
+import { LogoDecal } from "./LogoDecal";
 
 /**
  * Monitor's live view: the system's own array, seen from above at a
@@ -89,6 +90,7 @@ function Array_({ count, kit, producing, still, health }: { count: number; kit: 
           <planeGeometry args={[0.36, 0.14]} />
           <meshStandardMaterial color="#2a3441" roughness={0.3} />
         </mesh>
+        <LogoDecal position={[0, 0.16, 0.127]} w={0.3} />
       </group>
     </group>
   );

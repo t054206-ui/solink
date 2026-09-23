@@ -1,10 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRef, type ReactNode } from "react";
+import { useMemo, useRef, type ReactNode } from "react";
 import { useSceneGate } from "./useSceneGate";
 import type { BenchPanel } from "./BenchScene";
 import type { Health } from "./LiveArrayScene";
+import { SolinkMark } from "@/components/brand/Logo";
 
 /**
  * Thin wrappers for the per-page scenes. Each lazy-loads its own scene
@@ -18,6 +19,8 @@ const BenchScene = dynamic(() => import("./BenchScene"), { ssr: false, loading: 
 const RevealScene = dynamic(() => import("./RevealScene"), { ssr: false, loading: () => null });
 const LiveArrayScene = dynamic(() => import("./LiveArrayScene"), { ssr: false, loading: () => null });
 const CareScene = dynamic(() => import("./CareScene"), { ssr: false, loading: () => null });
+const ProfileScene = dynamic(() => import("./ProfileScene"), { ssr: false, loading: () => null });
+const ReportDeskScene = dynamic(() => import("./ReportDeskScene"), { ssr: false, loading: () => null });
 
 function Frame({ label, caption, aspect, children, fade = true, overlay }: {
   label: string; caption?: ReactNode; aspect: string; children: (gate: ReturnType<typeof useSceneGate>) => ReactNode; fade?: boolean; overlay?: ReactNode;
@@ -76,8 +79,72 @@ export function LiveArrayVisual({ count, producing, health, caption }: { count: 
 
 export function CareVisual({ caption }: { caption: ReactNode }) {
   return (
-    <Frame label="Illustration: close up on a dusty solar panel with a cleaned swath, a brush and water beads." caption={caption} aspect="aspect-[4/3] md:aspect-[5/4]">
+    <Frame
+      label="Illustration: close up on a dusty solar panel with a cleaned swath, a brush, water beads and a maintenance case."
+      caption={caption}
+      aspect="aspect-[4/3] md:aspect-[5/4]"
+      overlay={
+        <ol aria-hidden="true" className="pointer-events-none absolute bottom-3 start-3 flex items-center gap-1.5 rounded-full border border-border bg-elevated/90 px-3 py-1.5 shadow-[var(--shadow-sm)]">
+          {["Clean", "Inspect", "Maintain"].map((s, i) => (
+            <li key={s} className="flex items-center gap-1.5">
+              {i > 0 && <span className="text-fg-muted">→</span>}
+              <span className="micro" style={{ color: i === 0 ? "var(--sun-ink)" : i === 1 ? "var(--brand)" : "var(--good-fg)" }}>{s}</span>
+            </li>
+          ))}
+        </ol>
+      }
+    >
       {(g) => <CareScene paused={g.paused} still={g.still} economy={g.economy} />}
+    </Frame>
+  );
+}
+
+/** One of the profile's own values, annotated over the house. `value` is null when the profile does not have it. */
+export interface ProfileNote { label: string; value: string | null; tone: "data" | "sun" | "brand"; className: string }
+
+export function ProfileVisual({ notes, caption }: { notes: ProfileNote[]; caption: ReactNode }) {
+  const toneColor = { data: "var(--data)", sun: "var(--sun-ink)", brand: "var(--brand-strong)" } as const;
+  return (
+    <Frame
+      label="Illustration: a two-storey Kuwaiti villa on its plot, with a courtyard palm, a gated boundary wall, and a solar-ready area on the roof."
+      caption={caption}
+      aspect="aspect-[4/3] md:aspect-[5/4]"
+      overlay={
+        <>
+          {/* The product's own plate: the real Solink mark, as a technical annotation, not an advert. */}
+          <div aria-hidden="true" className="pointer-events-none absolute end-3 top-3 flex items-center gap-2 rounded-[var(--radius)] border border-border bg-elevated/90 px-2.5 py-1.5 shadow-[var(--shadow-sm)]">
+            <SolinkMark className="size-5 text-[var(--brand-strong)]" />
+            <span className="leading-tight">
+              <span className="micro block">Solink</span>
+              <span className="block text-[11.5px] font-semibold text-fg">Solar profile</span>
+            </span>
+          </div>
+          {notes.map((n) => (
+            <div key={n.label} className={`pointer-events-none absolute rounded-[var(--radius)] border border-border bg-elevated/90 px-2.5 py-1.5 shadow-[var(--shadow-sm)] ${n.className}`}>
+              <span className="micro block">{n.label}</span>
+              {n.value !== null
+                ? <span className="figure block text-[13.5px] font-medium" style={{ color: toneColor[n.tone] }}>{n.value}</span>
+                : <span className="block text-[12.5px] text-fg-muted">Not set</span>}
+            </div>
+          ))}
+        </>
+      }
+    >
+      {(g) => <ProfileScene paused={g.paused} still={g.still} economy={g.economy} parallax={g.parallax} />}
+    </Frame>
+  );
+}
+
+/** Reports: the record on the desk. Its sheet is drawn from these four values only. */
+export function ReportDeskVisual({ systemName, panelCount, reportCount, monthCount }: { systemName: string; panelCount: number | null; reportCount: number; monthCount: number }) {
+  const data = useMemo(() => ({ systemName, panelCount, reportCount, monthCount }), [systemName, panelCount, reportCount, monthCount]);
+  return (
+    <Frame
+      label={`The system record for ${systemName} as a printed sheet on a desk: a plan of ${panelCount ?? "an unrecorded number of"} panels and a title block listing ${reportCount} reports over ${monthCount} complete months.`}
+      caption="Your record, drawn from what Solink holds: the array as recorded, and the reports and months on this page."
+      aspect="aspect-[4/3] md:aspect-[5/4]"
+    >
+      {(g) => <ReportDeskScene data={data} paused={g.paused} still={g.still} economy={g.economy} parallax={g.parallax} />}
     </Frame>
   );
 }

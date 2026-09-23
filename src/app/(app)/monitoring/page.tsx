@@ -19,7 +19,7 @@ import type { Classified } from "@/lib/classification";
 import { formatNumber } from "@/lib/solar/calculations";
 import { deriveStatus, monthToDateKwh, sevenVsThirty, todayKwh } from "../_operate/production";
 import { StatusPill } from "../_operate/components/StatusPill";
-import { HealthMark, healthOf } from "./_components/health";
+import { HEALTH_STYLE, HealthMark, healthOf } from "./_components/health";
 import { DemoPanelLayout } from "./_components/DemoPanelLayout";
 
 export const metadata = { title: "Monitoring" };
@@ -58,7 +58,7 @@ export default async function MonitoringOverviewPage() {
           </div>
           <div className="order-1 space-y-5 px-5 pb-2 pt-6 sm:px-7 md:order-2 md:py-8 md:pe-8">
             <div>
-              <h2 className="micro">Live system view</h2>
+              <h2 className="micro" style={{ color: "var(--brand)" }}>Live system view</h2>
               <p className="mt-1 text-[13px] text-fg-muted">{ctx.system.name}</p>
             </div>
             <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-[var(--shadow-sm)]">
@@ -67,7 +67,7 @@ export default async function MonitoringOverviewPage() {
                 <StatusPill status={derived.status} />
                 <DataBadge cls={derived.cls} compact />
               </div>
-              <p className="mt-2 text-[15px] font-semibold leading-snug text-fg">{derived.headline}</p>
+              <p className={`mt-2 text-[15px] font-semibold leading-snug ${health === "unknown" ? "text-fg" : HEALTH_STYLE[health].fg}`}>{derived.headline}</p>
             </div>
             <dl className="grid grid-cols-2 gap-3">
               <LiveFigure label="Today" data={today} />
