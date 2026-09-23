@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Circle, ExternalLink, Loader2, MapPin, Satellite, X, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -9,7 +9,7 @@ import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
 import { formatDate } from "@/lib/utils";
-import { forgetPlacementLocation, readPlacementLocation, type CarriedLocation } from "@/lib/solar/placementHandoff";
+import { forgetPlacementLocation, usePlacementLocation, type CarriedLocation } from "@/lib/solar/placementHandoff";
 import type {
   AnalysisSources,
   EnvironmentAssessment,
@@ -116,29 +116,24 @@ function fromRow(row: SiteAnalysisRow | null): Success | null {
 
 export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
   const saved = fromRow(latest);
-  const [address, setAddress] = useState("");
   const [state, setState] = useState<State>(saved ? { status: "done", result: saved } : { status: "idle" });
+
   /**
    * A location settled on in the Placement Guide, if the person came from
-   * there in this tab. Read after mount, never during render: it lives in
-   * sessionStorage, which the server render cannot see, and reading it here
-   * keeps the two renders in agreement.
+   * there in this tab. It lives in sessionStorage, which the server cannot
+   * see, so it is read through a store rather than copied into state after
+   * mount: the two renders agree and nothing is set inside an effect.
    */
-  const [carried, setCarried] = useState<CarriedLocation | null>(null);
+  const carried = usePlacementLocation();
 
-  useEffect(() => {
-    const c = readPlacementLocation();
-    if (!c) return;
-    setCarried(c);
-    // The address it resolved goes straight into the field, so the same place
-    // is not looked up twice. Anything the person has already typed wins.
-    setAddress((current) => (current.length === 0 && c.address ? c.address : current));
-  }, []);
-
-  function dropCarried() {
-    forgetPlacementLocation();
-    setCarried(null);
-  }
+  /**
+   * What the person typed, or null while they have typed nothing. The field
+   * falls back to the carried address, so the place they just found is
+   * already in it without anything being written into state, and the moment
+   * they type, what they typed wins.
+   */
+  const [typed, setTyped] = useState<string | null>(null);
+  const address = typed ?? carried?.address ?? "";
 
   const running = state.status === "running";
   /** A run completed in this visit, as opposed to one restored from the database. */
@@ -179,7 +174,7 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
 
   return (
     <div className="space-y-5">
-      {carried && <CarriedLocationCard location={carried} onDismiss={dropCarried} />}
+      {carried && <CarriedLocationCard location={carried} onDismiss={forgetPlacementLocation} />}
 
       <Card>
         <CardHeader
@@ -196,7 +191,7 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
             <Field label="Address" className="flex-1" help="A street address, block and area, or a building name.">
               <Input
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => setTyped(e.target.value)}
                 placeholder="e.g. Block 4, Salmiya, Kuwait"
                 autoComplete="street-address"
                 maxLength={300}
