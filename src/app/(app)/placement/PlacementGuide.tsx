@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowRight, Compass, LoaderCircle, MapPin, ShieldCheck, Sun, TriangleAlert } from "lucide-react";
+import { ArrowRight, Compass, LoaderCircle, MapPin, Search, ShieldCheck, Sun, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
+import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
 import {
   formatCoarseCoordinates,
@@ -27,11 +27,24 @@ import {
  * address and needs no permission at all.
  */
 
+/**
+ * Where a pair of coordinates came from. It is shown with the result, because
+ * "your browser put you here" and "Google resolved the address you typed to
+ * this street" are different claims and the reader is entitled to both.
+ */
+type Source =
+  | { kind: "browser" }
+  | { kind: "address"; typed: string; resolved: string | null; precision: string | null; approximate: boolean };
+
 type State =
   | { status: "idle" }
   | { status: "locating" }
-  | { status: "ready"; rec: PlacementRecommendation }
-  | { status: "error"; kind: "denied" | "unavailable" | "timeout" | "unsupported" | "unusable" };
+  | { status: "geocoding" }
+  | { status: "ready"; rec: PlacementRecommendation; source: Source }
+  | {
+      status: "error";
+      kind: "denied" | "unavailable" | "timeout" | "unsupported" | "unusable" | "address_not_found" | "address_failed" | "address_not_configured";
+    };
 
 const ERROR_COPY: Record<Extract<State, { status: "error" }>["kind"], { title: string; body: string }> = {
   denied: {
@@ -54,10 +67,98 @@ const ERROR_COPY: Record<Extract<State, { status: "error" }>["kind"], { title: s
     title: "The location did not make sense",
     body: "The coordinates the browser returned were not a usable point on Earth, so no recommendation was made rather than a wrong one.",
   },
+  address_not_found: {
+    title: "That address could not be found",
+    body: "Google Maps matched nothing for what you typed. Adding the area or the governorate usually helps, and so does a nearby landmark.",
+  },
+  address_failed: {
+    title: "The address lookup did not answer",
+    body: "Solink could not reach the address service, so no location was resolved and no recommendation was made.",
+  },
+  address_not_configured: {
+    title: "Address lookup is not connected",
+    body: "The Google Maps key this site uses for addresses is not configured, so an address cannot be turned into coordinates here. Your browser's own location still works.",
+  },
 };
+
+/**
+ * One hit from /api/geocode, which is the same Google Maps lookup the Solar
+ * Potential analysis runs on the server. Only the fields this page reads.
+ */
+interface GeoHit {
+  formatted_address?: string;
+  lat: number;
+  lng: number;
+  location_type?: string | null;
+  partial_match?: boolean;
+}
+
+/**
+ * Whether Google landed on the building or near it.
+ *
+ * The same rule `collectSiteData` applies in the site analysis: anything less
+ * precise than a rooftop, or a partial match, describes an area rather than a
+ * building, and the page says so instead of implying otherwise. It is
+ * repeated here rather than imported because that module is server-only.
+ */
+function isApproximate(hit: GeoHit): boolean {
+  return hit.partial_match === true || (hit.location_type ? hit.location_type !== "ROOFTOP" : true);
+}
 
 export function PlacementGuide() {
   const [state, setState] = useState<State>({ status: "idle" });
+  const [address, setAddress] = useState("");
+
+  /**
+   * The address route, which is how Solar Potential asks for a location: the
+   * text goes to Solink's server, Google Maps resolves it there, and only
+   * coordinates come back. No key and no provider call exists in the browser.
+   */
+  async function findAddress(e: React.FormEvent) {
+    e.preventDefault();
+    const q = address.trim();
+    if (q.length < 3 || state.status === "geocoding") return;
+    setState({ status: "geocoding" });
+    try {
+      const res = await fetch(`/api/geocode?address=${encodeURIComponent(q)}`);
+      const json = (await res.json()) as { ok: true; data: GeoHit[] } | { ok: false; reason: string; message?: string };
+      if (!json.ok) {
+        setState({
+          status: "error",
+          kind:
+            json.reason === "not_configured"
+              ? "address_not_configured"
+              : json.reason === "zero_results"
+                ? "address_not_found"
+                : "address_failed",
+        });
+        return;
+      }
+      const hit = json.data[0];
+      if (!hit) {
+        setState({ status: "error", kind: "address_not_found" });
+        return;
+      }
+      const rec = recommendPlacement(hit.lat, hit.lng);
+      setState(
+        rec
+          ? {
+              status: "ready",
+              rec,
+              source: {
+                kind: "address",
+                typed: q,
+                resolved: hit.formatted_address ?? null,
+                precision: hit.location_type ?? null,
+                approximate: isApproximate(hit),
+              },
+            }
+          : { status: "error", kind: "unusable" },
+      );
+    } catch {
+      setState({ status: "error", kind: "address_failed" });
+    }
+  }
 
   function locate() {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
@@ -68,7 +169,7 @@ export function PlacementGuide() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const rec = recommendPlacement(pos.coords.latitude, pos.coords.longitude);
-        setState(rec ? { status: "ready", rec } : { status: "error", kind: "unusable" });
+        setState(rec ? { status: "ready", rec, source: { kind: "browser" } } : { status: "error", kind: "unusable" });
       },
       (err) => {
         const kind =
@@ -87,6 +188,7 @@ export function PlacementGuide() {
   }
 
   const locating = state.status === "locating";
+  const geocoding = state.status === "geocoding";
 
   return (
     <div className="space-y-5">
@@ -110,10 +212,27 @@ export function PlacementGuide() {
               )}
               {locating ? "Finding your location…" : "Use my location"}
             </Button>
-            <p className="text-[13px] text-fg-muted">
-              Your browser will ask first. Prefer not to? <ByAddressLink />
-            </p>
+            <p className="text-[13px] text-fg-muted">Your browser will ask first, and you can refuse.</p>
           </div>
+
+          {/* The address route: the same lookup Solar Potential uses, on the same server. */}
+          <form onSubmit={findAddress} className="mt-4 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-end" aria-busy={geocoding}>
+            <Field label="Or enter an address" className="flex-1" help="A street address, block and area, or a building name. Google Maps resolves it on Solink's server, as it does for Solar Potential.">
+              <Input
+                id="placement-address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="e.g. Block 4, Salmiya, Kuwait"
+                autoComplete="street-address"
+                maxLength={300}
+                minLength={3}
+              />
+            </Field>
+            <Button type="submit" variant="outline" disabled={geocoding || address.trim().length < 3}>
+              {geocoding ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Search className="size-4" aria-hidden="true" />}
+              {geocoding ? "Finding the address…" : "Use this address"}
+            </Button>
+          </form>
 
           <p className="mt-3 flex items-start gap-2 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-fg-muted">
             <ShieldCheck className="mt-px size-4 shrink-0" aria-hidden="true" />
@@ -129,37 +248,33 @@ export function PlacementGuide() {
         <ErrorState title={ERROR_COPY[state.kind].title}>
           <span className="block">{ERROR_COPY[state.kind].body}</span>
           <span className="mt-2 flex flex-wrap items-center gap-3">
-            {state.kind !== "unsupported" && (
+            {state.kind !== "unsupported" && !state.kind.startsWith("address_") && (
               <Button onClick={locate} size="sm" variant="outline">
                 Try again
               </Button>
             )}
             <Button href="/analysis" size="sm">
-              Enter your address instead <ArrowRight className="size-4" aria-hidden="true" />
+              Go to Solar Potential <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
           </span>
         </ErrorState>
       )}
 
-      {state.status === "ready" && <Result rec={state.rec} />}
+      {state.status === "ready" && <Result rec={state.rec} source={state.source} />}
     </div>
-  );
-}
-
-/** One link, used wherever the answer is "use an address instead". */
-function ByAddressLink() {
-  return (
-    <Link href="/analysis" className="font-medium text-data underline underline-offset-2 hover:opacity-80">
-      use your address instead
-    </Link>
   );
 }
 
 /* ------------------------------------------------------------------ result */
 
-function Result({ rec }: { rec: PlacementRecommendation }) {
+function Result({ rec, source }: { rec: PlacementRecommendation; source: Source }) {
   const tilt = formatTilt(rec.tilt);
   const tiltMid = (rec.tilt.minDeg + rec.tilt.maxDeg) / 2;
+  const coords = formatCoarseCoordinates(rec.latitude, rec.longitude);
+  const subtitle =
+    source.kind === "browser"
+      ? `Worked out from the location your browser gave, ${coords}${rec.inKuwait ? ", inside Kuwait" : ""}.`
+      : `Worked out from ${source.resolved ?? source.typed}, ${coords}${rec.inKuwait ? ", inside Kuwait" : ""}.`;
 
   return (
     <div className="space-y-5">
@@ -170,7 +285,7 @@ function Result({ rec }: { rec: PlacementRecommendation }) {
               <Sun className="size-4 text-[var(--sun-ink)]" aria-hidden="true" /> Your solar placement guide
             </>
           }
-          subtitle={`Worked out from ${formatCoarseCoordinates(rec.latitude, rec.longitude)}${rec.inKuwait ? ", inside Kuwait" : ""}.`}
+          subtitle={subtitle}
           action={<DataBadge cls={rec.cls} compact />}
         />
         <CardBody className="space-y-5">
@@ -201,6 +316,17 @@ function Result({ rec }: { rec: PlacementRecommendation }) {
               <p className="mt-3 text-[13px] leading-relaxed text-fg-secondary">{rec.tilt.source}</p>
             </section>
           </div>
+
+          {source.kind === "address" && (
+            <p className="text-[12.5px] leading-relaxed text-fg-muted">
+              You entered &ldquo;{source.typed}&rdquo;. Google Maps resolved it to{" "}
+              <span className="text-fg-secondary">{source.resolved ?? "a point it did not name"}</span>
+              {source.precision ? ` (${source.precision})` : ""}
+              {source.approximate
+                ? ", which is a nearby street or area rather than the building itself. The direction and angle below are for that area."
+                : "."}
+            </p>
+          )}
 
           <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-[13.5px] text-fg-secondary">
             <li className="flex items-center gap-2">
