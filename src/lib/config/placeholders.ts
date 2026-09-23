@@ -51,7 +51,7 @@ export const PLACEHOLDER_NOTES: Record<PlaceholderKey, string> = {
   ELECTRICITY_TARIFF: "Kuwait / GCC electricity price per kWh has not been provided. Savings cannot be calculated without it.",
   REAL_SOLAR_PANEL_DATA_SOURCE: "The verified manufacturer/product dataset has not been chosen (datasheets, participating companies, licensed API, CSV import…).",
   SOLAR_PANEL_DATA_IMPORT_METHOD: "How real panel data will be loaded (CSV, Excel, API, bulk upload, manual admin entry) is undecided.",
-  PAYMENT_PROVIDER: "No payment provider has been selected. The checkout UI is a non-functional demonstration.",
+  PAYMENT_PROVIDER: "No payment provider has been selected, and Solink has no checkout: panels are bought from the supplier listed on the product page.",
   EMAIL_NOTIFICATION_PROVIDER: "No email / push / SMS provider has been selected. Notifications are stored but not delivered.",
   SOLAR_MONITORING_HARDWARE_API: "No inverter / monitoring hardware integration exists yet. Live production data is unavailable.",
   PANEL_LEVEL_MONITORING_DATA_SOURCE: "Panel-by-panel data requires hardware (optimizers / micro-inverters) that is not connected.",

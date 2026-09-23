@@ -62,7 +62,7 @@ export async function getPlaceholderStatus(): Promise<Record<PlaceholderKey, Pla
     LEGAL_OPERATOR: LEGAL_VALUES.operator ? { state: "resolved", detail: `Set by the owner: ${LEGAL_VALUES.operator.en}.` } : { state: "open", detail: "Not named." },
     LEGAL_CONTACT: LEGAL_VALUES.contact ? { state: "resolved", detail: `Set by the owner: ${LEGAL_VALUES.contact.en}.` } : { state: "open", detail: "No address chosen." },
     GOVERNING_LAW: LEGAL_VALUES.law ? { state: "resolved", detail: `Set by the owner: ${LEGAL_VALUES.law.en}.` } : { state: "open", detail: "Not decided." },
-    PAYMENT_PROVIDER: { state: "open", detail: "No provider selected. Checkout is a labelled demonstration." },
+    PAYMENT_PROVIDER: { state: "open", detail: "No provider selected, and none is needed for panels: Solink does not sell them." },
     EMAIL_NOTIFICATION_PROVIDER: { state: "open", detail: "No provider selected. Notifications are in-app only; Supabase sends auth emails." },
     SOLAR_MONITORING_HARDWARE_API: { state: "open", detail: "No inverter or monitoring integration." },
     PANEL_LEVEL_MONITORING_DATA_SOURCE: { state: "open", detail: "Needs optimisers or micro-inverters that report per panel." },
