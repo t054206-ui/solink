@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Stage } from "@/components/layout/Stage";
 import { PanelAtRest } from "@/components/three/PanelAtRest";
-import { Count } from "@/components/motion/Count";
+import { RevealCount } from "@/components/motion/RevealCount";
 import { DataBadge } from "@/components/ui/DataBadge";
 import type { DataClass } from "@/lib/classification";
 
@@ -76,7 +76,7 @@ function Node({ node }: { node: FlowNode }) {
       <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         {node.figure ? (
           <span className="text-[26px] font-medium leading-none text-fg">
-            <Count to={node.figure.value} decimals={node.figure.decimals} className={node.energy ? "text-[color:var(--sun-ink)]" : ""} />
+            <RevealCount to={node.figure.value} decimals={node.figure.decimals} className={node.energy ? "text-[color:var(--sun-ink)]" : ""} />
             <span className="ms-1 text-[13px] font-medium text-fg-muted">{node.figure.unit}</span>
           </span>
         ) : null}
