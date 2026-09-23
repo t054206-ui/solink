@@ -307,3 +307,23 @@ at the end of `supabase/imports/2026-09-22_manufacturer_series_2.sql`.
 | **JinkoSolar** | `jinkosolarcdn.shwebspace.com/uploads/665d7326/60-182x182 V.jpg`, served by the official Tiger Neo page beside "Tiger Neo 66HC, 635 Wp, 23.51 %", i.e. this series (our 635 W bin prints 23.51 %). The file name reads 60 but the render shows 6 × 22 = 132 cells, matching 66HL4M; kept with this note, as in C-010 |
 | **Trina Solar** | `www-cdn.trinasolar.com/wwwstorage/sites/3/720W-TSM-NEG21C.20.png`, named for the exact series and served by the official Vertex N series page; 6 × 22 = 132 cells, matching. The product page `/en-glb/NEG21C.20/` was found and replaces the home page as `manufacturer_url` |
 | **Follow-up** | Trina's product page links a newer datasheet, `DT-M-0042-G-EN-J-Datasheet_Vertex_NEG21C.20_2025_C.pdf` (up to 740 W). Not read; the six rows still follow the 2024 B edition. A later refresh can add the 730–740 W bins and re-check the 700–725 W values against it |
+
+## Import 2026-09-23 — LONGi Hi-MO 7 LR8-66HGD 595~625M (Session 9)
+
+The owner supplied a CSV with four rows: three JA Solar JAM72D42 bins that
+were already in the catalogue with identical values, and one LONGi row,
+`LR8-66HGD-625M`, labelled Hi-MO 7. Seven rows imported from
+`supabase/imports/2026-09-23_longi_hi-mo-7_lr8.sql`, every bin the official
+sheet lists. All Unverified, zero validation flags, two provenance rows each.
+No price found. No image yet (the Hi-MO 7 page's render on file is the
+144-cell LR7-72HGD; this is a 132-cell module, so it is not reused).
+
+### C-018 — LR8-66HGD is a Hi-MO 7, and the CSV efficiency differed by 0.1
+
+| | |
+|---|---|
+| **Check** | An `LR8` model number looked out of place under Hi-MO 7 (the three rows on file are `LR7-72HGD`). LONGi's own datasheet, on static.longi.com and linked from the Hi-MO 7 page, is titled `LR8-66HGD 595~625M` and carries the Hi-MO 7 branding: the 66-cell format of the same family. The CSV was right |
+| **Datasheet** | `https://static.longi.com/L_Gi_LE_PM_T_PMD_059_F151_LR_8_66_HGD_595_625_M_V2_R_30_30_and_15_V3_1_EN_84644196a0.pdf`, version 20240705 V03, text layer present |
+| **Difference** | The CSV gave 23.0 % for the 625 W bin; the datasheet prints 23.1 % (625 W ÷ 2.7012 m² = 23.14 %). Datasheet value stored; the CSV row's electrical values (Voc 48.98, Vmp 41.11, Isc 16.10, Imp 15.21) match the sheet exactly |
+| **Cell technology** | The sheet prints "Advanced HPDC cell technology" (sic); stored as printed with the module type, not corrected to HPBC |
+| **Bins** | 595 / 600 / 605 / 610 / 615 / 620 / 625 W; Vmp × Imp within 0.1 % of each Pmax; 132 cells (6 × 22), 2382 × 1134 × 30 mm, 33.5 kg, bifaciality 80 ± 5 %, 12 y / 30 y, 87.4 % at year 30 |

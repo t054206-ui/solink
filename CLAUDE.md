@@ -76,8 +76,8 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   homeowner journey, provider workload, admin platform, manufacturer portal.
   Items with no page are dimmed `[SOON]`, never invented routes. No icon-only
   collapsed mode by the owner's choice.
-- **Products** (Sessions 8–9): 39 real panels from official datasheets across
-  the five manufacturers (two series each, every bin), versions and passport
+- **Products** (Sessions 8–9): 46 real panels from official datasheets across
+  the five manufacturers (two series each plus LONGi LR8-66HGD, every bin), versions and passport
   snapshots as before, plus `solar_products.series`, `solar_product_sources`
   (provenance per document) and `solar_product_prices` (supplier prices apart
   from datasheet data), migration 0011. Marketplace filters (power,
