@@ -493,9 +493,18 @@ export function Sky() {
   return env ? <primitive object={env.texture} attach="environment" /> : null;
 }
 
+/** One Vector3 per distinct target, so Drift's memo does not rebuild every render. */
+const targets = new Map<string, THREE.Vector3>();
+function viewTarget(t: [number, number, number]) {
+  const k = t.join(",");
+  let v = targets.get(k);
+  if (!v) { v = new THREE.Vector3(...t); targets.set(k, v); }
+  return v;
+}
+
 /** Slow drift, plus a little parallax from the pointer while it is over the canvas. */
-function Drift({ still, parallax }: { still: boolean; parallax: boolean }) {
-  const base = useMemo(() => new THREE.Spherical().setFromVector3(new THREE.Vector3(...CAMERA).sub(TARGET)), []);
+function Drift({ still, parallax, camera = CAMERA, target: aim = TARGET }: { still: boolean; parallax: boolean; camera?: [number, number, number]; target?: THREE.Vector3 }) {
+  const base = useMemo(() => new THREE.Spherical().setFromVector3(new THREE.Vector3(...camera).sub(aim)), [camera, aim]);
   const scratch = useRef({ v: new THREE.Vector3(), px: 0, py: 0 });
 
   useFrame((state, dt) => {
@@ -507,9 +516,9 @@ function Drift({ still, parallax }: { still: boolean; parallax: boolean }) {
     const drift = still ? 0 : 1;
     const theta = base.theta + drift * Math.sin(t * 0.11) * 0.04 + s.px * 0.06;
     const phi = base.phi + drift * Math.sin(t * 0.08) * 0.012 - s.py * 0.025;
-    s.v.setFromSphericalCoords(base.radius, phi, theta).add(TARGET);
+    s.v.setFromSphericalCoords(base.radius, phi, theta).add(aim);
     state.camera.position.copy(s.v);
-    state.camera.lookAt(TARGET);
+    state.camera.lookAt(aim);
   });
   return null;
 }
@@ -528,14 +537,14 @@ export function makeRoofKit(paved: [number, number] = [B.w - PARAPET_T * 2, B.d 
   };
 }
 
-function Scene({ still, parallax }: { still: boolean; parallax: boolean }) {
+function Scene({ still, parallax, camera, target }: { still: boolean; parallax: boolean; camera?: [number, number, number]; target?: THREE.Vector3 }) {
   const kit = useMemo<Kit>(() => makeRoofKit(), []);
   useEffect(() => () => Object.values(kit).forEach((t) => t.dispose()), [kit]);
 
   return (
     <>
       <Sky />
-      <Drift still={still} parallax={parallax} />
+      <Drift still={still} parallax={parallax} camera={camera} target={target} />
       <Building kit={kit} />
       <Planting kit={kit} />
       {ROWS.map((z) => <Row key={z} z={z} kit={kit} />)}
@@ -543,7 +552,9 @@ function Scene({ still, parallax }: { still: boolean; parallax: boolean }) {
   );
 }
 
-export default function RoofScene({ paused = false, still = false, economy = false, parallax = true }: {
+export default function RoofScene({ paused = false, still = false, economy = false, parallax = true, view }: {
+  /** Another viewpoint on the same rooftop (the Designer's hero). Omitted: the Home Overview's view. */
+  view?: { camera: [number, number, number]; target: [number, number, number] };
   /** Off screen: stop drawing. */
   paused?: boolean;
   /** prefers-reduced-motion: render once, no drift, no parallax. */
@@ -557,7 +568,7 @@ export default function RoofScene({ paused = false, still = false, economy = fal
       shadows="percentage"
       frameloop={paused ? "never" : still ? "demand" : "always"}
       dpr={economy ? [1, 1.5] : [1, 2]}
-      camera={{ position: CAMERA, fov: 30, near: 0.1, far: 80 }}
+      camera={{ position: view?.camera ?? CAMERA, fov: 30, near: 0.1, far: 80 }}
       gl={{ antialias: true, alpha: true }}
     >
       {/* Late-afternoon sun from the right: warm but not orange, low enough to
@@ -582,7 +593,7 @@ export default function RoofScene({ paused = false, still = false, economy = fal
         shadow-normalBias={0.02}
       />
       <directionalLight position={[-6, 4, 9]} intensity={0.5} color="#dfe8f4" />
-      <Scene still={still || paused} parallax={parallax && !still} />
+      <Scene still={still || paused} parallax={parallax && !still} camera={view?.camera} target={view ? viewTarget(view.target) : undefined} />
     </Canvas>
   );
 }

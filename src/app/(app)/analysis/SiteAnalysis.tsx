@@ -560,10 +560,10 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           action={<DataBadge cls="calculated" compact />}
         />
         <CardBody className="space-y-4">
-          <div className="rounded-[10px] border border-border bg-inset p-3">
+          <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-[var(--shadow-sm)]">
             <div className="micro">Overall feasibility</div>
-            <div className="mt-0.5 text-[16px] font-semibold text-fg">{VERDICT[a.feasibility.verdict]}</div>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-fg-secondary">{a.feasibility.summary}</p>
+            <div className="display mt-1.5 text-[28px] text-fg">{VERDICT[a.feasibility.verdict]}</div>
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-fg-secondary">{a.feasibility.summary}</p>
           </div>
 
           {a.environment && <Environment env={a.environment} />}

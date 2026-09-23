@@ -25,9 +25,14 @@ export function DesignVisual({ plan }: { plan: Plan }) {
     <Card className="overflow-hidden">
       <CardHeader
         title={<><Box className="size-4 text-fg-muted" aria-hidden /> Your layout in 3D</>}
-        subtitle="Drawn from the plan above as you change it: your roof size, your panels at their catalogue size and position, your obstacles and blocks."
+        subtitle={<>
+          Drawn from the plan above as you change it: your roof size, your panels at their catalogue size and position, your obstacles and blocks.
+          <span className="figure mt-1.5 inline-block whitespace-nowrap rounded-[var(--radius)] border border-border bg-inset px-2 py-0.5 text-[12px] text-fg-secondary">
+            {panels} panel{panels === 1 ? "" : "s"} · {plan.length} × {plan.width} m
+          </span>
+        </>}
       />
-      <div ref={holder} className="relative isolate aspect-[16/10] w-full bg-bg sm:aspect-[16/9]">
+      <div ref={holder} className="relative isolate aspect-[4/3] w-full bg-bg sm:aspect-[16/11]">
         <div aria-hidden="true" className="grid-rule pointer-events-none absolute inset-0 -z-10" style={{ maskImage: "radial-gradient(70% 70% at 50% 45%, #000, transparent)", WebkitMaskImage: "radial-gradient(70% 70% at 50% 45%, #000, transparent)" }} />
         <div
           className="absolute inset-0"

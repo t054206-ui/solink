@@ -191,7 +191,7 @@ function Motion({ plan, still, parallax }: { plan: Plan; still: boolean; paralla
   const target = useMemo(() => new THREE.Vector3(0, 0, 0), []);
   const base = useMemo(() => {
     const span = Math.max(plan.length, plan.width);
-    const d = span * 1.05 + 3.5;
+    const d = span * 1.2 + 3.5;
     const ac = -34 * (Math.PI / 180), e = 38 * (Math.PI / 180);
     return new THREE.Spherical().setFromVector3(new THREE.Vector3(Math.sin(ac) * Math.cos(e) * d, Math.sin(e) * d, Math.cos(ac) * Math.cos(e) * d));
   }, [plan.length, plan.width]);

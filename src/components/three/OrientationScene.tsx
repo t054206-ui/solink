@@ -17,8 +17,10 @@ import { SolarModule } from "./SolarModule";
  * and the band itself is the translucent wedge beside it. The sun path is the
  * equinox path for the resolved latitude, which is geometry, not a forecast.
  *
- * Before a location is resolved there is no recommendation, so the module
- * lies flat, no direction is marked and no sun path is drawn.
+ * Before a location is resolved there is no recommendation: no direction is
+ * marked and no sun path is drawn, and the module turns slowly on its mount
+ * at an illustrative angle, which is plainly not a direction and is captioned
+ * as such. Under reduced motion it lies flat instead.
  */
 
 export interface Orientation { azimuthDeg: number; tiltMinDeg: number; tiltMaxDeg: number; latitude: number }
@@ -172,11 +174,22 @@ function Arrow({ azimuthDeg }: { azimuthDeg: number }) {
   );
 }
 
+/** Turns its children slowly while `active`; otherwise holds them at `yaw`. */
+function Turntable({ active, yaw, children }: { active: boolean; yaw: number; children: React.ReactNode }) {
+  const g = useRef<THREE.Group>(null);
+  useFrame((_, dt) => {
+    if (!g.current) return;
+    if (active) g.current.rotation.y += Math.min(dt, 0.05) * 0.35;
+    else g.current.rotation.y = yaw;
+  });
+  return <group ref={g} rotation={[0, yaw, 0]}>{children}</group>;
+}
+
 function Motion({ o, still, parallax, light, sun }: { o: Orientation | null; still: boolean; parallax: boolean; light: React.RefObject<THREE.DirectionalLight | null>; sun: React.RefObject<THREE.Mesh | null> }) {
   const target = useMemo(() => new THREE.Vector3(0, 1.3, 0), []);
   const base = useMemo(() => {
     const ac = ((o?.azimuthDeg ?? 180) + 38) * DEG;
-    const e = 22 * DEG, d = 11.5;
+    const e = 22 * DEG, d = 10.4;
     return new THREE.Spherical().setFromVector3(new THREE.Vector3(Math.sin(ac) * Math.cos(e) * d, Math.sin(e) * d, -Math.cos(ac) * Math.cos(e) * d));
   }, [o?.azimuthDeg]);
   const s = useRef({ v: new THREE.Vector3(), d: new THREE.Vector3(), px: 0, py: 0 });
@@ -226,7 +239,8 @@ function Scene({ o, still, parallax }: { o: Orientation | null; still: boolean; 
   useEffect(() => () => { Object.values(kit).forEach((t) => t.dispose()); compass.dispose(); }, [kit, compass]);
   const light = useRef<THREE.DirectionalLight>(null);
   const sun = useRef<THREE.Mesh>(null);
-  const tiltMid = o ? (o.tiltMinDeg + o.tiltMaxDeg) / 2 : 0;
+  // The recommendation's own midpoint; before one exists, an illustrative mounting angle while turning.
+  const tiltMid = o ? (o.tiltMinDeg + o.tiltMaxDeg) / 2 : still ? 0 : 18;
 
   return (
     <>
@@ -257,10 +271,10 @@ function Scene({ o, still, parallax }: { o: Orientation | null; still: boolean; 
         <meshBasicMaterial map={compass} transparent depthWrite={false} />
       </mesh>
       {o && <Arrow azimuthDeg={o.azimuthDeg} />}
-      <group rotation={[0, Math.PI - (o?.azimuthDeg ?? 180) * DEG, 0]}>
+      <Turntable active={!o && !still} yaw={Math.PI - (o?.azimuthDeg ?? 180) * DEG}>
         <Mount tiltDeg={tiltMid} cells={kit.cells} />
         {o && <TiltBand minDeg={o.tiltMinDeg} maxDeg={o.tiltMaxDeg} />}
-      </group>
+      </Turntable>
       {o && <SunPath latitude={o.latitude} />}
       <mesh ref={sun} visible={Boolean(o)}>
         <sphereGeometry args={[0.15, 32, 16]} />

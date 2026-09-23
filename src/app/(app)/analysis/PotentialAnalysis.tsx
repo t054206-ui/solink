@@ -124,11 +124,11 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
           <ChevronDown className={cn("mt-1 size-4 shrink-0 text-fg-muted transition-transform", open && "rotate-180")} aria-hidden />
         </button>
         {open && (
-          <CardBody className="grid gap-3 sm:grid-cols-2">
-            <AssumptionField label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={user.psh} onChange={(v) => setUser((u) => ({ ...u, psh: v }))} help="Equivalent hours of full-strength sun per day at your site. Drives how much a kWp produces." step="0.1" min={0} />
-            <AssumptionField label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={user.pr} onChange={(v) => setUser((u) => ({ ...u, pr: v }))} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
-            <AssumptionField label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${a.currency}/kWh`} platform={tariffPlatform.platform} note={tariffPlatform.note} value={user.tariff} onChange={(v) => setUser((u) => ({ ...u, tariff: v }))} help="What you pay per kWh. Needed to turn production into savings." step="0.001" min={0} />
-            <AssumptionField label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={user.co2} onChange={(v) => setUser((u) => ({ ...u, co2: v }))} help="Kilograms of CO₂ the grid emits per kWh. Needed for the CO₂ reduction estimate." step="0.01" min={0} />
+          <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <AssumptionField dense label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={user.psh} onChange={(v) => setUser((u) => ({ ...u, psh: v }))} help="Equivalent hours of full-strength sun per day at your site. Drives how much a kWp produces." step="0.1" min={0} />
+            <AssumptionField dense label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={user.pr} onChange={(v) => setUser((u) => ({ ...u, pr: v }))} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
+            <AssumptionField dense label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${a.currency}/kWh`} platform={tariffPlatform.platform} note={tariffPlatform.note} value={user.tariff} onChange={(v) => setUser((u) => ({ ...u, tariff: v }))} help="What you pay per kWh. Needed to turn production into savings." step="0.001" min={0} />
+            <AssumptionField dense label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={user.co2} onChange={(v) => setUser((u) => ({ ...u, co2: v }))} help="Kilograms of CO₂ the grid emits per kWh. Needed for the CO₂ reduction estimate." step="0.01" min={0} />
           </CardBody>
         )}
       </Card>

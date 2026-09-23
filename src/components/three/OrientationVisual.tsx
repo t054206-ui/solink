@@ -34,7 +34,7 @@ export function OrientationVisual({ orientation, facing, tilt, className = "" }:
           aria-label={
             orientation && facing && tilt
               ? `Illustration: a panel on a roof facing ${facing}, tilted within ${tilt}, over a compass, with the sun's path for this latitude.`
-              : "Illustration: a panel lying flat on a roof over a compass. No direction is shown until a location is resolved."
+              : "Illustration: a panel on a roof over a compass. No direction is shown until a location is resolved."
           }
         >
           <OrientationScene orientation={orientation} paused={gate.paused} still={gate.still} economy={gate.economy} parallax={gate.parallax} />
@@ -49,7 +49,9 @@ export function OrientationVisual({ orientation, facing, tilt, className = "" }:
       <figcaption className="mt-1 text-center text-[11px] leading-snug text-fg-muted md:text-end">
         {orientation
           ? "An illustration of the recommendation below: the panel faces its direction, the wedge is its tilt range, and the arc is the equinox sun path for this latitude."
-          : "Use your location or an address and the recommended direction and tilt are drawn here."}
+          : gate.still
+            ? "Use your location or an address and the recommended direction and tilt are drawn here."
+            : "The panel turns at an illustrative angle until a location is resolved. Use your location or an address and it faces your recommended direction, at your recommended tilt."}
       </figcaption>
     </figure>
   );
