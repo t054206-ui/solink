@@ -49,6 +49,41 @@ export async function saveProfile(raw: unknown): Promise<SaveProfileResult> {
   return { ok: true, profile: data as SolarProfile };
 }
 
+/**
+ * Records the place a location-aware page resolved, so the rest of Solink
+ * knows where the roof is.
+ *
+ * The Solar Profile stopped asking for a location on 2026-09-23; Solar
+ * Potential and the Placement Guide resolve one properly, through Google on
+ * the server, and this is how that reaches the profile the site weather, the
+ * dashboard and the AI context all read. It writes three fields and nothing
+ * else: an upsert with the whole draft would wipe a roof area the person had
+ * typed.
+ */
+const LocationInput = z.object({
+  address: z.string().max(300).nullable().optional(),
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+});
+
+export type SaveLocationResult = { ok: true } | { ok: false; reason: "demo" | "unauthenticated" | "invalid" | "error" };
+
+export async function saveProfileLocation(raw: unknown): Promise<SaveLocationResult> {
+  const parsed = LocationInput.safeParse(raw);
+  if (!parsed.success) return { ok: false, reason: "invalid" };
+  if (getDataMode() === "demo") return { ok: false, reason: "demo" };
+  const c = await createClient();
+  if (!c) return { ok: false, reason: "demo" };
+  const { data: { user } } = await c.auth.getUser();
+  if (!user) return { ok: false, reason: "unauthenticated" };
+  const { error } = await c
+    .from("solar_profiles")
+    .upsert({ user_id: user.id, address: parsed.data.address ?? null, lat: parsed.data.lat, lng: parsed.data.lng }, { onConflict: "user_id", ignoreDuplicates: false })
+    .select("user_id")
+    .single();
+  return error ? { ok: false, reason: "error" } : { ok: true };
+}
+
 export type UploadPhotoResult =
   | { ok: true; path: string; signedUrl: string | null }
   | { ok: false; reason: "demo" | "unauthenticated" | "invalid" | "error"; message: string };

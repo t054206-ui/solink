@@ -13,6 +13,7 @@ import {
   type PlacementRecommendation,
 } from "@/lib/solar/placement";
 import { rememberPlacementLocation } from "@/lib/solar/placementHandoff";
+import { saveProfileLocation } from "../profile/actions";
 
 /**
  * Which way to face a panel, from where the person is standing.
@@ -164,6 +165,11 @@ export function PlacementGuide() {
         source: "address",
         at: new Date().toISOString(),
       });
+      // The address route already sent this address to Solink's server to be
+      // resolved, so recording where it landed tells the profile nothing it has
+      // not already seen. The browser route below does not do this: nothing
+      // from it leaves the device, as this page promises.
+      void saveProfileLocation({ address: hit.formatted_address ?? q, lat: hit.lat, lng: hit.lng });
       setState({ status: "ready", rec, source });
     } catch {
       setState({ status: "error", kind: "address_failed" });
@@ -261,8 +267,10 @@ export function PlacementGuide() {
           <p className="mt-3 flex items-start gap-2 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-fg-muted">
             <ShieldCheck className="mt-px size-4 shrink-0" aria-hidden="true" />
             <span>
-              Solink does not receive your coordinates from this guide, does not store them, and does not need an
-              account for it. They stay in the browser and are shown rounded to about a kilometre.
+              Your browser&apos;s own location stays in this browser: Solink never receives it, and it is shown
+              rounded to about a kilometre. An address you type is different. It goes to Solink&apos;s server to be
+              resolved, and where it lands is saved to your Solar Profile so the rest of Solink knows where the roof
+              is.
             </span>
           </p>
         </CardBody>

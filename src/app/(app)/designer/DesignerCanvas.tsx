@@ -591,8 +591,10 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
             </CardBody>
           </Card>
 
-          {advanced && <Card>
-            <CardHeader title={<><ImageIcon className="size-4 text-fg-muted" aria-hidden /> Photo of the roof <InfoTip term="photo_trace" /></>} subtitle="An overhead or drone photo goes under the grid, stretched to the dimensions above. Then trace what is on it." />
+          {/* Shown without "more options" since 2026-09-23: the roof photo left the
+              Solar Profile and this is where it lives now, so it has to be findable. */}
+          <Card>
+            <CardHeader title={<><ImageIcon className="size-4 text-fg-muted" aria-hidden /> Photo of the roof <InfoTip term="photo_trace" /></>} subtitle="Take or upload a photo of the roof. It goes under the grid, stretched to the dimensions above, so you can trace what is on it, and Solink can read it for obstacles." />
             <CardBody className="space-y-3">
               <input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Upload a roof photo" onChange={(e) => onPhotoFile(e.target.files?.[0] ?? null)} className="block w-full text-[12.5px] text-fg-secondary file:mr-3 file:rounded-[var(--radius)] file:border file:border-border-strong file:bg-elevated file:px-3 file:py-1.5 file:text-[12.5px] file:font-medium file:text-fg hover:file:bg-inset" />
               {photo && (
@@ -642,7 +644,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
               )}
               {!photo && <p className="text-[12px] text-fg-muted">Optional. Without a photo, the grid alone is the canvas.</p>}
             </CardBody>
-          </Card>}
+          </Card>
 
           <Card>
             <CardHeader title={<>Anything on the roof? <InfoTip term="obstacle" /></>} subtitle="A water tank, an AC unit, a stairwell. Panels will not be placed on them." />

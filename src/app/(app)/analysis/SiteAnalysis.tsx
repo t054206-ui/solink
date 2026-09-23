@@ -10,6 +10,7 @@ import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
 import { formatDate } from "@/lib/utils";
 import { forgetPlacementLocation, usePlacementLocation, type CarriedLocation } from "@/lib/solar/placementHandoff";
+import { saveProfileLocation } from "../profile/actions";
 import type {
   AnalysisSources,
   EnvironmentAssessment,
@@ -158,7 +159,18 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
         body: JSON.stringify({ address: address.trim() }),
       });
       const body = (await res.json().catch(() => null)) as (Success | { ok: false; stage: string; message: string }) | null;
-      if (body && body.ok) setState({ status: "done", result: body });
+      if (body && body.ok) {
+        setState({ status: "done", result: body });
+        // The Solar Profile stopped asking where the roof is; this is where it
+        // finds out. The address was already resolved on the server for this
+        // run, so nothing new is sent. A failure here is silent on purpose:
+        // the analysis succeeded, and a profile write is not what was asked for.
+        void saveProfileLocation({
+          address: body.location.formattedAddress ?? body.location.address,
+          lat: body.location.latitude,
+          lng: body.location.longitude,
+        });
+      }
       else
         setState({
           status: "error",
