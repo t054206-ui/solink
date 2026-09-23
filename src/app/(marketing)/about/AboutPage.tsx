@@ -107,7 +107,7 @@ export function AboutPage() {
               <div className="relative mt-3 overflow-x-auto pb-1">
                 <div aria-hidden="true" className="absolute inset-x-0 top-1/2 h-px bg-[color:var(--brand)]" />
                 <ol className="relative flex min-w-max items-center gap-2">
-                  {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((n) => (
+                  {([1, 2, 3, 4, 6, 7, 8, 9, 10] as const).map((n) => (
                     <li key={n} className="rounded-full border border-[color:var(--brand)] bg-bg px-3 py-1.5 text-[13px] font-medium text-[color:var(--brand-strong)]">
                       {t(`about.stage.${n}` as DictKey)}
                     </li>
@@ -131,9 +131,12 @@ export function AboutPage() {
           <h2 className="display max-w-2xl text-[clamp(1.9rem,4vw,2.9rem)]">{t("about.solution.title")}</h2>
           <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/80">{t("about.solution.sub")}</p>
           <ol className="mt-12 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-5">
-            {([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((n) => (
+            {/* Purchase (stage 5) removed on the owner's word, 2026-09-23; the
+                rest keep their own about.stage.N content but are numbered
+                01–09 in display order. */}
+            {([1, 2, 3, 4, 6, 7, 8, 9, 10] as const).map((n, i) => (
               <li key={n} className="border-t border-white/15 pt-3">
-                <span className="micro text-[color:var(--sun)]">{String(n).padStart(2, "0")}</span>
+                <span className="micro text-[color:var(--sun)]">{String(i + 1).padStart(2, "0")}</span>
                 <h3 className="mt-1.5 text-[15.5px] font-semibold">{t(`about.stage.${n}` as DictKey)}</h3>
                 <p className="mt-1 text-[13.5px] leading-snug text-white/70">{t(`about.stage.${n}d` as DictKey)}</p>
               </li>
@@ -174,9 +177,11 @@ export function AboutPage() {
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
           <SectionHead title={t("about.how.title")} sub={t("about.how.sub")} />
           <ol className="mt-12 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            {([1, 2, 3, 4, 5, 6, 7, 8] as const).map((n) => (
+            {/* Purchase and install (step 5) removed on the owner's word, 2026-09-23;
+                the rest keep their own about.how.N content but are numbered 01–07. */}
+            {([1, 2, 3, 4, 6, 7, 8] as const).map((n, i) => (
               <li key={n} className="border-t border-border pt-3">
-                <span className="micro text-[color:var(--sun-ink)]">{String(n).padStart(2, "0")}</span>
+                <span className="micro text-[color:var(--sun-ink)]">{String(i + 1).padStart(2, "0")}</span>
                 <h3 className="mt-1.5 text-[15.5px] font-semibold text-fg">{t(`about.how.${n}` as DictKey)}</h3>
                 <p className="mt-1 text-[13.5px] leading-snug text-fg-muted">{t(`about.how.${n}d` as DictKey)}</p>
               </li>
