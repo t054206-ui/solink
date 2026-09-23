@@ -2099,3 +2099,31 @@ Session 10 does not rediscover it.
 2. Owner: sign in as a real homeowner and run the basket → checkout path once, to see the order land in `/admin` and in the account's own request history.
 3. Test the full flow signed in (marketplace → compare → recommend → designer → purchase → passport) with the 46-row catalogue; the designer and purchase read the catalogue and were not changed.
 4. Rate limiting with a shared store (Upstash / Vercel KV); Arabic for the app area; provider Reports and Settings; the earlier list.
+
+## Addendum, 2026-09-23 — two directions landed on the same day; the owner chose both
+
+While the basket above was being built, a collaborator (with Claude Opus 5)
+pushed `d7bb794` and `92d56bc`: they removed the disabled "Pay now" card
+form from `/purchase` and every shopping-cart icon or "Request this system"
+label in the app, on the reasoning that a form shaped like a checkout — even
+a disabled, labelled-demo one — trains people to type card details into it.
+In its place: `SupplierPurchase.tsx`, real links to the supplier listings on
+record in `solar_product_prices`, and `/purchase` renamed to "Plan
+installation" throughout. That work is real and stands.
+
+This landed the same day as the basket feature above, which adds exactly
+the pattern they removed (a basket, a cart icon, a Checkout wall). Given the
+choice — drop the basket, rename its language, or keep both — **the owner
+chose to keep both, side by side**: `SupplierPurchase` (buy from the
+supplier, real link, leaves Solink) sits directly above `AddToBasketButton`
+(request a quote through Solink) on every product page. Resolved as one
+rebase, one small conflict (two import lines in
+`marketplace/[id]/page.tsx`; both components' actual usage had already
+auto-merged cleanly). Re-verified after: `npx tsc --noEmit`, `npx eslint
+src`, `npm run build` clean, and both buttons checked by hand in a running
+dev server on a product with a real supplier price (LONGi LR7-72HGD-585M) —
+"Purchase from supplier" opens the real Alwan Solar listing, "Add to
+basket" still works and the header count updates.
+
+Session 10: if this pairing reads as cluttered once real people use it,
+that is a design call for the owner, not something to silently simplify.
