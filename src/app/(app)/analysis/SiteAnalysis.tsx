@@ -1,13 +1,18 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, ExternalLink, Loader2, MapPin, Satellite, X, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, CloudSun, ExternalLink, Haze, Loader2, MapPin, Satellite, Thermometer, Wind, X, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
+import { Stage } from "@/components/layout/Stage";
+import { SiteVisual } from "@/components/three/SiteVisual";
+import type { Atmosphere } from "@/components/three/SiteScene";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { formatDate } from "@/lib/utils";
 import { forgetPlacementLocation, usePlacementLocation, type CarriedLocation } from "@/lib/solar/placementHandoff";
 import { saveProfileLocation } from "../profile/actions";
@@ -115,8 +120,21 @@ function fromRow(row: SiteAnalysisRow | null): Success | null {
   };
 }
 
-export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
+/** The rule engine's level as the scene's 0-3 scale; unavailable stays unavailable. */
+const LEVEL_INDEX: Record<EnvironmentLevel, number | null> = { unavailable: null, low: 0, moderate: 1, high: 2, extreme: 3 };
+
+function atmosphereOf(env: EnvironmentAssessment | undefined): Atmosphere | null {
+  if (!env) return null;
+  return { dust: LEVEL_INDEX[env.dust.level], heat: LEVEL_INDEX[env.heat.level], wind: LEVEL_INDEX[env.wind.level] };
+}
+
+export interface PageHeading { eyebrow: string; title: string; description: string }
+
+export function SiteAnalysis({ latest, heading }: { latest: SiteAnalysisRow | null; heading: PageHeading }) {
   const saved = fromRow(latest);
+  // Tablet and up: the scene sits in the hero beside the heading. Phones: it
+  // comes after the address form, so the action is never below the picture.
+  const wide = useMediaQuery("(min-width: 768px)");
   const [state, setState] = useState<State>(saved ? { status: "done", result: saved } : { status: "idle" });
 
   /**
@@ -184,8 +202,36 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
     }
   }
 
+  const shown = state.status === "done" ? state.result : null;
+  const atmosphere = atmosphereOf(shown?.analysis.environment);
+  const visual = <SiteVisual atmosphere={atmosphere} />;
+
   return (
     <div className="space-y-5">
+      <Stage label="Solar Potential" focus="75% 30%">
+        <div className="grid items-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="relative z-10 px-5 py-8 sm:px-8 md:py-12 lg:ps-10">
+            <p className="micro wipe">{heading.eyebrow}</p>
+            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
+            <p className="wipe mt-4 max-w-md text-[15.5px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{heading.description}</p>
+            {shown && (
+              <dl className="rise mt-6 grid gap-2 text-[13px]" style={{ animationDelay: "300ms" }}>
+                <HeroFact label="Location" icon={<MapPin className="size-3.5" aria-hidden="true" />}>
+                  {shown.location.formattedAddress ?? shown.location.address}
+                </HeroFact>
+                <HeroFact label="Feasibility">{VERDICT[shown.analysis.feasibility.verdict]}</HeroFact>
+                {shown.analysis.environment && (
+                  <HeroFact label="Conditions">
+                    <Badge tone={STATUS_TONE[shown.analysis.environment.overallStatus]}>{STATUS_LABEL[shown.analysis.environment.overallStatus]}</Badge>
+                  </HeroFact>
+                )}
+              </dl>
+            )}
+          </div>
+          <div className="hidden px-3 pb-3 md:block md:pe-4 md:ps-0 md:pt-4">{wide ? visual : <div className="aspect-[5/4]" />}</div>
+        </div>
+      </Stage>
+
       {carried && <CarriedLocationCard location={carried} onDismiss={forgetPlacementLocation} />}
 
       <Card>
@@ -226,6 +272,8 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
           {(running || freshRun || failedAt !== null) && <RunProgress complete={freshRun} failedAt={failedAt} />}
         </CardBody>
       </Card>
+
+      {!wide && <div className="md:hidden">{visual}</div>}
 
       {state.status === "error" && (
         <ErrorState title={`The analysis stopped at ${STAGE_LABEL[state.stage] ?? "an earlier step"}`}>{state.message}</ErrorState>
@@ -342,6 +390,38 @@ function RunProgress({ failedAt, complete }: { failedAt: number | null; complete
   );
 }
 
+/** One fact from the analysis, repeated in the hero exactly as the result card states it. */
+function HeroFact({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex min-w-0 items-baseline gap-3 border-t border-border/70 pt-2">
+      <dt className="micro w-24 shrink-0">{label}</dt>
+      <dd className="flex min-w-0 items-center gap-1.5 break-words text-fg">{icon}{children}</dd>
+    </div>
+  );
+}
+
+/**
+ * The level a factor already has, drawn as four steps. Decorative: the badge
+ * beside it names the level in words, so the meter is hidden from assistive
+ * technology and an unavailable level draws four empty steps.
+ */
+function LevelMeter({ level }: { level: EnvironmentLevel }) {
+  const n = LEVEL_INDEX[level];
+  const tone = LEVEL_TONE[level];
+  const fill = tone === "good" ? "var(--good)" : tone === "warn" ? "var(--warn)" : tone === "serious" ? "var(--serious)" : tone === "critical" ? "var(--critical)" : "var(--border-strong)";
+  return (
+    <span aria-hidden="true" className="inline-flex items-end gap-[3px]">
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className="w-[5px] rounded-[1px]"
+          style={{ height: 6 + i * 3, background: n !== null && i <= n ? fill : "transparent", border: n !== null && i <= n ? "none" : "1px solid var(--border-strong)" }}
+        />
+      ))}
+    </span>
+  );
+}
+
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-0.5 border-t border-border/70 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -416,11 +496,11 @@ const STATUS_TONE: Record<EnvironmentAssessment["overallStatus"], "neutral" | "g
  * engine existed do not, and are left as they were.
  */
 function Environment({ env }: { env: EnvironmentAssessment }) {
-  const factors: { label: string; level: EnvironmentLevel; note: string }[] = [
-    { label: "Heat exposure", level: env.heat.level, note: env.heat.note },
-    { label: "Dust and soiling risk", level: env.dust.level, note: env.dust.note },
-    { label: "Air quality", level: env.airQuality.level, note: env.airQuality.note },
-    { label: "Wind exposure", level: env.wind.level, note: env.wind.note },
+  const factors: { label: string; level: EnvironmentLevel; note: string; icon: ReactNode }[] = [
+    { label: "Heat exposure", level: env.heat.level, note: env.heat.note, icon: <Thermometer className="size-4" aria-hidden="true" /> },
+    { label: "Dust and soiling risk", level: env.dust.level, note: env.dust.note, icon: <Haze className="size-4" aria-hidden="true" /> },
+    { label: "Air quality", level: env.airQuality.level, note: env.airQuality.note, icon: <CloudSun className="size-4" aria-hidden="true" /> },
+    { label: "Wind exposure", level: env.wind.level, note: env.wind.note, icon: <Wind className="size-4" aria-hidden="true" /> },
   ];
 
   return (
@@ -437,9 +517,10 @@ function Environment({ env }: { env: EnvironmentAssessment }) {
       </div>
       <dl className="mt-2 text-[13px]">
         {factors.map((f) => (
-          <div key={f.label} className="flex flex-col gap-1 border-t border-border/70 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-            <dt className="flex shrink-0 items-center gap-2 text-fg-muted sm:w-52">
-              {f.label} <Badge tone={LEVEL_TONE[f.level]}>{LEVEL_LABEL[f.level]}</Badge>
+          <div key={f.label} className="-mx-2 flex flex-col gap-1 rounded-[var(--radius)] border-t border-border/70 px-2 py-2.5 transition-colors hover:bg-inset sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <dt className="flex shrink-0 flex-wrap items-center gap-2 text-fg-muted sm:w-60">
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]">{f.icon}</span>
+              {f.label} <LevelMeter level={f.level} /> <Badge tone={LEVEL_TONE[f.level]}>{LEVEL_LABEL[f.level]}</Badge>
             </dt>
             <dd className="min-w-0 break-words leading-relaxed text-fg-secondary sm:text-right">{f.note}</dd>
           </div>

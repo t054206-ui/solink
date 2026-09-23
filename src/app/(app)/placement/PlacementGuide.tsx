@@ -6,6 +6,9 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
+import { Stage } from "@/components/layout/Stage";
+import { OrientationVisual } from "@/components/three/OrientationVisual";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import {
   formatCoarseCoordinates,
   formatTilt,
@@ -107,8 +110,11 @@ function isApproximate(hit: GeoHit): boolean {
   return hit.partial_match === true || (hit.location_type ? hit.location_type !== "ROOFTOP" : true);
 }
 
-export function PlacementGuide() {
+export function PlacementGuide({ heading }: { heading: { eyebrow: string; title: string; description: string } }) {
   const [state, setState] = useState<State>({ status: "idle" });
+  // Tablet and up: the scene sits in the hero. Phones: after the location
+  // card, so "Use my location" is never below the picture.
+  const wide = useMediaQuery("(min-width: 768px)");
   const [address, setAddress] = useState("");
 
   /**
@@ -220,8 +226,29 @@ export function PlacementGuide() {
   const locating = state.status === "locating";
   const geocoding = state.status === "geocoding";
 
+  // The scene draws the recommendation the page already made; nothing is recomputed.
+  const rec = state.status === "ready" ? state.rec : null;
+  const visual = (
+    <OrientationVisual
+      orientation={rec ? { azimuthDeg: rec.azimuthDeg, tiltMinDeg: rec.tilt.minDeg, tiltMaxDeg: rec.tilt.maxDeg, latitude: rec.latitude } : null}
+      facing={rec ? `${rec.compassLabel} · ${rec.azimuthDeg}°` : null}
+      tilt={rec ? formatTilt(rec.tilt) : null}
+    />
+  );
+
   return (
     <div className="space-y-5">
+      <Stage label="Solar Placement Guide" focus="70% 45%">
+        <div className="grid items-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="relative z-10 px-5 py-8 sm:px-8 md:py-12 lg:ps-10">
+            <p className="micro wipe">{heading.eyebrow}</p>
+            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
+            <p className="wipe mt-4 max-w-md text-[15.5px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{heading.description}</p>
+          </div>
+          <div className="hidden px-3 pb-3 md:block md:pe-4 md:ps-0 md:pt-4">{wide ? visual : <div className="aspect-[5/4]" />}</div>
+        </div>
+      </Stage>
+
       <Card>
         <CardHeader
           title={
@@ -275,6 +302,8 @@ export function PlacementGuide() {
           </p>
         </CardBody>
       </Card>
+
+      {!wide && <div className="md:hidden">{visual}</div>}
 
       {state.status === "error" && (
         <ErrorState title={ERROR_COPY[state.kind].title}>

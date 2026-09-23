@@ -25,6 +25,8 @@ import { cn, formatMoney } from "@/lib/utils";
 import { EMPTY_DESIGNER_STORE, newId, type DesignerStore, type ModuleKind, type Obstacle, type PanelGeometry, type PlacedModule, type PlacedPanel, type RoofSpec, type SavedDesign } from "./designTypes";
 import { MODULE_KINDS, MODULE_ORDER } from "./modules";
 import { areaSummary, autoFillGrid, clampToRoof, detectProblems, firstFreeSpot, inspire, moduleRect, panelRect, panelSize, panelWeightKg, round2, setbackOf, snap, snapToNeighbours as snapNeighbours, walkwayOf, type InspireGoal, type Rect } from "./geometry";
+import { DesignVisual } from "@/components/three/DesignVisual";
+import type { Plan } from "@/components/three/DesignScene";
 import { saveDesignAction } from "./actions";
 
 export interface PanelOption {
@@ -546,6 +548,14 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
   const selectedObstacle = sel?.kind === "obstacle" ? roof.obstacles.find((o) => o.id === sel.id) ?? null : null;
   const gridLines = useMemo(() => ({ v: Array.from({ length: Math.floor(roof.length_m) + 1 }, (_, i) => i), h: Array.from({ length: Math.floor(roof.width_m) + 1 }, (_, i) => i) }), [roof.length_m, roof.width_m]);
   const moduleGroups = useMemo(() => MODULE_ORDER.map((k) => ({ kind: k, items: modules.filter((m) => m.kind === k) })).filter((g) => g.items.length), [modules]);
+  // The same plan the drawing shows, in the 3D view's terms. Read-only: the view never writes back.
+  const plan3d = useMemo<Plan>(() => ({
+    length: roof.length_m,
+    width: roof.width_m,
+    panels: geom ? placed.map((p) => panelRect(p, geom)) : [],
+    obstacles: roof.obstacles,
+    blocks: modules.map((m) => ({ x: m.x, y: m.y, w: m.w, h: m.h, kind: m.kind })),
+  }), [roof.length_m, roof.width_m, roof.obstacles, placed, modules, geom]);
 
   return (
     <div className="space-y-4">
@@ -744,6 +754,16 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
                     <pattern id="hatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
                       <line x1="0" y1="0" x2="0" y2="8" stroke="var(--fg-muted)" strokeWidth="2" />
                     </pattern>
+                    {/* The landing module's look at plan scale: dark cells in a silver frame.
+                        Bounding-box units, so each panel gets its own cell grid whichever way it turns. */}
+                    <pattern id="cellsPortrait" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width={1 / 6} height={1 / 10}>
+                      <rect width={1 / 6} height={1 / 10} fill="#0b1a2e" />
+                      <rect x={0.008} y={0.005} width={1 / 6 - 0.016} height={1 / 10 - 0.01} fill="#1b3657" />
+                    </pattern>
+                    <pattern id="cellsLandscape" patternUnits="objectBoundingBox" patternContentUnits="objectBoundingBox" width={1 / 10} height={1 / 6}>
+                      <rect width={1 / 10} height={1 / 6} fill="#0b1a2e" />
+                      <rect x={0.005} y={0.008} width={1 / 10 - 0.01} height={1 / 6 - 0.016} fill="#1b3657" />
+                    </pattern>
                     <clipPath id="roofClip"><rect x={0} y={0} width={roof.length_m * PX_PER_M} height={roof.width_m * PX_PER_M} /></clipPath>
                   </defs>
                   <g transform={`translate(${PAD} ${PAD})`}>
@@ -814,13 +834,19 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
                       const isSel = sel?.kind === "panel" && sel.id === p.id;
                       return (
                         <g key={p.id} onPointerDown={(e) => startDrag(e, "panel", p.id, p.x, p.y)} className={traceMode ? "" : "cursor-grab active:cursor-grabbing"} role="button" aria-label={`Panel ${i + 1} at ${p.x}, ${p.y} metres${bad ? ", has a problem" : ""}`}>
+                          {/* A soft shadow under the module; purely visual, never hit-tested. */}
+                          <rect x={r.x * PX_PER_M + 1.5} y={r.y * PX_PER_M + 2.5} width={r.w * PX_PER_M} height={r.h * PX_PER_M} rx={2} fill="#0e1116" opacity={0.14} className="pointer-events-none" />
+                          {/* Problem and AI-suggested states keep their colours: they carry meaning. A plain panel is drawn as a module. */}
                           <rect x={r.x * PX_PER_M} y={r.y * PX_PER_M} width={r.w * PX_PER_M} height={r.h * PX_PER_M} rx={2}
-                            fill={bad ? "var(--critical-soft)" : aiSuggested ? "var(--cls-ai-soft)" : "var(--data-soft)"}
-                            stroke={bad ? "var(--critical)" : isSel ? "var(--brand-strong)" : aiSuggested ? "var(--cls-ai)" : "var(--series-1)"}
-                            strokeWidth={isSel ? 3 : 1.5} />
-                          <line x1={r.x * PX_PER_M} x2={(r.x + r.w) * PX_PER_M} y1={(r.y + r.h / 2) * PX_PER_M} y2={(r.y + r.h / 2) * PX_PER_M} stroke={bad ? "var(--critical)" : "var(--series-1)"} strokeOpacity={0.35} />
-                          <line y1={r.y * PX_PER_M} y2={(r.y + r.h) * PX_PER_M} x1={(r.x + r.w / 2) * PX_PER_M} x2={(r.x + r.w / 2) * PX_PER_M} stroke={bad ? "var(--critical)" : "var(--series-1)"} strokeOpacity={0.35} />
-                          <text x={(r.x + r.w / 2) * PX_PER_M} y={(r.y + r.h / 2) * PX_PER_M + 4} textAnchor="middle" fontSize={11} fontWeight={600} fill={bad ? "var(--critical-fg)" : "var(--fg-secondary)"} className="tabular pointer-events-none">{i + 1}</text>
+                            fill={bad ? "var(--critical-soft)" : aiSuggested ? "var(--cls-ai-soft)" : r.w > r.h ? "url(#cellsLandscape)" : "url(#cellsPortrait)"}
+                            stroke={bad ? "var(--critical)" : aiSuggested ? "var(--cls-ai)" : "#aab2bb"}
+                            strokeWidth={bad || aiSuggested ? 1.5 : 2} />
+                          {isSel && <rect x={r.x * PX_PER_M - 2.5} y={r.y * PX_PER_M - 2.5} width={r.w * PX_PER_M + 5} height={r.h * PX_PER_M + 5} rx={4} fill="none" stroke="var(--brand-strong)" strokeWidth={3} className="pointer-events-none" />}
+                          {(bad || aiSuggested) && <>
+                            <line x1={r.x * PX_PER_M} x2={(r.x + r.w) * PX_PER_M} y1={(r.y + r.h / 2) * PX_PER_M} y2={(r.y + r.h / 2) * PX_PER_M} stroke={bad ? "var(--critical)" : "var(--series-1)"} strokeOpacity={0.35} />
+                            <line y1={r.y * PX_PER_M} y2={(r.y + r.h) * PX_PER_M} x1={(r.x + r.w / 2) * PX_PER_M} x2={(r.x + r.w / 2) * PX_PER_M} stroke={bad ? "var(--critical)" : "var(--series-1)"} strokeOpacity={0.35} />
+                          </>}
+                          <text x={(r.x + r.w / 2) * PX_PER_M} y={(r.y + r.h / 2) * PX_PER_M + 4} textAnchor="middle" fontSize={11} fontWeight={600} fill={bad ? "var(--critical-fg)" : aiSuggested ? "var(--fg-secondary)" : "#ffffff"} paintOrder="stroke" stroke={bad || aiSuggested ? "none" : "#0b1a2e"} strokeWidth={3} className="tabular pointer-events-none">{i + 1}</text>
                         </g>
                       );
                     })}
@@ -881,6 +907,8 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
               {notice && <p className="text-[12.5px] text-fg-secondary" role="status">{notice}</p>}
             </CardBody>
           </Card>
+
+          <DesignVisual plan={plan3d} />
 
           {/* Get inspired */}
           <Card>

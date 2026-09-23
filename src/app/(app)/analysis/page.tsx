@@ -1,4 +1,3 @@
-import { PageHeader } from "@/components/layout/PageHeader";
 import { getProfile, listProducts, listSiteAnalyses } from "@/lib/data/repositories";
 import { getPlatformSettings } from "@/lib/data/settings";
 import { SiteAnalysisSchema } from "@/lib/solar/siteAnalysis";
@@ -32,13 +31,15 @@ export default async function AnalysisPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <PageHeader
-        eyebrow="Plan · Step 2"
-        title="Solar Potential"
-        description="What your roof could produce, save and avoid: built only from your profile, the selected panel's specifications and clearly labeled assumptions."
-      />
       <div className="mb-6">
-        <SiteAnalysis latest={latest} />
+        <SiteAnalysis
+          latest={latest}
+          heading={{
+            eyebrow: "Plan · Step 2",
+            title: "Solar Potential",
+            description: "What your roof could produce, save and avoid: built only from your profile, the selected panel's specifications and clearly labeled assumptions.",
+          }}
+        />
       </div>
 
       <PotentialAnalysis profile={profile} mode={mode} settings={settings} panels={panels} />

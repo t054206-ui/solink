@@ -35,8 +35,8 @@ const GAP = 0.022;
 const FRAME_D = 0.035; // frame depth
 const FRAME_W = 0.03; // visible frame lip
 
-const B = { w: 10.4, d: 7.2, h: 3.4 };
-const PARAPET_T = 0.2;
+export const B = { w: 10.4, d: 7.2, h: 3.4 };
+export const PARAPET_T = 0.2;
 
 const METAL = "#c3c8cf";
 const RACK = "#b4b9c0";
@@ -50,7 +50,7 @@ const PER_ROW = 5;
 const ARRAY_X = -1.05;
 const FRONT_Y = 0.36; // underside of the front edge, on short legs
 
-interface Kit {
+export interface Kit {
   cells: THREE.Texture;
   plaster: THREE.Texture;
   pavers: THREE.Texture;
@@ -216,7 +216,7 @@ function Window({ position, size, axis = "z" }: { position: [number, number, num
   );
 }
 
-function Building({ kit }: { kit: Kit }) {
+export function Building({ kit }: { kit: Kit }) {
   const wall = <meshStandardMaterial map={kit.plaster} roughness={0.92} />;
   const coping = <meshStandardMaterial map={kit.plaster} color="#faf7f1" roughness={0.85} />;
   const halfW = B.w / 2;
@@ -414,7 +414,7 @@ function Planter({ kit, position, size }: { kit: Kit; position: [number, number,
   );
 }
 
-function Planting({ kit }: { kit: Kit }) {
+export function Planting({ kit }: { kit: Kit }) {
   const halfW = B.w / 2;
   const halfD = B.d / 2;
   const plants = useMemo(() => {
@@ -459,7 +459,7 @@ function Planting({ kit }: { kit: Kit }) {
  * sun is. Drawn into a canvas, like the landing's StudioEnv, so there is no
  * HDRI request.
  */
-function Sky() {
+export function Sky() {
   const gl = useThree((s) => s.gl);
   const env = useMemo(() => {
     const canvas = document.createElement("canvas");
@@ -514,19 +514,22 @@ function Drift({ still, parallax }: { still: boolean; parallax: boolean }) {
   return null;
 }
 
+/** The textures a rooftop needs, for a roof of the given paved size. Shared with the other rooftop scenes. */
+export function makeRoofKit(paved: [number, number] = [B.w - PARAPET_T * 2, B.d - PARAPET_T * 2]): Kit {
+  const cells = makeCellTexture();
+  cells.colorSpace = THREE.SRGBColorSpace;
+  cells.anisotropy = 8;
+  return {
+    cells,
+    plaster: plasterTexture(),
+    pavers: paverTexture([paved[0] / 2.4, paved[1] / 2.4]),
+    gravel: gravelTexture(),
+    contact: contactTexture(),
+  };
+}
+
 function Scene({ still, parallax }: { still: boolean; parallax: boolean }) {
-  const kit = useMemo<Kit>(() => {
-    const cells = makeCellTexture();
-    cells.colorSpace = THREE.SRGBColorSpace;
-    cells.anisotropy = 8;
-    return {
-      cells,
-      plaster: plasterTexture(),
-      pavers: paverTexture([(B.w - PARAPET_T * 2) / 2.4, (B.d - PARAPET_T * 2) / 2.4]),
-      gravel: gravelTexture(),
-      contact: contactTexture(),
-    };
-  }, []);
+  const kit = useMemo<Kit>(() => makeRoofKit(), []);
   useEffect(() => () => Object.values(kit).forEach((t) => t.dispose()), [kit]);
 
   return (
