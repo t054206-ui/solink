@@ -10,9 +10,14 @@
 export type PurchaseStep = 0 | 1 | 2 | 3 | 4 | 5;
 export const STEP_LABELS = ["Choose System", "Review", "Request a Quote", "Select Installation", "Schedule"] as const;
 
-/** A catalog product reduced to what the flow needs — prices are never invented. */
+/**
+ * A catalog product reduced to what an order line needs — prices are never
+ * invented. The Purchase wizard only ever fills this from its own four
+ * system-building categories; the basket (marketplace-wide) can fill it from
+ * any category the marketplace lists, so the union covers all of them.
+ */
 export interface CatalogItem {
-  id: string; category: "solar_panel" | "inverter" | "battery" | "installation_package";
+  id: string; category: "solar_panel" | "inverter" | "battery" | "installation_package" | "maintenance_package" | "cleaning_service" | "other_service";
   name: string; manufacturer: string; model: string;
   price: number | null; price_text: string; currency: string;
   rated_power_w: number | null; length_m: number | null; width_m: number | null;

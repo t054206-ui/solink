@@ -8,7 +8,8 @@ import { InfoTip } from "@/components/help/InfoTip";
 import { DEMO_PRODUCT_BANNER } from "@/lib/demo/data";
 import type { Product } from "@/lib/types";
 import { formatDate, specText } from "@/lib/utils";
-import { CATEGORY_SINGULAR, keySpecs } from "./product-helpers";
+import { CATEGORY_SINGULAR, keySpecs, realPrice } from "./product-helpers";
+import { AddToBasketButton } from "./AddToBasketButton";
 import { CompareToggle } from "./CompareToggle";
 import { PriceCell } from "./PriceCell";
 import { VerificationBadge } from "./VerificationBadge";
@@ -62,6 +63,7 @@ export function ProductCard({ product: p }: { product: Product }) {
               {p.source.kuwait_price_observed_at ? <> · price observed {formatDate(p.source.kuwait_price_observed_at)}</> : null}
             </p>
           )}
+          <AddToBasketButton productId={p.id} price={realPrice(p, "price")} currency={p.currency} className="w-full" />
           <div className="flex items-center justify-between gap-2">
             <CompareToggle id={p.id} />
             <Link href={href} className="inline-flex h-8 items-center gap-1 rounded-[10px] px-2.5 text-[13px] font-medium text-fg-secondary hover:bg-inset hover:text-fg">Details <ArrowRight className="size-3.5" aria-hidden /></Link>

@@ -10,11 +10,13 @@ import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { AgentDrawer } from "./AgentDrawer";
+import { BasketHeaderIcon } from "./BasketHeaderIcon";
 import { SkipLink } from "./SkipLink";
 import { SignOutButton } from "./SignOutButton";
 import type { Role } from "@/lib/roles";
 
-export interface ShellUser { email: string | null; name: string | null; orgName: string | null; isDemo: boolean; role: Role }
+/** isDemo: no Supabase connected, so there is no account at all. isAuthenticated: false for a signed-out guest even when Supabase IS connected — distinct from isDemo, since making pages like the marketplace public means both now render for people with no session. */
+export interface ShellUser { email: string | null; name: string | null; orgName: string | null; isDemo: boolean; isAuthenticated: boolean; role: Role }
 
 /**
  * Authenticated app shell. One sidebar per role (lib/navigation.ts): the
@@ -52,11 +54,16 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
   }
 
   const tag = ROLE_TAG[role];
+  const guest = !user.isDemo && !user.isAuthenticated;
   // Footer identity: name, then the company for providers and manufacturers,
   // then the email, for every role. Demo mode has no account, so it says so
-  // and offers Sign in instead of Sign out.
+  // and offers Sign in instead of Sign out — a real, signed-out guest (now
+  // possible on public pages like the marketplace) gets the same treatment,
+  // never "Signed in" with nothing to back it.
   const identity: { primary: string; lines: string[] } = user.isDemo
     ? { primary: `Demo ${role === "company" ? "provider" : role}`, lines: ["not signed in"] }
+    : guest
+    ? { primary: "Not signed in", lines: ["Browsing as a guest"] }
     : {
         primary: user.name ?? user.email ?? "Signed in",
         lines: [
@@ -99,7 +106,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
         <div className="truncate text-[12.5px] font-medium text-fg">{identity.primary}</div>
         {identity.lines.map((l) => <div key={l} className="truncate text-[11.5px] text-fg-muted" dir="ltr">{l}</div>)}
       </div>
-      {user.isDemo
+      {user.isDemo || guest
         ? <Link href="/login" className="press inline-flex h-8 shrink-0 items-center gap-1.5 rounded-[var(--radius)] border border-border-strong bg-elevated px-2.5 text-[12px] font-medium text-fg hover:bg-inset"><LogIn className="size-3.5" aria-hidden /> Sign in</Link>
         : <SignOutButton compact />}
     </div>
@@ -147,6 +154,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
                 </Link>
               )}
               <button onClick={() => setAgentOpen(true)} className="hidden sm:inline-flex h-8 items-center gap-1.5 rounded-[var(--radius)] border border-border-strong bg-elevated px-2.5 text-[12.5px] font-medium text-fg hover:bg-inset"><Bot className="size-4 text-[var(--brand-strong)]" aria-hidden /> Ask Solink</button>
+              <BasketHeaderIcon />
               <Link href="/notifications" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ""}`} className="relative grid size-9 place-items-center rounded-[var(--radius)] text-fg-muted hover:bg-inset hover:text-fg">
                 <Bell className="size-4" aria-hidden />{unreadCount > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-[var(--bg)]" />}
               </Link>

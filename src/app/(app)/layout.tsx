@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <AppShell
       demoMode={mode === "demo"}
       unreadCount={unread}
-      user={{ email: identity?.email ?? null, name: identity?.name ?? null, orgName: identity?.orgName ?? null, isDemo: mode === "demo", role: identity?.role ?? "homeowner" }}
+      user={{ email: identity?.email ?? null, name: identity?.name ?? null, orgName: identity?.orgName ?? null, isDemo: mode === "demo", isAuthenticated: identity !== null, role: identity?.role ?? "homeowner" }}
     >
       {children}
     </AppShell>

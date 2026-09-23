@@ -34,10 +34,19 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   sentence, if the provider were ever switched off. "Continue as a guest"
   under the form leads to `/`. Sign out is in the app sidebar footer
   (desktop) and top bar (phones).
-- **Marketplace** runs on the real catalogue: three LONGi Hi-MO 7 modules in
-  `solar_products` with the manufacturer's renders as images. Supabase-mode
-  listings exclude demo rows. Behind sign-in. Import pattern and provenance:
+- **Marketplace** runs on the real catalogue (46 real panels, Sessions 8–9) in
+  `solar_products` with the manufacturers' own renders as images.
+  Supabase-mode listings exclude demo rows. `/marketplace`, `/marketplace/[id]`
+  and `/compare` are **public** (2026-09-23, not behind sign-in); everything
+  else in the app stays gated. Import pattern and provenance:
   `supabase/imports/`, `docs/DATA-CLEANING-LOG.md`.
+- **Basket and checkout gate** (2026-09-23): a per-browser basket
+  (`src/lib/basket.ts`, `localStorage`, versioned key) works for guests and
+  signed-in people alike, on `/basket`; the login/signup wall shows only at
+  Checkout, never at add-to-basket (`CheckoutGateModal`). Checkout writes one
+  `orders` row, same as the Purchase wizard's "Request a quote" — never
+  before a real signed-in user id. Full account: HANDOFF.md, "Addendum,
+  2026-09-23 — guest browsing, a basket, and a checkout wall."
 - Supabase project `bgwvztckesuwlydwcfkj`, migrations 0001–0011 applied, both
   environments in Supabase mode, sign-up live, the owner's account is admin.
   Still needed: service-role key, SMTP sender, domain. Leaked-password

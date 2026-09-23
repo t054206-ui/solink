@@ -2021,8 +2021,81 @@ what changed is listed.
 - Trina Vertex N: the product page `/en-glb/NEG21C.20/` and render were added 2026-09-23 (C-017). That page links a 2025 C datasheet (up to 740 W) that has not been read; the rows follow the 2024 B edition.
 - 2026-09-23: production broke because someone pressed "Harden Data API" in Supabase (exposed schemas became `api, graphql_public`; every `public` read was refused with 406 from 17:12 UTC on 2026-09-22). `public` was added back on the owner's word and the site recovered. The empty `api` schema was removed from the exposed list on 2026-09-23 on the owner's word ("fix it"), and `graphql_public` was unticked and re-ticked so the saved order is `public, graphql_public`: PostgREST's default schema is the FIRST exposed one, and the dashboard keeps selection order. Verified: a request with no schema header reads `public` again (200). The `api` schema itself still exists, empty; drop it or build views in it.
 
+## Addendum, 2026-09-23 — guest browsing, a basket, and a checkout wall
+
+The owner filed a ticket with two verified bugs and a feature. All three are
+done; the ticket's own language (basket, checkout, stock, reviews) did not
+all match what the app actually has, and that mismatch is recorded here so
+Session 10 does not rediscover it.
+
+- **Bug 1**: `/marketplace` and `/compare` were behind sign-in in
+  `src/proxy.ts`. Removed from `PROTECTED_PREFIXES`. Their RLS `select`
+  policies were already public (`manufacturers`, `solar_products`,
+  `solar_product_sources`, `solar_product_prices` all read `using (true)`),
+  so nothing behind the pages needed a change; `recordProductEventAction`
+  already no-ops for a guest.
+- **Bug 2**: the "Continue as a guest" link on `/login` was hardcoded to `/`,
+  dropping `next`. Fixed in `AuthForm.tsx`: browsing goes to `next` when one
+  was actually given (i.e. `nextPath` is not the plain-visit default of
+  `/dashboard`), else `/`, same as before.
+- **A guest-shell bug this surfaced**: `ShellUser` only distinguished demo
+  mode from real mode, not signed-in from signed-out. A real, signed-out
+  guest on the now-public marketplace saw "Signed in" and a working
+  **Sign out** button in the sidebar footer. Added `ShellUser.isAuthenticated`
+  (`AppShell.tsx`, `(app)/layout.tsx`); a guest now sees "Not signed in /
+  Browsing as a guest" and a **Sign in** link, matching the existing demo-mode
+  treatment.
+- **The basket** (`src/lib/basket.ts`, `AddToBasketButton`,
+  `BasketHeaderIcon`, `/basket`): per-browser `localStorage` under a
+  versioned key (`basket:v1`), quantities, a local `anon_id` used only to
+  key the basket (never sent anywhere — Solink runs no analytics, see
+  `/privacy`). Works identically for guests and signed-in people, all the way
+  to Checkout, on the exact pattern `purchase`/`compare`/`calculator` already
+  use. Visible in the header (`BasketHeaderIcon`, next to notifications) for
+  everyone.
+- **What in the ticket doesn't exist here, and how it was handled instead**
+  (owner told, not guessed past): no ratings/reviews anywhere in the schema —
+  none were invented. No stock-quantity field — only a per-supplier
+  availability status; checkout re-validates price and whether the product is
+  still in the catalog, not a count. No persistent server-side basket to
+  "merge" into — everything is client-side until the final write, so the
+  guest basket already survives login/signup untouched (same browser
+  storage); `reconcileAfterRevalidation` in `basket.ts` is the seam a real
+  server basket would slot into later. "Checkout" has never meant payment in
+  this app (`payment_provider` is always `null`); it now writes one `orders`
+  row exactly as the Purchase wizard's "Request a quote" already does
+  (`createOrderFromBasketAction`, `basket/actions.ts`), never before a real
+  signed-in user id.
+- **The gate**: `CheckoutGateModal`, shown only when Checkout is clicked, not
+  at add-to-basket. `next=/basket` on both Log in and Create account, so
+  auth (including email-verification signup, which already threads `next`
+  through `emailRedirectTo`) returns to a basket that was never touched.
+- **Re-validation**: `revalidateBasketAction` runs at the Checkout click for
+  a signed-in person (never for a guest — the gate intercepts first). An
+  item that is gone (archived or deleted) is dropped and named; a changed
+  price is shown before anything is submitted, never charged silently.
+  `createOrderFromBasketAction` re-checks again server-side regardless of
+  what the client sent.
+- **`Modal.tsx`** (one prior caller, `VerificationQueue`) gained real focus
+  trapping and an `aria-labelledby` link to its heading, since the checkout
+  wall needed it and it was a latent gap in the only modal the app had.
+- `CatalogItem["category"]` (`purchase/purchaseTypes.ts`) widened from the
+  wizard's four system-building categories to every marketplace category, so
+  the basket (which sells the whole marketplace, not just systems) and
+  `OrderItem` can describe any of them. The wizard's own behaviour is
+  unchanged.
+- Checked in the dev server as a guest end to end: marketplace loads with no
+  redirect, add-to-basket works, the header count updates, `/basket` is
+  public, the gate modal traps focus (verified by walking Tab through all
+  four controls and confirming it wraps) and Escape closes it, and both
+  `next=/basket` links and the login page's own guest link round-trip back
+  to the basket. The signed-in checkout path (revalidate → order write)
+  was written and type-checked but not clicked through, since that needs a
+  real account password, which this session never handles.
+
 ## What to do next, in priority order
 
 1. Owner: verify products (or ask for a knowing SQL run with the note recorded), and decide on the Pro plan for leaked-password protection.
-2. Test the full flow signed in (marketplace → compare → recommend → designer → purchase → passport) with the 39-row catalogue; the designer and purchase read the catalogue and were not changed.
-3. Rate limiting with a shared store (Upstash / Vercel KV); Arabic for the app area; provider Reports and Settings; the earlier list.
+2. Owner: sign in as a real homeowner and run the basket → checkout path once, to see the order land in `/admin` and in the account's own request history.
+3. Test the full flow signed in (marketplace → compare → recommend → designer → purchase → passport) with the 46-row catalogue; the designer and purchase read the catalogue and were not changed.
+4. Rate limiting with a shared store (Upstash / Vercel KV); Arabic for the app area; provider Reports and Settings; the earlier list.

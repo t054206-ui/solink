@@ -13,10 +13,11 @@ import { DEMO_PRODUCT_BANNER } from "@/lib/demo/data";
 import { getProduct, listProductPrices, listProductSources } from "@/lib/data/repositories";
 import { PricesCard, SourceDocumentsCard } from "../_components/ProvenanceCards";
 import { SupplierPurchase } from "../_components/SupplierPurchase";
+import { AddToBasketButton } from "../_components/AddToBasketButton";
 import { CompareToggle } from "../_components/CompareToggle";
 import { CompareTray } from "../_components/CompareTray";
 import { PriceCell } from "../_components/PriceCell";
-import { CATEGORY_SINGULAR } from "../_components/product-helpers";
+import { CATEGORY_SINGULAR, realPrice } from "../_components/product-helpers";
 import { VerificationBadge } from "../_components/VerificationBadge";
 import { ManufacturerLink } from "../_components/ManufacturerLink";
 import { RecordProductEvent } from "../_components/RecordProductEvent";
@@ -72,6 +73,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
                   <div className="mt-1"><PriceCell product={p} /></div>
                   <SupplierPurchase prices={prices} className="mt-3 border-t border-border/70 pt-3" />
                 </div>
+                <AddToBasketButton productId={p.id} price={realPrice(p, "price")} currency={p.currency} size="md" className="w-full" />
                 <div className="flex flex-wrap gap-1.5 text-[12px] text-fg-muted">
                   <span>Data class of manufacturer fields:</span>
                   <DataBadge cls={p.is_demo ? "demo" : "source"} compact source={p.source.data_source} />
@@ -108,6 +110,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/marketpl
           <Card>
             <CardHeader title="Next steps" />
             <CardBody className="flex flex-col gap-2">
+              <AddToBasketButton productId={p.id} price={realPrice(p, "price")} currency={p.currency} size="md" className="w-full" />
               <CompareToggle id={p.id} size="md" className="w-full" />
               {isPanel && <Button href={`/designer?panel=${encodeURIComponent(p.id)}`} variant="outline" className="w-full"><PencilRuler className="size-4" aria-hidden /> Use in Designer</Button>}
               <Button href={`/purchase?panel=${encodeURIComponent(p.id)}`} variant="outline" className="w-full"><Wrench className="size-4" aria-hidden /> Plan installation</Button>

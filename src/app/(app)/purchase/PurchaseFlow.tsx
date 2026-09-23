@@ -395,5 +395,8 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function categoryLabel(c: CatalogItem["category"]) {
-  return { solar_panel: "Solar panel", inverter: "Inverter", battery: "Battery", installation_package: "Installation package" }[c];
+  return {
+    solar_panel: "Solar panel", inverter: "Inverter", battery: "Battery", installation_package: "Installation package",
+    maintenance_package: "Maintenance package", cleaning_service: "Cleaning service", other_service: "Other service",
+  }[c];
 }
