@@ -17,8 +17,12 @@ import { fmtKwh, fmtPct, monthLabel } from "../../_ops/production";
 import { isLocalId, mergeRecords, upsertRecord, useLocalIncidents, useLocalMaintenance, useLocalReports } from "../../_ops/localRecords";
 import { buildMonthlyReport } from "./buildReport";
 import { saveReport } from "../actions";
+import { PageHero } from "@/components/layout/PageHero";
+import { RecordSheet } from "./RecordSheet";
 
-export function ReportsIndex({ mode, serverReports, systems, production, cases, incidents, assumptions, months }: {
+export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems, production, cases, incidents, assumptions, months }: {
+  heading: { eyebrow: string; title: string; description: string };
+  demoNotice: React.ReactNode;
   mode: DataMode; serverReports: MonthlyReport[]; systems: SolarSystem[]; production: ProductionRecord[]; cases: MaintenanceCase[]; incidents: Incident[];
   assumptions: SolarAssumptions; months: string[];
 }) {
@@ -47,6 +51,14 @@ export function ReportsIndex({ mode, serverReports, systems, production, cases, 
 
   return (
     <div className="space-y-4">
+      <PageHero
+        label="Monthly reports"
+        {...heading}
+        layout="reverse"
+        focus="30% 50%"
+        visual={<RecordSheet systemName={systems[0]?.name ?? "Your system"} panelCount={systems[0]?.panel_count ?? null} reportCount={reports.length} monthCount={months.length} />}
+      />
+      {demoNotice}
       <Card>
         <CardHeader title="Generate a report" subtitle="Energy and maintenance sections are computed from the records available. Financial and environmental figures stay unavailable until a tariff and an emission factor are provided; the AI section needs the Claude API key." />
         <CardBody>
@@ -73,16 +85,19 @@ export function ReportsIndex({ mode, serverReports, systems, production, cases, 
             const counts = r.maintenance.incidents + r.maintenance.cleanings + r.maintenance.repairs + r.maintenance.replacements;
             return (
               <li key={r.id}>
-                <Link href={`/reports/${r.id}`} className="block h-full rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm transition-colors hover:bg-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-                  <div className="flex items-start justify-between gap-2">
+                {/* A report as a document: a sheet with a folded corner, the month as its title. */}
+                <Link href={`/reports/${r.id}`} className="lift group relative block h-full border border-border bg-elevated p-5 shadow-[var(--shadow)] [clip-path:polygon(0_0,calc(100%-22px)_0,100%_22px,100%_100%,0_100%)] hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
+                  <span aria-hidden="true" className="absolute end-0 top-0 size-[22px] border-b border-s border-border bg-inset" />
+                  <div className="flex items-start justify-between gap-2 border-b border-border pb-3">
                     <div>
-                      <div className="text-[15px] font-semibold text-fg">{monthLabel(r.month)}</div>
+                      <div className="micro">Monthly report</div>
+                      <div className="display mt-1 text-[20px] text-fg">{monthLabel(r.month)}</div>
                       <div className="text-[12px] text-fg-muted">{systemName(r.system_id)}</div>
                     </div>
-                    <ChevronRight className="size-4 shrink-0 text-fg-muted" aria-hidden />
+                    <ChevronRight className="mt-5 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
                   </div>
                   <div className="mt-3 flex items-end justify-between gap-2">
-                    <div className="tabular text-2xl font-semibold text-fg">{r.energy.total_kwh === null ? <span className="text-base font-medium text-fg-muted">Unavailable</span> : fmtKwh(r.energy.total_kwh)}</div>
+                    <div className="figure text-2xl font-medium text-[color:var(--sun-ink)]">{r.energy.total_kwh === null ? <span className="text-base font-medium text-fg-muted">Unavailable</span> : fmtKwh(r.energy.total_kwh)}</div>
                     <DataBadge cls={r.energy.cls} compact />
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[12.5px] text-fg-secondary">

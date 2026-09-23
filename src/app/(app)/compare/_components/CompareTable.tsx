@@ -15,6 +15,8 @@ import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import { annualProductionKwh, totalCostOfOwnership, type SolarAssumptions } from "@/lib/solar/calculations";
 import type { Product } from "@/lib/types";
 import { cn, specNum, specText } from "@/lib/utils";
+import { PageHero } from "@/components/layout/PageHero";
+import { BenchVisual } from "@/components/three/PageVisuals";
 import { PriceCell } from "../../marketplace/_components/PriceCell";
 import { VerificationBadge } from "../../marketplace/_components/VerificationBadge";
 import { ManufacturerLink } from "../../marketplace/_components/ManufacturerLink";
@@ -71,7 +73,10 @@ function classifiedCell(c: Classified, format: (v: number) => string): Cell {
  * marketplace. Estimate rows are only computed when the user (or an admin
  * platform setting) supplies the assumptions; otherwise the reason is shown.
  */
-export function CompareTable({ panels, platformAssumptions }: { panels: Product[]; platformAssumptions: SolarAssumptions }) {
+/** Column letters, in selection order: the bench, the vs line and the table all use them. */
+const LETTERS = ["A", "B", "C", "D"];
+
+export function CompareTable({ panels, platformAssumptions, heading }: { panels: Product[]; platformAssumptions: SolarAssumptions; heading: { eyebrow: string; title: string; description: string; actions: React.ReactNode } }) {
   const [ids, setIds, loaded] = useLocalStore<string[]>(COMPARE_STORE_KEY, []);
   const [ua, setUa] = useLocalStore<UserAssumptions>("compare:assumptions", EMPTY_ASSUMPTIONS);
 
@@ -145,13 +150,46 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
     return vals.indexOf(target);
   };
 
-  if (!loaded) return <div className="skeleton h-64 rounded-[var(--radius-lg)]" aria-hidden />;
+  const hero = (visual?: React.ReactNode) => (
+    <PageHero label="Compare panels" eyebrow={heading.eyebrow} title={heading.title} description={heading.description} actions={heading.actions} layout="stacked" focus="50% 70%" visual={visual} />
+  );
+
+  if (!loaded) return <>{hero()}<div className="skeleton h-64 rounded-[var(--radius-lg)]" aria-hidden /></>;
 
   const anyDemo = selected.some((p) => p.is_demo);
   const realSelected = selected.filter((p) => !p.is_demo).map((p) => p.id);
 
+  // The bench draws each selected panel at the length and width its record states (mm → m).
+  const bench = selected.map((p) => {
+    const l = getSpecNum(p.specs, "length_mm"), w = getSpecNum(p.specs, "width_mm");
+    return { w: w !== null ? w / 1000 : null, h: l !== null ? l / 1000 : null };
+  });
+  const unsized = bench.filter((b) => b.w === null || b.h === null).length;
+
   return (
     <div className="space-y-5">
+      {hero(selected.length > 0 ? (
+        <div>
+          <BenchVisual
+            panels={bench}
+            caption={<>Each panel is drawn at the length and width its record states, so their sizes compare truly.{unsized > 0 ? ` ${unsized} ${unsized === 1 ? "record does" : "records do"} not state a size and ${unsized === 1 ? "is" : "are"} drawn as an outline.` : ""}</>}
+          />
+          <ol className="mt-3 flex flex-wrap items-stretch justify-center gap-2" aria-label="Panels being compared">
+            {selected.map((p, i) => (
+              <li key={p.id} className="flex items-center gap-2">
+                {i > 0 && <span className="micro" aria-hidden="true">vs</span>}
+                <span className="flex min-w-0 max-w-[16rem] items-center gap-2 rounded-[var(--radius)] border border-border bg-elevated px-2.5 py-1.5 shadow-[var(--shadow-sm)]">
+                  <span className="figure grid size-6 shrink-0 place-items-center rounded-full bg-brand text-[12px] text-brand-fg">{LETTERS[i]}</span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[13px] font-semibold text-fg">{p.name}</span>
+                    <span className="block truncate text-[11.5px] text-fg-muted">{p.manufacturer_name}</span>
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : undefined)}
       {realSelected.length > 1 && <RecordProductEvent productIds={realSelected} kind="compare" />}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex-1 sm:max-w-md">
@@ -185,10 +223,11 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
               <thead>
                 <tr className="border-b border-border bg-inset/60">
                   <th scope="col" className="sticky left-0 z-10 w-44 min-w-44 bg-elevated px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-fg-muted shadow-[1px_0_0_var(--border)]">Specification</th>
-                  {selected.map((p) => (
+                  {selected.map((p, i) => (
                     <th key={p.id} scope="col" className="min-w-44 px-4 py-3 text-left align-top">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
+                          <span className="figure mb-1 grid size-6 place-items-center rounded-full bg-brand text-[12px] text-brand-fg" aria-label={`Panel ${LETTERS[i]}`}>{LETTERS[i]}</span>
                           <Link href={`/marketplace/${p.id}`} className="block truncate font-semibold text-fg hover:underline underline-offset-2">{p.name}</Link>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[12px] font-normal text-fg-muted"><ManufacturerLink product={p} />{p.is_demo && <DataBadge cls="demo" compact />}</div>
                         </div>
@@ -203,14 +242,14 @@ export function CompareTable({ panels, platformAssumptions }: { panels: Product[
                   const cells = selected.map((p) => row.cell(p));
                   const best = bestIndex(row, cells);
                   return (
-                    <tr key={row.id} className="border-b border-border/70 last:border-0">
+                    <tr key={row.id} className="border-b border-border/70 transition-colors last:border-0 hover:bg-inset/50">
                       <th scope="row" className="sticky left-0 z-10 bg-elevated px-4 py-2.5 text-left align-top font-medium text-fg-secondary shadow-[1px_0_0_var(--border)]">
                         <span className="inline-flex items-center gap-1">{row.label}{row.term && <InfoTip term={row.term} />}</span>
                       </th>
                       {cells.map((c, i) => (
                         <td key={selected[i].id} className={cn("px-4 py-2.5 align-top", best === i && "bg-brand-soft/60")} title={best === i ? `Highest/lowest in this row for ${row.label}. Whether that is “best” depends on your needs` : undefined}>
                           <div className="flex flex-col gap-1">
-                            <div className="tabular text-fg">{c.node}{best === i && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--brand-strong)]">▲ {row.best === "high" ? "highest" : "lowest"}</span>}</div>
+                            <div className="tabular text-fg">{c.node}{best === i && <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full border border-[var(--brand)]/30 bg-elevated px-1.5 py-px align-middle text-[10px] font-semibold uppercase tracking-wide text-[var(--brand-strong)]">{row.best === "high" ? "▲ highest" : "▼ lowest"}</span>}</div>
                             {c.cls && <DataBadge cls={c.cls} compact source={c.source} />}
                           </div>
                         </td>

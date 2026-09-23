@@ -85,7 +85,9 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
             <ul className="divide-y divide-border">
               {filtered.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/maintenance/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-[10px] px-2 py-3 hover:bg-inset focus-visible:bg-inset focus-visible:outline-none">
+                  <Link href={`/maintenance/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-[10px] px-2 py-3 transition-colors hover:bg-inset focus-visible:bg-inset focus-visible:outline-none">
+                    {/* A rail from the case's own status and urgency: done green, open amber, open and urgent red. The pills beside it say the same in words. */}
+                    <span aria-hidden="true" className={cn("mt-1 w-1 shrink-0 self-stretch rounded-full", OPEN_MAINT_STATUSES.includes(c.status) ? (c.urgency === "urgent" ? "bg-critical" : "bg-warn") : "bg-good")} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <KindBadge kind={c.kind} />
@@ -114,9 +116,12 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
 
 function Summary({ icon: Icon, label, value, sub }: { icon: typeof ClipboardList; label: string; value: string; sub: string }) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-2 text-[12.5px] font-medium text-fg-secondary"><Icon className="size-4 text-fg-muted" aria-hidden />{label}</div>
-      <div className="mt-2 text-xl font-semibold leading-tight text-fg">{value}</div>
+    <Card className="lift p-4">
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Icon className="size-4" aria-hidden /></span>
+        <span className="micro">{label}</span>
+      </div>
+      <div className="display mt-3 text-[24px] leading-tight text-fg">{value}</div>
       <div className="mt-1 text-[12px] text-fg-muted">{sub}</div>
     </Card>
   );

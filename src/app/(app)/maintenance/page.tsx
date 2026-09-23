@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CalendarPlus } from "lucide-react";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageHero } from "@/components/layout/PageHero";
+import { CareVisual } from "@/components/three/PageVisuals";
 import { Button } from "@/components/ui/Button";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { EmptyState } from "@/components/ui/States";
@@ -28,11 +29,14 @@ export default async function MaintenancePage() {
 
   return (
     <div>
-      <PageHeader
+      <PageHero
+        label="Maintenance"
         eyebrow="Operate"
         title="Maintenance"
         description="Every cleaning, inspection and repair on your system, from first signal to closed record. Nothing here is assumed: costs appear only when a provider enters them."
         actions={<Button href="/maintenance/book"><CalendarPlus className="size-4" aria-hidden /> Book maintenance</Button>}
+        visual={<CareVisual caption="An illustration of what a cleaning does: dust on the glass, a cleared swath. It is not a picture of your panels and measures nothing." />}
+        focus="80% 40%"
       />
       {mode === "demo" && <DemoBanner className="mb-4" detail="Supabase is not connected. Demo cases are shown; anything you create is stored on this device only." />}
 

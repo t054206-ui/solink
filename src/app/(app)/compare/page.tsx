@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { listProducts } from "@/lib/data/repositories";
@@ -20,14 +19,17 @@ export default async function ComparePage() {
 
   return (
     <div>
-      <PageHeader
-        eyebrow="Choose"
-        title="Compare panels"
-        description="Up to four panels side by side. Manufacturer figures are labeled as source data; anything Solink derives is labeled calculated or estimated, with its assumptions visible."
-        actions={<Button href="/marketplace?category=solar_panel" variant="outline">Back to marketplace</Button>}
-      />
       {mode === "demo" && <DemoBanner className="mb-5" text="DEMO CATALOG — NOT REAL" detail="Only demo panel records are available until a real product dataset is connected." />}
-      <CompareTable panels={panels} platformAssumptions={assumptions} />
+      <CompareTable
+        panels={panels}
+        platformAssumptions={assumptions}
+        heading={{
+          eyebrow: "Choose",
+          title: "Compare panels",
+          description: "Up to four panels side by side. Manufacturer figures are labeled as source data; anything Solink derives is labeled calculated or estimated, with its assumptions visible.",
+          actions: <Button href="/marketplace?category=solar_panel" variant="outline">Back to marketplace</Button>,
+        }}
+      />
     </div>
   );
 }
