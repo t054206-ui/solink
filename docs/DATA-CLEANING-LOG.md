@@ -279,16 +279,31 @@ rows (datasheet, product page) record provenance per product.
 | **Stored** | `performance_warranty_end_pct` unavailable, limits in `specs.additional`; product warranty 12 years as printed, with the footnote wording in `product_warranty_note`. System voltage 1500 V (IEC/UL), snow 6000 Pa, wind 5400 Pa |
 | **Image** | `TOPBiHiKu6-Detailed.png`, the render the official TOPBiHiKu6 page serves; shows 6 × 22 = 132 cells, matching |
 
-### C-016 — Images: what was rejected
+### C-016 — Images: what was rejected on import day (superseded by C-017)
 
 | | |
 |---|---|
 | **Rule** | Only an image the manufacturer's own product page serves for this series (as C-010) |
-| **LONGi** | The Hi-MO X6 page serves `X6_Scientist_*.jpg`: a cropped atmospheric shot and a marketing banner, not product renders. No image stored |
-| **JinkoSolar** | See C-012. No image stored |
-| **Trina Solar** | See C-014. No image stored |
+| **LONGi** | The Hi-MO X6 family page serves `X6_Scientist_*.jpg`: a cropped atmospheric shot and a marketing banner, not product renders. No image stored on 2026-09-22 |
+| **JinkoSolar** | See C-012. No image stored on 2026-09-22 |
+| **Trina Solar** | See C-014. No image stored on 2026-09-22 |
 
 ### Not imported
 
 Nothing was rejected in this batch. The 2025 Trina sheet (715–740 W) is the
 only document that was wanted and not obtained.
+
+### C-017 — Product renders for the LONGi, JinkoSolar and Trina rows (2026-09-23)
+
+The three pages need JavaScript, which the plain download of 2026-09-22 could
+not run. Opened with a browser on 2026-09-23; the same rule as C-010 applied
+(only an image the manufacturer's own page serves for this series), and each
+render's cell count was compared with the datasheet before storing. Addendum
+at the end of `supabase/imports/2026-09-22_manufacturer_series_2.sql`.
+
+| | |
+|---|---|
+| **LONGi** | `static.longi.com/Scientist_new2_7168a03441.png`, the front render the official Hi-MO X6 Scientist series page (`/en/products/modules/hi-mo-x6-scientist/`) serves; 6 × 24 = 144 cells, back-contact front, matching LR7-72HTH. The series page also covers LR5 Scientist models; it replaces the family page as `manufacturer_url` |
+| **JinkoSolar** | `jinkosolarcdn.shwebspace.com/uploads/665d7326/60-182x182 V.jpg`, served by the official Tiger Neo page beside "Tiger Neo 66HC, 635 Wp, 23.51 %", i.e. this series (our 635 W bin prints 23.51 %). The file name reads 60 but the render shows 6 × 22 = 132 cells, matching 66HL4M; kept with this note, as in C-010 |
+| **Trina Solar** | `www-cdn.trinasolar.com/wwwstorage/sites/3/720W-TSM-NEG21C.20.png`, named for the exact series and served by the official Vertex N series page; 6 × 22 = 132 cells, matching. The product page `/en-glb/NEG21C.20/` was found and replaces the home page as `manufacturer_url` |
+| **Follow-up** | Trina's product page links a newer datasheet, `DT-M-0042-G-EN-J-Datasheet_Vertex_NEG21C.20_2025_C.pdf` (up to 740 W). Not read; the six rows still follow the 2024 B edition. A later refresh can add the 730–740 W bins and re-check the 700–725 W values against it |

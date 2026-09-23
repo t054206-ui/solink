@@ -2725,3 +2725,29 @@ from solar_products p join manufacturers m on m.id = p.manufacturer_id where m.s
 commit;
 
 -- Rollback (manual): delete from solar_products where model in ('LR7-72HTH-620M', 'LR7-72HTH-625M', 'LR7-72HTH-630M', 'JKM610N-66HL4M-(V)', 'JKM615N-66HL4M-(V)', 'JKM620N-66HL4M-(V)', 'JKM625N-66HL4M-(V)', 'JKM630N-66HL4M-(V)', 'JKM635N-66HL4M-(V)', 'JAM72D42-625/LB', 'JAM72D42-630/LB', 'JAM72D42-635/LB', 'JAM72D42-640/LB', 'JAM72D42-645/LB', 'JAM72D42-650/LB', 'TSM-700NEG21C.20', 'TSM-705NEG21C.20', 'TSM-710NEG21C.20', 'TSM-715NEG21C.20', 'TSM-720NEG21C.20', 'TSM-725NEG21C.20', 'CS6.2-66TB-590H', 'CS6.2-66TB-595H', 'CS6.2-66TB-600H', 'CS6.2-66TB-605H', 'CS6.2-66TB-610H', 'CS6.2-66TB-615H', 'CS6.2-66TB-620H');
+
+-- ----------------------------------------------------------------------------
+-- Addendum, 2026-09-23: official product renders for the three series that had
+-- none (owner: "why in marketplace the photos are not showing"). The product
+-- pages need JavaScript; opened with a browser this time. Each address is the
+-- image the manufacturer's own series page serves; cell counts checked against
+-- the datasheet before storing. Ran against the database the same day. See
+-- docs/DATA-CLEANING-LOG.md C-017.
+-- ----------------------------------------------------------------------------
+begin;
+update solar_products p set images = array['https://jinkosolarcdn.shwebspace.com/uploads/665d7326/60-182x182%20V.jpg'],
+  source = p.source || jsonb_build_object('field_sources', coalesce(p.source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://www.jinkosolar.com/en/site/tigerneo'), 'date_last_updated', '2026-09-23')
+from manufacturers m where m.id = p.manufacturer_id and m.slug = 'jinkosolar' and p.model like 'JKM6%N-66HL4M-(V)';
+update solar_product_sources s set fields = array['images'], notes = 'The official Tiger Neo page; also serves the product render stored in images (placed beside "Tiger Neo 66HC 635Wp, Efficiency 23.51%", this series; the file name reads 60 while the page places it with the 66-cell module). Render checked 2026-09-23: 6 × 22 = 132 cells.'
+from solar_products p, manufacturers m where s.product_id = p.id and p.manufacturer_id = m.id and m.slug = 'jinkosolar' and p.model like 'JKM6%N-66HL4M-(V)' and s.source_type = 'official_manufacturer_product_page';
+update solar_products p set images = array['https://static.longi.com/Scientist_new2_7168a03441.png'],
+  source = p.source || jsonb_build_object('manufacturer_url', 'https://www.longi.com/en/products/modules/hi-mo-x6-scientist/', 'manufacturer_doc_url', 'https://www.longi.com/en/products/modules/hi-mo-x6-scientist/', 'field_sources', coalesce(p.source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://www.longi.com/en/products/modules/hi-mo-x6-scientist/'), 'date_last_updated', '2026-09-23')
+from manufacturers m where m.id = p.manufacturer_id and m.slug = 'longi' and p.model like 'LR7-72HTH-%M';
+update solar_product_sources s set source_url = 'https://www.longi.com/en/products/modules/hi-mo-x6-scientist/', fields = array['images'], notes = 'The official Hi-MO X6 Scientist series page (the series page covers LR5 and LR7 Scientist models); also serves the product render stored in images. Render checked 2026-09-23: 6 × 24 = 144 cells, back-contact front.'
+from solar_products p, manufacturers m where s.product_id = p.id and p.manufacturer_id = m.id and m.slug = 'longi' and p.model like 'LR7-72HTH-%M' and s.source_type = 'official_manufacturer_product_page';
+update solar_products p set images = array['https://www-cdn.trinasolar.com/wwwstorage/sites/3/720W-TSM-NEG21C.20.png'],
+  source = p.source || jsonb_build_object('manufacturer_url', 'https://www.trinasolar.com/en-glb/NEG21C.20/', 'manufacturer_doc_url', 'https://www.trinasolar.com/en-glb/NEG21C.20/', 'field_sources', coalesce(p.source->'field_sources','{}'::jsonb) || jsonb_build_object('images', 'https://www.trinasolar.com/en-glb/VertexN/'), 'date_last_updated', '2026-09-23')
+from manufacturers m where m.id = p.manufacturer_id and m.slug = 'trina-solar' and p.model like 'TSM-7%NEG21C.20';
+update solar_product_sources s set source_url = 'https://www.trinasolar.com/en-glb/NEG21C.20/', fields = array['images'], notes = 'The official NEG21C.20 product page, opened with a browser on 2026-09-23 (the home page was recorded on import). The Vertex N series page serves the render stored in images (720W-TSM-NEG21C.20.png; checked: 6 × 22 = 132 cells). The product page links a newer datasheet, DT-M-0042-G-EN-J 2025 C (up to 740 W), not yet read; the rows follow the 2024 B edition.'
+from solar_products p, manufacturers m where s.product_id = p.id and p.manufacturer_id = m.id and m.slug = 'trina-solar' and p.model like 'TSM-7%NEG21C.20' and s.source_type = 'official_manufacturer_product_page';
+commit;
