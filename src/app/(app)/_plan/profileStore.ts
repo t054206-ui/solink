@@ -48,7 +48,10 @@ export function profileCompleteness(p: SolarProfile | null): Completeness {
     { key: "consumption", label: "Monthly electricity use (kWh) or monthly bill", required: true, weight: 25, done: Boolean(p && (num(p.monthly_consumption_kwh) || num(p.monthly_bill))) },
     { key: "roof_area", label: "Roof area (or roof length and width)", required: true, weight: 20, done: roof.value !== null },
     { key: "available_area", label: "Available roof area for panels", required: false, weight: 15, done: Boolean(p && num(p.available_roof_area_m2)) },
-    { key: "location", label: "Address or map coordinates", required: false, weight: 15, done: Boolean(p && ((p.address && p.address.trim().length > 0) || (num(p.lat) && num(p.lng)))) },
+    // Not typed here since 2026-09-23: it arrives from a Solar Potential run or
+    // the Placement Guide, so the label names where it comes from rather than
+    // asking for something this page no longer has a field for.
+    { key: "location", label: "Location (from Solar Potential or the Placement Guide)", required: false, weight: 15, done: Boolean(p && ((p.address && p.address.trim().length > 0) || (num(p.lat) && num(p.lng)))) },
     { key: "orientation", label: "Roof orientation", required: false, weight: 10, done: Boolean(p && p.roof_orientation && p.roof_orientation !== "unknown") },
     { key: "tilt", label: "Roof tilt", required: false, weight: 5, done: Boolean(p && num(p.roof_tilt_deg)) },
     { key: "house_type", label: "House type", required: false, weight: 5, done: Boolean(p && p.house_type) },
