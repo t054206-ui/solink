@@ -17,6 +17,7 @@ import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sniffFileType } from "@/lib/files/sniffFileType";
 import type { MaintenanceStatus, SpecValue } from "@/lib/types";
 import { getProviderAccess } from "./_lib/access";
 import { canMoveTo, transitionReason } from "./_lib/workflow";
@@ -67,9 +68,11 @@ function text(fd: FormData, key: string): string | null {
 async function uploadImage(c: SupabaseClient, userId: string, file: File): Promise<{ path: string } | { error: string }> {
   if (!file.type.startsWith("image/")) return { error: "Only image files are accepted." };
   if (file.size > MAX_IMAGE_BYTES) return { error: "Each image must be 8 MB or smaller." };
+  const sniffed = await sniffFileType(file);
+  if (!sniffed || !sniffed.startsWith("image/")) return { error: "That file's contents don't look like an image." };
   const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
   const path = `${userId}/${Date.now()}-${safe}`;
-  const { error } = await c.storage.from("maintenance-images").upload(path, file, { contentType: file.type, upsert: false });
+  const { error } = await c.storage.from("maintenance-images").upload(path, file, { contentType: sniffed, upsert: false });
   if (error) return { error: `Image upload failed: ${error.message}` };
   return { path };
 }

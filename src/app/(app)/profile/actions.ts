@@ -3,6 +3,7 @@ import { friendlyDbError } from "@/lib/api/errors";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
+import { sniffFileType } from "@/lib/files/sniffFileType";
 import type { SolarProfile } from "@/lib/types";
 
 /**
@@ -97,13 +98,15 @@ export async function uploadRoofPhoto(formData: FormData): Promise<UploadPhotoRe
   if (!(file instanceof File)) return { ok: false, reason: "invalid", message: "No file received." };
   if (!file.type.startsWith("image/")) return { ok: false, reason: "invalid", message: "Only image files are accepted." };
   if (file.size > MAX_BYTES) return { ok: false, reason: "invalid", message: "Image must be 8 MB or smaller." };
+  const sniffed = await sniffFileType(file);
+  if (!sniffed || !sniffed.startsWith("image/")) return { ok: false, reason: "invalid", message: "That file's contents don't look like an image." };
   const c = await createClient();
   if (!c) return { ok: false, reason: "demo", message: "Photo storage requires Supabase. Preview only." };
   const { data: { user } } = await c.auth.getUser();
   if (!user) return { ok: false, reason: "unauthenticated", message: "Sign in to upload a photo." };
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
   const path = `${user.id}/${Date.now()}-${safeName}`;
-  const { error } = await c.storage.from("roof-photos").upload(path, file, { contentType: file.type, upsert: false });
+  const { error } = await c.storage.from("roof-photos").upload(path, file, { contentType: sniffed, upsert: false });
   if (error) return { ok: false, reason: "error", message: friendlyDbError(error) };
   const { data: signed } = await c.storage.from("roof-photos").createSignedUrl(path, 60 * 60);
   return { ok: true, path, signedUrl: signed?.signedUrl ?? null };

@@ -3,6 +3,7 @@ import { friendlyDbError } from "@/lib/api/errors";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getManufacturerAccess } from "./_lib/access";
+import { sniffFileType } from "@/lib/files/sniffFileType";
 import type { ActionResult, ProductInput } from "@/app/(app)/admin/actions";
 
 /**
@@ -144,12 +145,14 @@ export async function uploadProductDocumentAction(form: FormData): Promise<Actio
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Choose a file to upload." };
   if (file.size > MAX_UPLOAD_BYTES) return { ok: false, error: "The file is larger than 15 MB." };
   if (!ALLOWED_UPLOAD.has(file.type)) return { ok: false, error: "Only PDF, PNG, JPEG or WebP files can be uploaded." };
+  const sniffed = await sniffFileType(file);
+  if (!sniffed || !ALLOWED_UPLOAD.has(sniffed)) return { ok: false, error: "That file's contents don't match a PDF, PNG, JPEG or WebP file." };
   if (!["datasheet", "manual", "warranty", "certificate", "image", "other"].includes(kind)) return { ok: false, error: "Unknown document kind." };
   const { data: p } = await g.c.from("solar_products").select("id, manufacturer_id").eq("id", productId).maybeSingle();
   if (!p || p.manufacturer_id !== g.manufacturerId) return { ok: false, error: "That product does not belong to your company." };
   const safeName = file.name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 100) || "file";
   const path = `${productId}/${Date.now()}-${safeName}`;
-  const { error: upErr } = await g.c.storage.from("product-documents").upload(path, file, { contentType: file.type, upsert: false });
+  const { error: upErr } = await g.c.storage.from("product-documents").upload(path, file, { contentType: sniffed, upsert: false });
   if (upErr) return { ok: false, error: friendlyDbError(upErr, "The file could not be stored. Check the type and size and try again.") };
   const { data, error } = await g.c.from("product_documents").insert({ product_id: productId, kind, title: title || file.name, storage_path: path, uploaded_by: g.userId }).select("id").single();
   if (error) return { ok: false, error: friendlyDbError(error) };

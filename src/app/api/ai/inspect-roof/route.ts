@@ -3,6 +3,7 @@ import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { HouseType, RoofOrientation } from "@/lib/types";
 import { requireUser } from "@/lib/api/auth";
 import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
+import { sniffFileType } from "@/lib/files/sniffFileType";
 
 export type Confidence = "low" | "medium" | "high";
 
@@ -51,7 +52,7 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 export async function POST(req: Request) {
   const gate = await requireUser();
   if ("response" in gate) return gate.response;
-  const limited = checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/inspect-roof"), LIMITS.ai);
+  const limited = await checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/inspect-roof"), LIMITS.ai);
   if (limited) return limited;
   if (!isClaudeConfigured()) {
     return Response.json(
@@ -72,16 +73,20 @@ export async function POST(req: Request) {
   if (files.length > MAX_FRAMES) return Response.json({ ok: false, reason: "invalid_input", message: `Send at most ${MAX_FRAMES} images.` }, { status: 400 });
 
   let total = 0;
+  const sniffed: string[] = [];
   for (const f of files) {
     if (!ALLOWED.has(f.type)) return Response.json({ ok: false, reason: "invalid_input", message: "Use JPEG, PNG or WEBP images." }, { status: 400 });
     if (f.size > MAX_BYTES) return Response.json({ ok: false, reason: "invalid_input", message: "Each image must be under 6 MB." }, { status: 400 });
+    const type = await sniffFileType(f);
+    if (!type || !ALLOWED.has(type)) return Response.json({ ok: false, reason: "invalid_input", message: "One of those files' contents doesn't match a JPEG, PNG or WEBP image." }, { status: 400 });
+    sniffed.push(type);
     total += f.size;
   }
   if (total > MAX_TOTAL) return Response.json({ ok: false, reason: "invalid_input", message: "Those images are too large in total." }, { status: 400 });
 
   const images = await Promise.all(
-    files.map(async (f) => ({
-      media_type: f.type as "image/jpeg" | "image/png" | "image/webp",
+    files.map(async (f, i) => ({
+      media_type: sniffed[i] as "image/jpeg" | "image/png" | "image/webp",
       data: Buffer.from(await f.arrayBuffer()).toString("base64"),
     })),
   );

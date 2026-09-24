@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getDataMode } from "@/lib/data/mode";
+import { sniffFileType } from "@/lib/files/sniffFileType";
 import type { Incident } from "@/lib/types";
 
 /**
@@ -42,9 +43,11 @@ export async function createIncident(formData: FormData): Promise<CreateIncident
     if (!(f instanceof File) || f.size === 0) continue;
     if (!f.type.startsWith("image/")) return { ok: false, reason: "invalid", message: "Only image files are accepted." };
     if (f.size > MAX_BYTES) return { ok: false, reason: "invalid", message: "Each image must be 8 MB or smaller." };
+    const sniffed = await sniffFileType(f);
+    if (!sniffed || !sniffed.startsWith("image/")) return { ok: false, reason: "invalid", message: "One of those files' contents doesn't look like an image." };
     const safe = f.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
     const path = `${user.id}/${Date.now()}-${safe}`;
-    const { error } = await c.storage.from("incident-images").upload(path, f, { contentType: f.type, upsert: false });
+    const { error } = await c.storage.from("incident-images").upload(path, f, { contentType: sniffed, upsert: false });
     if (error) return { ok: false, reason: "error", message: `Image upload failed: ${error.message}` };
     images.push(path);
   }
