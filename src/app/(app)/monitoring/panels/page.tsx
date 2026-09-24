@@ -58,7 +58,7 @@ export default async function PanelsPage() {
             {WOULD_SHOW.map((f) => (
               <li key={f.title} className="rounded-[var(--radius-md)] border border-dashed border-border-strong bg-inset p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-[13.5px] font-semibold text-fg">{f.title}</h3>
+                  <h3 className="text-[13.5px] font-semibold text-fg-heading">{f.title}</h3>
                   <DataBadge cls="unavailable" compact />
                 </div>
                 <p className="mt-1 text-[13px] leading-relaxed text-fg-secondary">{f.text}</p>

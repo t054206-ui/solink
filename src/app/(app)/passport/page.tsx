@@ -29,7 +29,7 @@ export default async function PassportListPage() {
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-brand-soft text-[var(--brand-strong)]"><FileBadge className="size-5" aria-hidden /></span>
                     <div className="min-w-0">
-                      <h2 className="truncate text-[15px] font-semibold text-fg">{system.name}</h2>
+                      <h2 className="truncate text-[15px] font-semibold text-fg-heading">{system.name}</h2>
                       <p className="font-mono text-[12px] text-fg-muted">{passport?.passport_number ?? "No passport issued yet"}</p>
                     </div>
                   </div>

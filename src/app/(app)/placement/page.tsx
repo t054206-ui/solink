@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { PlacementGuide } from "./PlacementGuide";
 
 /**
@@ -22,12 +21,13 @@ export const metadata: Metadata = {
 export default function PlacementPage() {
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <PageHeader
-        eyebrow="Plan"
-        title="Solar Placement Guide"
-        description="Which way a fixed panel should face where you are, and at what angle. Worked out from your location in this browser, with the reasoning and the limits of it shown alongside."
+      <PlacementGuide
+        heading={{
+          eyebrow: "Plan",
+          title: "Solar Placement Guide",
+          description: "Which way a fixed panel should face where you are, and at what angle. Worked out from your location in this browser, with the reasoning and the limits of it shown alongside.",
+        }}
       />
-      <PlacementGuide />
     </div>
   );
 }

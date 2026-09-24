@@ -240,7 +240,10 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
             </Card>
 
             {ranked.matches.map((m, i) => (
-              <MatchCard key={m.product.id} match={m} rank={i + 1} />
+              <div key={m.product.id} className="space-y-4">
+                {i === 1 && <h3 className="micro pt-2">Other matches, in ranked order</h3>}
+                <MatchCard match={m} rank={i + 1} featured={i === 0} />
+              </div>
             ))}
 
             {ranked.status !== "ok" && (

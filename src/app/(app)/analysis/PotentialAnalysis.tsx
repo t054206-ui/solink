@@ -118,17 +118,17 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
       <Card>
         <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-start justify-between gap-3 px-5 pt-5 pb-3 text-left">
           <div>
-            <h3 className="flex items-center gap-1.5 text-[15px] font-semibold text-fg"><SlidersHorizontal className="size-4 text-fg-muted" aria-hidden /> Assumptions</h3>
+            <h3 className="flex items-center gap-1.5 text-[15px] font-semibold text-fg-heading"><SlidersHorizontal className="size-4 text-fg-muted" aria-hidden /> Assumptions</h3>
             <p className="mt-1 text-[13px] text-fg-muted">{missingAssumptions === 0 ? "All four assumptions are set." : `${missingAssumptions} of 4 assumptions are not set by the platform: supply your own to unlock estimates.`}</p>
           </div>
           <ChevronDown className={cn("mt-1 size-4 shrink-0 text-fg-muted transition-transform", open && "rotate-180")} aria-hidden />
         </button>
         {open && (
-          <CardBody className="grid gap-3 sm:grid-cols-2">
-            <AssumptionField label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={user.psh} onChange={(v) => setUser((u) => ({ ...u, psh: v }))} help="Equivalent hours of full-strength sun per day at your site. Drives how much a kWp produces." step="0.1" min={0} />
-            <AssumptionField label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={user.pr} onChange={(v) => setUser((u) => ({ ...u, pr: v }))} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
-            <AssumptionField label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${a.currency}/kWh`} platform={tariffPlatform.platform} note={tariffPlatform.note} value={user.tariff} onChange={(v) => setUser((u) => ({ ...u, tariff: v }))} help="What you pay per kWh. Needed to turn production into savings." step="0.001" min={0} />
-            <AssumptionField label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={user.co2} onChange={(v) => setUser((u) => ({ ...u, co2: v }))} help="Kilograms of CO₂ the grid emits per kWh. Needed for the CO₂ reduction estimate." step="0.01" min={0} />
+          <CardBody className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <AssumptionField dense label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={user.psh} onChange={(v) => setUser((u) => ({ ...u, psh: v }))} help="Equivalent hours of full-strength sun per day at your site. Drives how much a kWp produces." step="0.1" min={0} />
+            <AssumptionField dense label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={user.pr} onChange={(v) => setUser((u) => ({ ...u, pr: v }))} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
+            <AssumptionField dense label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${a.currency}/kWh`} platform={tariffPlatform.platform} note={tariffPlatform.note} value={user.tariff} onChange={(v) => setUser((u) => ({ ...u, tariff: v }))} help="What you pay per kWh. Needed to turn production into savings." step="0.001" min={0} />
+            <AssumptionField dense label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={user.co2} onChange={(v) => setUser((u) => ({ ...u, co2: v }))} help="Kilograms of CO₂ the grid emits per kWh. Needed for the CO₂ reduction estimate." step="0.01" min={0} />
           </CardBody>
         )}
       </Card>
@@ -183,7 +183,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
 
       {/* Results */}
       <section aria-labelledby="results-heading">
-        <h2 id="results-heading" className="mb-3 text-[17px] font-semibold text-fg">What your roof could do</h2>
+        <h2 id="results-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">What your roof could do</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MetricWithNotes label={<>Recommended capacity <InfoTip term="system_capacity" /></>} data={recommended} unit="kWp" format={(v) => formatNumber(v, 2)} />
           <MetricWithNotes label="Panels that fit your roof" data={fit} unit="panels" format={(v) => formatNumber(v, 0)} />

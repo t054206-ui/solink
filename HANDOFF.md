@@ -2153,6 +2153,185 @@ all three example states (normal/underperforming/fault) appear. Not
 clicked through signed in as her account, same limitation as the basket's
 checkout path above: this session never handles a real password.
 
+---
+
+## Addendum, 2026-09-22/23 — Site Analysis left the model behind, and three things came with it
+
+Written at the end of the session that did the work. Everything below is on
+`main` and live. Read the CI note first: it changes how every future session
+should check its work.
+
+### CI, because nothing could be checked locally
+
+The machine this ran on has no Node: no `node`, no `npm`, no nvm, Homebrew or
+Volta anywhere. `npx tsc --noEmit`, `npm run lint` and `npm run build` could
+not run at all, and the repository had no automated checks either. So the
+first thing built was `.github/workflows/ci.yml`: `npm ci`, `npx next typegen`,
+`npx tsc --noEmit`, `npm run lint`, `npm run build`, on every push to `main`
+and every pull request into it, plus `ci/**` so a branch can be checked before
+it lands. Node 22, no credentials: the build runs with no provider variables,
+which is the demo mode a clean checkout builds in anyway.
+
+The working discipline that followed, and that the next session should keep if
+it also has no Node: commit to a `ci/…` branch, push, wait for the run to go
+green, then fast-forward `main` and push. Never force-push; when `origin/main`
+has moved, rebase the branch and push it under a new name rather than
+rewriting one that is already on the remote. CI earned its keep three times
+in two days: it caught `react-hooks/set-state-in-effect` in a location
+hand-off, a raw apostrophe that would have failed `react/no-unescaped-entities`,
+and a `photoNote` reference left behind by a deleted photo upload.
+
+### The analysis engine (2026-09-22)
+
+Solar Site Analysis ran on Claude, and the Anthropic account had no credit, so
+the last stage of the pipeline could never complete. A Claude subscription
+cannot help: `src/lib/ai/claude.ts` authenticates with an API key, and Pro/Max
+are separately billed products. Rather than wait for credit, the analysis now
+runs on rules.
+
+`src/lib/solar/analysisEngine.ts` is pure: no network call, no key, no
+server-only import, no model. Same readings in, same analysis out. It
+classifies heat, dust and soiling, air quality, wind and the forecast days
+WeatherAPI returned, and writes maintenance advice that follows from those
+conditions and says nothing about any installed equipment. Every level names
+the value it came from and the threshold applied.
+
+Thresholds, all in `SOLINK_ENVIRONMENT_THRESHOLDS`, labelled in the UI as
+Solink's own operating bands rather than standards:
+
+| Factor | low | moderate | high | extreme |
+|---|---|---|---|---|
+| Heat, °C | under 30 | 30–40 | 40–48 | 48+ |
+| Dust, PM10 µg/m³ | under 50 | 50–150 | 150–350 | 350+ |
+| Air quality | EPA 1 | EPA 2 | EPA 3–4 | EPA 5–6 |
+| Wind, km/h | under 20 | 20–40 | 40–60 | 60+ |
+
+Two rules read the weather text rather than a number: a current condition
+naming dust, sand or a sandstorm raises soiling to at least high (extreme when
+described as severe), and each forecast day carrying dust, a high of 45 °C or
+wind reaching 40 km/h raises an alert naming that date. Air quality is the one
+published scale in it — WeatherAPI's US EPA index, reported as the provider
+gives it.
+
+No schema change. The same `ai_analyses` row, the same columns, the same RLS;
+`model` reads `solink-rule-engine` instead of a model name. Claude is
+untouched everywhere else: the Solar Agent, image and roof inspection,
+recommendations, monitoring, placement and the monthly report all still call
+it. Google Solar stays optional, and roof measurements stay unavailable rather
+than becoming zero.
+
+### The rest of that thread
+
+- **`/workflow`** (public, marketing group): the pipeline drawn out, eight
+  steps with what each receives and returns, Google Solar as an optional
+  branch, and the thresholds table **imported from `analysisEngine.ts`** so it
+  cannot drift from the bands the engine applies. Linked from the footer's
+  Help column, the guide's "Analyze Your Home" section, and `/analysis`.
+- **Honest progress on `/analysis`**: the old caption walked forward on a
+  2.5-second timer, so it announced "Saving analysis" whether or not anything
+  had been saved. The run is one request, so the browser now ticks only the
+  step it performed itself; the rest are ticked when the server answers, and a
+  failure ticks up to the stage the server names and marks that one.
+- **Restore fix**: the page read exactly one `ai_analyses` row before looking
+  for a completed analysis, so a single failed run hid a good one. It reads
+  the recent rows and shows the newest completed one.
+
+### Production keys, and the first real end-to-end run (2026-09-23)
+
+The owner set `GOOGLE_MAPS_API_KEY` and `WEATHER_API_KEY` in Vercel
+Production and redeployed; `/api/integrations` flipped both to connected.
+Verified signed in, on production, with "Abdullah Al Salem University,
+Khaldiya, Kuwait": Google resolved it to **Firdous St, Kuwait**
+(`GEOMETRIC_CENTER`, flagged approximate), WeatherAPI returned 42.4 °C,
+**Severe sandstorm**, PM2.5 93.1, PM10 517.8, EPA 4, wind 11.9 km/h and a
+three-day forecast, and the engine returned heat **high**, soiling **extreme**,
+air **high**, wind **low**, three forecast alerts and an overall status of
+**attention required**. The row saved, and a hard refresh and a navigate-away
+both restored it. That is the whole chain working on real data for the first
+time.
+
+### Solar Placement Guide (`/placement`, 2026-09-23)
+
+Which way a fixed panel should face, before anyone has measured anything. No
+profile, no account data, no provider: the browser's own permission gives a
+latitude and longitude, `src/lib/solar/placement.ts` turns them into a
+direction and a tilt band, and the page shows the reasoning and the limits.
+Hemisphere decides the direction. The tilt has three bases and the result
+always names the one it used: inside Kuwait, 20–25° from the two studies the
+owner supplied (labelled source data); anywhere else the site's own latitude
+as a rule of thumb (labelled an estimate, and saying Solink has no local
+measurement); near the equator, about 10°, described as a drainage convention
+rather than an energy figure. It states plainly that location cannot determine
+the best spot on a roof. It links to `/analysis` and `/workflow`; it does not
+duplicate either.
+
+An address field was added beside "Use my location", going through the
+existing `/api/geocode` — the same Google lookup the site analysis runs on the
+server — so someone who refuses the permission, or is indoors on a desktop,
+can still use the page.
+
+**The location now carries across.** Whatever the guide resolves is kept in
+`sessionStorage` (`src/lib/solar/placementHandoff.ts`) and shown at the top of
+Solar Potential, with the address already in the field. Deliberately not a
+query parameter: a location is personal, and a query string ends up in browser
+history, in anything shared, and in the server's log. It is read through
+`useSyncExternalStore`, as `useLocalStore` does, so the server render and the
+first client render agree.
+
+### The Solar Profile stopped asking for what other pages already know
+
+The profile asked for an address, a map and coordinates that Solar Potential
+and the Placement Guide resolve properly, and it held the roof photo while the
+Solar Designer — where a photo of a roof is actually useful — had its own
+reader hidden behind "Show more options".
+
+Gone from `/profile`: the address field, find-on-map, the candidate list,
+manual coordinates, `MapView.tsx` (deleted, profile-only), the AI photo reader
+card and the stored roof photo. Kept, under a new "Your home" card:
+governorate and house type.
+
+Removing the address field would have stranded the three features that read
+the profile's coordinates — site weather on Solar Potential, weather on the
+dashboard and Monitoring, and the AI agent's location flag — because nothing
+else collected them. **The owner chose to keep those alive**, so
+`saveProfileLocation` (profile/actions.ts) writes address, lat and lng and
+nothing else; an upsert of a whole draft would wipe a roof area someone typed.
+Solar Potential saves after a completed run. The Placement Guide saves on the
+address route only, where the address had already gone to the server, and its
+browser route still sends nothing — the privacy note now says which is which
+instead of promising it about both. The two empty states that told people to
+add a location in the profile now point at the pages that can.
+
+The Designer keeps the photo reader it already had — no second copy — and
+shows it without "Show more options", since it is now the only one. The
+profile's `RoofCapture` (multi-photo, video-frame extraction) was deleted
+rather than moved: its whole job was filling profile form fields, which mean
+nothing on the Designer canvas, and dropping it in would have put two photo
+readers on one page. If video capture is wanted there, it is a real addition,
+not a move. `uploadRoofPhoto` and `roof_photo_path` were left in place: no UI
+calls the action now, but nothing was removed from the schema and existing
+photos keep their rows.
+
+### Things Session 11 should know
+
+- **Check through CI.** If the machine still has no Node, the branch → CI →
+  fast-forward loop above is the only way to know the code compiles. Do not
+  claim a check passed that did not run.
+- **The consent gate is real.** A signed-in account that has not accepted the
+  current terms is sent to `/consent` before any protected page. That is where
+  the first attempt at the production end-to-end test stopped, and accepting
+  on the owner's behalf is not something this session does.
+- **Eight untracked duplicate files** sit in the working tree (`… 2.ts`,
+  `… 2.tsx`, `… 2.sql`, `AUTOMATION 2.md`), byte-identical copies from a file
+  sync. They have never been committed and must not be; they will break a
+  local typecheck if one ever runs.
+- **Three spent branches remain on origin**: `ci/no-ecommerce`,
+  `ci/placement-guide`, `ci/validate-site-analysis`. Their content is in
+  `main` under rebased commits, so they are obsolete, but they are not literal
+  ancestors of `main` and were left rather than deleted on a guess.
+- The three API keys used for local testing were pasted into a chat transcript
+  in an earlier session and still want rotating.
+
 ## Addendum, 2026-09-24 — a full security review, and the two findings fixed
 
 The owner asked for a full, read-only security check of the whole project,

@@ -1,14 +1,21 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, ExternalLink, Loader2, MapPin, Satellite, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, CloudSun, ExternalLink, Haze, Loader2, MapPin, Satellite, Thermometer, Wind, X, XCircle } from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input } from "@/components/ui/Form";
 import { ErrorState } from "@/components/ui/States";
+import { Stage } from "@/components/layout/Stage";
+import { SiteVisual } from "@/components/three/SiteVisual";
+import type { Atmosphere } from "@/components/three/SiteScene";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
 import { formatDate } from "@/lib/utils";
+import { forgetPlacementLocation, usePlacementLocation, type CarriedLocation } from "@/lib/solar/placementHandoff";
+import { saveProfileLocation } from "../profile/actions";
 import type {
   AnalysisSources,
   EnvironmentAssessment,
@@ -113,10 +120,39 @@ function fromRow(row: SiteAnalysisRow | null): Success | null {
   };
 }
 
-export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
+/** The rule engine's level as the scene's 0-3 scale; unavailable stays unavailable. */
+const LEVEL_INDEX: Record<EnvironmentLevel, number | null> = { unavailable: null, low: 0, moderate: 1, high: 2, extreme: 3 };
+
+function atmosphereOf(env: EnvironmentAssessment | undefined): Atmosphere | null {
+  if (!env) return null;
+  return { dust: LEVEL_INDEX[env.dust.level], heat: LEVEL_INDEX[env.heat.level], wind: LEVEL_INDEX[env.wind.level] };
+}
+
+export interface PageHeading { eyebrow: string; title: string; description: string }
+
+export function SiteAnalysis({ latest, heading }: { latest: SiteAnalysisRow | null; heading: PageHeading }) {
   const saved = fromRow(latest);
-  const [address, setAddress] = useState("");
+  // Tablet and up: the scene sits in the hero beside the heading. Phones: it
+  // comes after the address form, so the action is never below the picture.
+  const wide = useMediaQuery("(min-width: 768px)");
   const [state, setState] = useState<State>(saved ? { status: "done", result: saved } : { status: "idle" });
+
+  /**
+   * A location settled on in the Placement Guide, if the person came from
+   * there in this tab. It lives in sessionStorage, which the server cannot
+   * see, so it is read through a store rather than copied into state after
+   * mount: the two renders agree and nothing is set inside an effect.
+   */
+  const carried = usePlacementLocation();
+
+  /**
+   * What the person typed, or null while they have typed nothing. The field
+   * falls back to the carried address, so the place they just found is
+   * already in it without anything being written into state, and the moment
+   * they type, what they typed wins.
+   */
+  const [typed, setTyped] = useState<string | null>(null);
+  const address = typed ?? carried?.address ?? "";
 
   const running = state.status === "running";
   /** A run completed in this visit, as opposed to one restored from the database. */
@@ -141,7 +177,18 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
         body: JSON.stringify({ address: address.trim() }),
       });
       const body = (await res.json().catch(() => null)) as (Success | { ok: false; stage: string; message: string }) | null;
-      if (body && body.ok) setState({ status: "done", result: body });
+      if (body && body.ok) {
+        setState({ status: "done", result: body });
+        // The Solar Profile stopped asking where the roof is; this is where it
+        // finds out. The address was already resolved on the server for this
+        // run, so nothing new is sent. A failure here is silent on purpose:
+        // the analysis succeeded, and a profile write is not what was asked for.
+        void saveProfileLocation({
+          address: body.location.formattedAddress ?? body.location.address,
+          lat: body.location.latitude,
+          lng: body.location.longitude,
+        });
+      }
       else
         setState({
           status: "error",
@@ -155,8 +202,38 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
     }
   }
 
+  const shown = state.status === "done" ? state.result : null;
+  const atmosphere = atmosphereOf(shown?.analysis.environment);
+  const visual = <SiteVisual atmosphere={atmosphere} />;
+
   return (
     <div className="space-y-5">
+      <Stage label="Solar Potential" focus="75% 30%">
+        <div className="grid items-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="relative z-10 px-5 py-8 sm:px-8 md:py-12 lg:ps-10">
+            <p className="micro wipe">{heading.eyebrow}</p>
+            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg-heading" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
+            <p className="wipe mt-4 max-w-md text-[15.5px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{heading.description}</p>
+            {shown && (
+              <dl className="rise mt-6 grid gap-2 text-[13px]" style={{ animationDelay: "300ms" }}>
+                <HeroFact label="Location" icon={<MapPin className="size-3.5" aria-hidden="true" />}>
+                  {shown.location.formattedAddress ?? shown.location.address}
+                </HeroFact>
+                <HeroFact label="Feasibility">{VERDICT[shown.analysis.feasibility.verdict]}</HeroFact>
+                {shown.analysis.environment && (
+                  <HeroFact label="Conditions">
+                    <Badge tone={STATUS_TONE[shown.analysis.environment.overallStatus]}>{STATUS_LABEL[shown.analysis.environment.overallStatus]}</Badge>
+                  </HeroFact>
+                )}
+              </dl>
+            )}
+          </div>
+          <div className="hidden px-3 pb-3 md:block md:pe-4 md:ps-0 md:pt-4">{wide ? visual : <div className="aspect-[5/4]" />}</div>
+        </div>
+      </Stage>
+
+      {carried && <CarriedLocationCard location={carried} onDismiss={forgetPlacementLocation} />}
+
       <Card>
         <CardHeader
           title={
@@ -172,7 +249,7 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
             <Field label="Address" className="flex-1" help="A street address, block and area, or a building name.">
               <Input
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => setTyped(e.target.value)}
                 placeholder="e.g. Block 4, Salmiya, Kuwait"
                 autoComplete="street-address"
                 maxLength={300}
@@ -196,12 +273,72 @@ export function SiteAnalysis({ latest }: { latest: SiteAnalysisRow | null }) {
         </CardBody>
       </Card>
 
+      {!wide && <div className="md:hidden">{visual}</div>}
+
       {state.status === "error" && (
         <ErrorState title={`The analysis stopped at ${STAGE_LABEL[state.stage] ?? "an earlier step"}`}>{state.message}</ErrorState>
       )}
 
       {state.status === "done" && <Result result={state.result} isSaved={saved?.id === state.result.id} />}
     </div>
+  );
+}
+
+/**
+ * The location carried over from the Placement Guide.
+ *
+ * It states what was resolved and how precisely, in the guide's own words, so
+ * the person can see they are still talking about the same place. It is a
+ * starting point, not a result: the analysis below still resolves the address
+ * itself through Google, and reports what that run found.
+ */
+function CarriedLocationCard({ location, onDismiss }: { location: CarriedLocation; onDismiss: () => void }) {
+  const ns = location.latitude >= 0 ? "N" : "S";
+  const ew = location.longitude >= 0 ? "E" : "W";
+  const coords = `${Math.abs(location.latitude).toFixed(2)}° ${ns}, ${Math.abs(location.longitude).toFixed(2)}° ${ew}`;
+
+  return (
+    <Card>
+      <CardHeader
+        title={
+          <>
+            <MapPin className="size-4 text-[var(--brand-strong)]" aria-hidden="true" /> Location
+          </>
+        }
+        subtitle="Carried over from the Placement Guide, in this browser."
+        action={
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="press inline-flex items-center gap-1 rounded-[var(--radius)] px-2 py-1 text-[12.5px] text-fg-secondary hover:bg-inset hover:text-fg"
+          >
+            <X className="size-3.5" aria-hidden="true" /> Use a different place
+          </button>
+        }
+      />
+      <CardBody>
+        <p className="text-[17px] font-semibold leading-snug text-fg">
+          {location.address ?? "Your device's location"}
+        </p>
+        <p className="figure mt-0.5 text-[13.5px] text-fg-secondary">{coords}</p>
+
+        {location.source === "address" ? (
+          <p className="mt-2 text-[12.5px] leading-relaxed text-fg-muted">
+            {location.typed && location.typed !== location.address ? <>You entered &ldquo;{location.typed}&rdquo;. </> : null}
+            Google Maps resolved it{location.precision ? ` (${location.precision})` : ""}
+            {location.approximate
+              ? ", which is a nearby street or area rather than the building itself."
+              : "."}{" "}
+            The address is already in the field below, so you do not have to find it again.
+          </p>
+        ) : (
+          <p className="mt-2 text-[12.5px] leading-relaxed text-fg-muted">
+            These coordinates came from your browser, and Solink did not look up an address for them. The analysis
+            below works from an address, so enter one for this area to run it.
+          </p>
+        )}
+      </CardBody>
+    </Card>
   );
 }
 
@@ -250,6 +387,38 @@ function RunProgress({ failedAt, complete }: { failedAt: number | null; complete
         </p>
       )}
     </div>
+  );
+}
+
+/** One fact from the analysis, repeated in the hero exactly as the result card states it. */
+function HeroFact({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex min-w-0 items-baseline gap-3 border-t border-border/70 pt-2">
+      <dt className="micro w-24 shrink-0">{label}</dt>
+      <dd className="flex min-w-0 items-center gap-1.5 break-words text-fg">{icon}{children}</dd>
+    </div>
+  );
+}
+
+/**
+ * The level a factor already has, drawn as four steps. Decorative: the badge
+ * beside it names the level in words, so the meter is hidden from assistive
+ * technology and an unavailable level draws four empty steps.
+ */
+function LevelMeter({ level }: { level: EnvironmentLevel }) {
+  const n = LEVEL_INDEX[level];
+  const tone = LEVEL_TONE[level];
+  const fill = tone === "good" ? "var(--good)" : tone === "warn" ? "var(--warn)" : tone === "serious" ? "var(--serious)" : tone === "critical" ? "var(--critical)" : "var(--border-strong)";
+  return (
+    <span aria-hidden="true" className="inline-flex items-end gap-[3px]">
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className="w-[5px] rounded-[1px]"
+          style={{ height: 6 + i * 3, background: n !== null && i <= n ? fill : "transparent", border: n !== null && i <= n ? "none" : "1px solid var(--border-strong)" }}
+        />
+      ))}
+    </span>
   );
 }
 
@@ -327,16 +496,16 @@ const STATUS_TONE: Record<EnvironmentAssessment["overallStatus"], "neutral" | "g
  * engine existed do not, and are left as they were.
  */
 function Environment({ env }: { env: EnvironmentAssessment }) {
-  const factors: { label: string; level: EnvironmentLevel; note: string }[] = [
-    { label: "Heat exposure", level: env.heat.level, note: env.heat.note },
-    { label: "Dust and soiling risk", level: env.dust.level, note: env.dust.note },
-    { label: "Air quality", level: env.airQuality.level, note: env.airQuality.note },
-    { label: "Wind exposure", level: env.wind.level, note: env.wind.note },
+  const factors: { label: string; level: EnvironmentLevel; note: string; icon: ReactNode }[] = [
+    { label: "Heat exposure", level: env.heat.level, note: env.heat.note, icon: <Thermometer className="size-4" aria-hidden="true" /> },
+    { label: "Dust and soiling risk", level: env.dust.level, note: env.dust.note, icon: <Haze className="size-4" aria-hidden="true" /> },
+    { label: "Air quality", level: env.airQuality.level, note: env.airQuality.note, icon: <CloudSun className="size-4" aria-hidden="true" /> },
+    { label: "Wind exposure", level: env.wind.level, note: env.wind.note, icon: <Wind className="size-4" aria-hidden="true" /> },
   ];
 
   return (
     <section>
-      <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+      <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
         Environmental conditions <DataBadge cls="calculated" compact />
       </h3>
       <div className="mt-1.5 rounded-[10px] border border-border bg-inset p-3">
@@ -348,9 +517,10 @@ function Environment({ env }: { env: EnvironmentAssessment }) {
       </div>
       <dl className="mt-2 text-[13px]">
         {factors.map((f) => (
-          <div key={f.label} className="flex flex-col gap-1 border-t border-border/70 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-            <dt className="flex shrink-0 items-center gap-2 text-fg-muted sm:w-52">
-              {f.label} <Badge tone={LEVEL_TONE[f.level]}>{LEVEL_LABEL[f.level]}</Badge>
+          <div key={f.label} className="-mx-2 flex flex-col gap-1 rounded-[var(--radius)] border-t border-border/70 px-2 py-2.5 transition-colors hover:bg-inset sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <dt className="flex shrink-0 flex-wrap items-center gap-2 text-fg-muted sm:w-60">
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]">{f.icon}</span>
+              {f.label} <LevelMeter level={f.level} /> <Badge tone={LEVEL_TONE[f.level]}>{LEVEL_LABEL[f.level]}</Badge>
             </dt>
             <dd className="min-w-0 break-words leading-relaxed text-fg-secondary sm:text-right">{f.note}</dd>
           </div>
@@ -390,35 +560,35 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           action={<DataBadge cls="calculated" compact />}
         />
         <CardBody className="space-y-4">
-          <div className="rounded-[10px] border border-border bg-inset p-3">
+          <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-[var(--shadow-sm)]">
             <div className="micro">Overall feasibility</div>
-            <div className="mt-0.5 text-[16px] font-semibold text-fg">{VERDICT[a.feasibility.verdict]}</div>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-fg-secondary">{a.feasibility.summary}</p>
+            <div className="display mt-1.5 text-[28px] text-fg">{VERDICT[a.feasibility.verdict]}</div>
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-fg-secondary">{a.feasibility.summary}</p>
           </div>
 
           {a.environment && <Environment env={a.environment} />}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Roof</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Roof</h3>
               <div className="mt-1.5">
                 <List items={a.roofAssessment.findings} />
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Solar potential</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Solar potential</h3>
               <div className="mt-1.5">
                 <List items={a.solarPotential.findings} />
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Weather considerations</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Weather considerations</h3>
               <div className="mt-1.5">
                 <List items={a.weatherConsiderations.findings} />
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Maintenance considerations</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Maintenance considerations</h3>
               <div className="mt-1.5">
                 <List items={a.systemConsiderations} />
               </div>
@@ -426,7 +596,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </div>
 
           <section>
-            <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+            <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
               Annual energy <DataBadge cls={a.energy.annualEnergyDcKwh === null ? "unavailable" : "source"} compact />
             </h3>
             <p className="figure mt-0.5 text-[18px] text-fg">
@@ -436,13 +606,13 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </section>
 
           <section>
-            <h3 className="text-[14px] font-medium text-fg">How this was reached</h3>
+            <h3 className="text-[14px] font-medium text-fg-heading">How this was reached</h3>
             <p className="mt-1 whitespace-pre-wrap text-[13.5px] leading-relaxed text-fg-secondary">{a.reasoning}</p>
           </section>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <section>
-              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
                 Taken from the providers <DataBadge cls="source" compact />
               </h3>
               <div className="mt-1.5">
@@ -450,7 +620,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
               </div>
             </section>
             <section>
-              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
                 Worked out by Solink <DataBadge cls="calculated" compact />
               </h3>
               <div className="mt-1.5">
@@ -460,7 +630,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </div>
 
           <section>
-            <h3 className="text-[14px] font-medium text-fg">Limitations</h3>
+            <h3 className="text-[14px] font-medium text-fg-heading">Limitations</h3>
             <div className="mt-1.5">
               <List items={[...a.limitations, ...a.roofAssessment.limitations]} />
             </div>

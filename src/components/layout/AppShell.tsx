@@ -162,7 +162,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
               {!user.isDemo && <SignOutButton compact className="lg:hidden" />}
             </div>
           </header>
-          <main id="main" className="flex-1 px-3 py-4 sm:px-4 lg:px-5 pb-24 lg:pb-8">
+          <main id="main" data-app-main className="flex-1 px-3 py-4 sm:px-4 lg:px-5 pb-24 lg:pb-8">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>

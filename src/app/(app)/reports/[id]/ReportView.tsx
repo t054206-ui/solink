@@ -96,7 +96,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
         <CardHeader title={<>Energy <InfoTip term="energy_production" /></>} subtitle={`What the system produced in ${monthLabel(report.month)}, from the daily records Solink holds.`} />
         <CardBody className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Metric label="Total produced" term="energy_production" data={energy} format={(v) => fmtKwh(v, 1)} />
+            <Metric label="Total produced" term="energy_production" data={energy} format={(v) => fmtKwh(v, 1)} energy />
             <Metric
               label={<span className="inline-flex items-center gap-1.5">Change vs previous month {report.energy.trend_pct !== null && (report.energy.trend_pct < 0 ? <TrendingDown className="size-3.5 text-serious-fg" aria-hidden /> : <TrendingUp className="size-3.5 text-good-fg" aria-hidden />)}</span>}
               data={trend}
@@ -272,7 +272,7 @@ function AiList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div>
-      <h4 className="text-[13px] font-semibold text-fg">{title}</h4>
+      <h4 className="text-[13px] font-semibold text-fg-heading">{title}</h4>
       <ul className="mt-1 list-disc space-y-1 pl-5 text-[13.5px] leading-relaxed text-fg-secondary">
         {items.map((s, i) => <li key={i}>{s}</li>)}
       </ul>

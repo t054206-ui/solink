@@ -113,7 +113,30 @@ The current position, as of 2026-09-22 (full account: HANDOFF.md,
   profile), Product Performance and Reports from `product_events` (0007,
   applied 2026-09-22). Orders and Settings remain honest empty states.
 - **Designer is simple by default**; "Show more options" reveals the rest.
-  Blocks and obstacles resize; panels never do. `InfoTip` opens on hover.
+  Blocks and obstacles resize; panels never do. `InfoTip` opens on hover. The
+  roof photo card sits outside "more options" since 2026-09-23: it left the
+  Solar Profile and the Designer is the only page with a photo reader.
+- **Solar Site Analysis runs on rules, not a model** (2026-09-22):
+  `src/lib/solar/analysisEngine.ts` is pure and deterministic, the thresholds
+  live in `SOLINK_ENVIRONMENT_THRESHOLDS`, and `ai_analyses.model` reads
+  `solink-rule-engine`. Google Maps and WeatherAPI are required and live in
+  production; Google Solar is optional; no Claude key is involved. `/workflow`
+  explains the chain and imports the thresholds so it cannot drift. Never put
+  a roof measurement, a production figure or a zero where a provider returned
+  nothing.
+- **Solar Placement Guide** at `/placement` (2026-09-23): direction and tilt
+  from a browser location or a typed address (through the existing
+  `/api/geocode`), worked out in `src/lib/solar/placement.ts`. Kuwait's 20-25°
+  band comes from the owner's two studies and is labelled source data;
+  elsewhere is a latitude rule of thumb, labelled an estimate. What it
+  resolves is carried to Solar Potential in sessionStorage, never a URL.
+- **The Solar Profile no longer asks for a location or a roof photo**
+  (2026-09-23). Coordinates arrive from a Solar Potential run or the Placement
+  Guide via `saveProfileLocation`, which writes address, lat and lng only.
+- **CI runs the checks**: `.github/workflows/ci.yml` runs `npm ci`, typegen,
+  `tsc --noEmit`, `eslint` and `next build` on every push to `main`, every PR
+  into it, and any `ci/**` branch. When the machine has no Node, validate on a
+  `ci/…` branch and fast-forward `main` only once the run is green.
 - Two collaborators push to `main` (`t040262-cmyk`, `Lolwah AlAnsari`). Fetch
   before you work; coordinate before touching the intro or the import.
 - Nothing is pushed or deployed without the owner's word.

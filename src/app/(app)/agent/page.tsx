@@ -61,7 +61,7 @@ export default async function AgentPage() {
                       <l.icon className="size-4" aria-hidden />
                     </span>
                     <div className="min-w-0">
-                      <h3 className="text-[13.5px] font-semibold text-fg">
+                      <h3 className="text-[13.5px] font-semibold text-fg-heading">
                         {l.href ? <Link href={l.href} className="underline-offset-2 hover:underline">{l.name}</Link> : l.name}
                         {l.name === "Info icons" && <InfoTip term="kwh" className="ml-1" />}
                       </h3>

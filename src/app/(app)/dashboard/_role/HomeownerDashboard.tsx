@@ -9,9 +9,7 @@
  * arrives through the design tokens it already uses.
  */
 import Link from "next/link";
-import { Activity, FileBadge, Wrench, AlertOctagon, FileText, ArrowRight, Sparkles, CalendarClock, SprayCan } from "lucide-react";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { Activity, FileBadge, Wrench, AlertOctagon, FileText, ArrowRight, Sparkles, CalendarClock, SprayCan, Bot, UserRound, SunMedium, LayoutGrid, PencilRuler, ClipboardList } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
@@ -33,8 +31,11 @@ import { MonthlyTotalsChart } from "../../_operate/components/MonthlyTotalsChart
 import { StatusPill } from "../../_operate/components/StatusPill";
 import { CurrentConditions } from "../../_operate/components/WeatherSummary";
 import { loadWeatherForProfile } from "../../_operate/loadWeather";
+import { WEATHER_SOURCE, type WeatherState } from "../../_operate/weather";
 import { deriveStatus, inheritCls, lastCleaning, lastDays, monthToDateKwh, monthlyTotals, productionCls, sevenVsThirty, todayKwh, trailingKwh } from "../../_operate/production";
 import { JourneyProgress, type JourneyStep } from "../_components/JourneyProgress";
+import { OverviewHero } from "../_components/OverviewHero";
+import { SystemStage, type FlowNode } from "../_components/SystemStage";
 
 export default async function HomeownerDashboard() {
   const [{ data: systems, mode }, { data: profile }, settings] = await Promise.all([listSystems(), getProfile(), getPlatformSettings()]);
@@ -71,8 +72,11 @@ export default async function HomeownerDashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Overview" title={`Hello${isDemo ? ", demo homeowner" : ""}`} description={<>Your system <span className="font-medium text-fg">{system.name}</span> at a glance. Every figure says where it comes from.</>}
-        actions={<><Button href="/monitoring" variant="outline" size="sm"><Activity className="size-4" aria-hidden /> Monitoring</Button><Button href="/agent" size="sm"><Sparkles className="size-4" aria-hidden /> Ask Solink</Button></>} />
+      <SystemStage eyebrow="Overview" title={`Hello${isDemo ? ", demo homeowner" : ""}`} description={<>Your system <span className="font-medium text-fg">{system.name}</span> at a glance. Every figure says where it comes from.</>}
+        actions={[{ href: "/monitoring", label: "Monitoring", icon: <Activity className="size-4" aria-hidden /> }, { href: "/agent", label: "Ask Solink", icon: <Sparkles className="size-4" aria-hidden />, primary: true }]}
+        sun={sunNode(weather)} array={arrayNode(capacity, system.panel_count)} home={homeNode(today, system.monitoring_source)}
+        live={today.value !== null} idleLabel={system.monitoring_source === null ? "No monitoring connected" : "No reading today"}
+        caption="An illustrative rooftop, not your installation." />
 
       {isDemo && <DemoBanner text={DEMO_BANNER} detail="This dashboard is built from a demo system and a simulated production series so you can see how Solink works." />}
 
@@ -132,7 +136,7 @@ export default async function HomeownerDashboard() {
         </section>
       )}
 
-      <section className="grid gap-4 lg:grid-cols-3" aria-label="Quick links">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3" aria-label="Quick links">
         <div className="lg:col-span-2 grid gap-2 sm:grid-cols-2">
           <QuickLink href="/monitoring" icon={Activity} title="Monitoring" text="Charts, AI assessment, weather, cleaning, inspection." />
           <QuickLink href={`/passport/${system.id}`} icon={FileBadge} title="Solar Passport" text="Equipment, warranties and full history." />
@@ -149,14 +153,45 @@ export default async function HomeownerDashboard() {
 
 /* ---------------- pieces ---------------- */
 
+/* The three stops on the Overview's energy path. Each reads a value the page
+   already loaded and nothing else; a missing value stays missing. */
+
+function sunNode(weather: WeatherState): FlowNode {
+  if (weather.status !== "ok") {
+    const text = weather.status === "no_location" ? "No location on record" : weather.status === "not_configured" ? "Weather is not connected" : "Weather could not be loaded";
+    return { label: "Sun", cls: "unavailable", text };
+  }
+  const { current: c, location } = weather.bundle;
+  return {
+    label: "Sun",
+    cls: "source",
+    figure: c.temp_c === null ? undefined : { value: c.temp_c, decimals: 0, unit: "°C" },
+    text: c.condition ?? (c.temp_c === null ? "No reading" : undefined),
+    detail: `${location.name} · ${WEATHER_SOURCE}`,
+  };
+}
+
+function arrayNode(capacity: Classified, panelCount: number | null): FlowNode {
+  const panels = panelCount ? `${panelCount} panels` : null;
+  if (capacity.value === null) return { label: "Panels", cls: capacity.cls, text: "Capacity not recorded", detail: panels ?? undefined };
+  return { label: "Panels", cls: capacity.cls, figure: { value: capacity.value, decimals: 1, unit: "kWp" }, detail: [panels, capacity.source].filter(Boolean).join(" · ") };
+}
+
+function homeNode(today: Classified, monitoringSource: string | null): FlowNode {
+  if (today.value === null) {
+    return { label: "Home, today", cls: today.cls, text: "No reading today", detail: monitoringSource === null ? "No monitoring hardware is connected." : "Nothing has been recorded for today yet." };
+  }
+  return { label: "Home, today", cls: today.cls, figure: { value: today.value, decimals: 1, unit: "kWh" }, energy: true, detail: "Production recorded today" };
+}
+
 function StatusCard({ title, icon: Icon, href, status, cls, lines, statusLabelOverride }: { title: string; icon: typeof Wrench; href: string; status: Parameters<typeof StatusPill>[0]["status"]; cls: Parameters<typeof DataBadge>[0]["cls"]; lines: string[]; statusLabelOverride?: string }) {
   return (
-    <Link href={href} className="flex min-w-0 flex-col gap-2 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
+    <Link href={href} className="lift flex min-w-0 flex-col gap-2 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-fg-secondary truncate"><Icon className="size-3.5 text-fg-muted" aria-hidden />{title}</div>
         <DataBadge cls={cls} compact />
       </div>
-      <div>{statusLabelOverride ? <span className="text-[15px] font-semibold text-fg">{statusLabelOverride}</span> : <StatusPill status={status} />}</div>
+      <div>{statusLabelOverride ? <span className={`text-[15px] font-semibold ${status === "normal" ? "text-good-fg" : status === "monitor" ? "text-warn-fg" : "text-fg-heading"}`}>{statusLabelOverride}</span> : <StatusPill status={status} />}</div>
       <ul className="space-y-0.5 text-[12.5px] leading-snug text-fg-muted">{lines.map((l) => <li key={l}>{l}</li>)}</ul>
     </Link>
   );
@@ -164,7 +199,7 @@ function StatusCard({ title, icon: Icon, href, status, cls, lines, statusLabelOv
 
 function QuickLink({ href, icon: Icon, title, text }: { href: string; icon: typeof Wrench; title: string; text: string }) {
   return (
-    <Link href={href} className="group flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-elevated px-3.5 py-3 hover:bg-inset">
+    <Link href={href} className="lift group flex items-start gap-3 rounded-[var(--radius-md)] border border-border bg-elevated px-3.5 py-3 hover:bg-inset">
       <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[8px] bg-inset text-fg-secondary group-hover:bg-elevated"><Icon className="size-4" aria-hidden /></span>
       <span className="min-w-0 flex-1"><span className="block text-[13.5px] font-medium text-fg">{title}</span><span className="block text-[12.5px] text-fg-muted">{text}</span></span>
       <ArrowRight className="mt-1 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
@@ -206,27 +241,51 @@ function Onboarding({ profile }: { profile: SolarProfile | null }) {
   // The pre-installation journey, one real page per step. The owner chose five
   // steps (2026-09-22) so that no two steps point at the same page.
   const steps = [
-    { href: "/profile", title: "1. Complete Profile", text: profile ? "Your home details are saved. Review or update them." : "Tell Solink about your home, roof and electricity use.", done: Boolean(profile) },
-    { href: "/analysis", title: "2. Solar Potential", text: "See what your roof could produce, save and avoid, and what each figure rests on.", done: false },
-    { href: "/marketplace", title: "3. Explore Systems", text: "Browse real panels with source-labelled specifications, and compare them.", done: false },
-    { href: "/designer", title: "4. Design System", text: "Lay panels on a drawing of your roof and save your first design.", done: false },
-    { href: "/purchase", title: "5. Request Installation", text: "Turn a saved design into a quote request and pick an installer.", done: false },
+    { href: "/profile", icon: UserRound, title: "1. Complete Profile", text: profile ? "Your home details are saved. Review or update them." : "Tell Solink about your home, roof and electricity use.", done: Boolean(profile) },
+    { href: "/analysis", icon: SunMedium, title: "2. Solar Potential", text: "See what your roof could produce, save and avoid, and what each figure rests on.", done: false },
+    { href: "/marketplace", icon: LayoutGrid, title: "3. Explore Systems", text: "Browse real panels with source-labelled specifications, and compare them.", done: false },
+    { href: "/designer", icon: PencilRuler, title: "4. Design System", text: "Lay panels on a drawing of your roof and save your first design.", done: false },
+    { href: "/purchase", icon: ClipboardList, title: "5. Request Installation", text: "Turn a saved design into a quote request and pick an installer.", done: false },
   ];
+  // "Get started" is the first step not yet done: a shortcut to a card below, not a new destination.
+  const next = steps.find((s) => !s.done) ?? steps[0];
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Overview" title="Welcome to Solink" description="You don't have a solar system on record yet. Follow the journey below; your dashboard fills in as you go." />
-      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {steps.map((s) => (
-          <li key={s.href}>
-            <Link href={s.href} className="group flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
-              <span className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${s.done ? "bg-good text-white" : "bg-brand-soft text-[var(--brand-strong)]"}`}>{s.done ? "✓" : s.title[0]}</span>
-              <span className="min-w-0 flex-1"><span className="block text-[14px] font-semibold text-fg">{s.title}</span><span className="mt-0.5 block text-[13px] text-fg-secondary">{s.text}</span></span>
-              <ArrowRight className="mt-1 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
-            </Link>
-          </li>
-        ))}
+      <OverviewHero
+        label="Welcome"
+        eyebrow="Overview"
+        title={<>Welcome to <span className="text-[color:var(--sun-ink)]">Solink</span></>}
+        description="You don't have a solar system on record yet. Follow the journey below; your dashboard fills in as you go."
+        actions={[{ href: next.href, label: "Get started", icon: <SunMedium className="size-4" aria-hidden />, primary: true }, { href: "/agent", label: "Ask Solink", icon: <Bot className="size-4" aria-hidden /> }]}
+        caption="An illustrative rooftop, not your home."
+      />
+      <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Your solar journey">
+        {steps.map((s) => {
+          const [, n, label] = s.title.match(/^(\d+)\.\s*(.*)$/) ?? [null, "", s.title];
+          const Icon = s.icon;
+          return (
+            <li key={s.href}>
+              <Link href={s.href} className="lift group relative flex h-full items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-5 shadow-[var(--shadow)] hover:bg-inset">
+                <span className={`figure mt-2 grid size-7 shrink-0 place-items-center rounded-full border text-[12px] font-medium ${s.done ? "border-transparent bg-good text-white" : "border-border bg-inset text-fg-secondary"}`}>{s.done ? "✓" : n}<span className="sr-only">{s.done ? " (done)" : ""}</span></span>
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Icon className="size-5" aria-hidden /></span>
+                <span className="min-w-0 flex-1 pe-5 pt-0.5">
+                  <span className="block text-[16px] font-semibold tracking-[-0.01em] text-fg">{label}</span>
+                  <span className="mt-1.5 block text-[13.5px] leading-relaxed text-fg-secondary">{s.text}</span>
+                </span>
+                <ArrowRight className="absolute end-5 top-5 size-4 text-fg-muted transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
+              </Link>
+            </li>
+          );
+        })}
       </ol>
-      <AskSolink topic="Not sure where to start? Ask the AI Solar Agent." />
+      <Link href="/agent" className="lift group flex items-center gap-4 rounded-[var(--radius-lg)] border border-border bg-brand-soft px-5 py-4 hover:border-border-strong sm:px-6 sm:py-5">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-elevated text-[var(--brand-strong)] shadow-[var(--shadow)]"><Bot className="size-5" aria-hidden /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15.5px] font-semibold text-fg">Ask Solink about this</span>
+          <span className="mt-0.5 block text-[13.5px] text-fg-secondary">Not sure where to start? Ask the AI Solar Agent.</span>
+        </span>
+        <ArrowRight className="size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden />
+      </Link>
     </div>
   );
 }

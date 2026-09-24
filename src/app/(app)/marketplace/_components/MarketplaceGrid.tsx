@@ -76,10 +76,13 @@ export function MarketplaceGrid({ products, emptyTitle }: { products: Product[];
   }, [products, q, sort, f]);
 
   const leftOut = products.length - list.length;
+  const activeCount = Object.values(f).filter((v) => v !== "").length;
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      {/* The discovery toolbar: search and sort in one bar, the filters grouped under it. */}
+      <div className="rounded-[var(--radius-lg)] border border-border bg-elevated shadow-[var(--shadow-sm)]">
+      <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-muted" aria-hidden />
           <Input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, model, series or manufacturer" aria-label="Search products" className="pl-9" />
@@ -95,8 +98,12 @@ export function MarketplaceGrid({ products, emptyTitle }: { products: Product[];
       </div>
 
       {anyPanel && (
-        <fieldset className="rounded-[var(--radius-lg)] border border-border bg-inset/40 p-3">
-          <legend className="flex items-center gap-1.5 px-1 text-[12px] font-semibold uppercase tracking-wider text-fg-muted"><SlidersHorizontal className="size-3.5" aria-hidden /> Filter panels</legend>
+        <fieldset className="border-t border-border bg-inset/50 px-3 pb-3 pt-2">
+          <legend className="sr-only">Filter panels</legend>
+          <div className="mb-2 flex items-center gap-2">
+            <span className="micro flex items-center gap-1.5"><SlidersHorizontal className="size-3.5" aria-hidden /> Filter panels</span>
+            {activeCount > 0 && <span className="figure rounded-full bg-brand px-2 py-0.5 text-[11px] text-brand-fg">{activeCount} on</span>}
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <div className="grid gap-1">
               <label htmlFor={`${uid}-minw`} className="text-[12.5px] text-fg-secondary">Min power (W)</label>
@@ -139,6 +146,7 @@ export function MarketplaceGrid({ products, emptyTitle }: { products: Product[];
           </p>
         </fieldset>
       )}
+      </div>
 
       <p className="text-[12.5px] text-fg-muted" aria-live="polite">
         {list.length} {list.length === 1 ? "product" : "products"}{q.trim() ? ` matching “${q.trim()}”` : ""}
@@ -149,7 +157,7 @@ export function MarketplaceGrid({ products, emptyTitle }: { products: Product[];
           {q.trim() || filtersActive ? "Try a different search, widen the filters, or clear them." : "Products appear here once they are imported from a real data source or entered by a participating provider."}
         </EmptyState>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((p) => <li key={p.id}><ProductCard product={p} /></li>)}
         </ul>
       )}

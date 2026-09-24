@@ -26,8 +26,17 @@
   --bg-inset: #faf9f6;
 
   --fg: #0e1116;
-  --fg-secondary: #4a4e57;
-  --fg-muted: #6b6e77;
+  --fg-secondary: #445166;
+  --fg-muted: #5d6a7e;
+  /* Text roles. Headings take the panel's navy-ink, source and
+     informational lines a muted blue, and anything unavailable or not
+     recorded a neutral grey, so "missing" never reads as a finding. */
+  --fg-heading: #13233b;
+  --fg-info: #355d8c;
+  --fg-na: #6d6c68;
+  /* Mustard: attention, in-progress and accent labels (eyebrows, step
+     numbers). Amber stays for energy figures. */
+  --fg-mustard: #806200;
 
   --border: #d8d6cf;
   --border-strong: #bdbab1;
@@ -54,7 +63,7 @@
   --data-soft: #e7ecf3;
 
   --good: #1f6b3e; --good-soft: #e6f1ea; --good-fg: #175331;
-  --warn: #8a5a06; --warn-soft: #fdf1dd; --warn-fg: #6d4705;
+  --warn: #8a5a06; --warn-soft: #fdf1dd; --warn-fg: #735600;
   --serious: #a2410c; --serious-soft: #fbeae0; --serious-fg: #7d3209;
   --critical: #a41d1d; --critical-soft: #fae9e9; --critical-fg: #831717;
 
@@ -100,8 +109,12 @@
     --bg-sunken: #090b0f;
     --bg-inset: #13171e;
     --fg: #f2f1ed;
-    --fg-secondary: #bcbfc7;
-    --fg-muted: #9aa0ab;
+    --fg-secondary: #b9c2cf;
+    --fg-muted: #98a4b5;
+    --fg-heading: #eef2f8;
+    --fg-info: #9ebde2;
+    --fg-na: #a09f9a;
+    --fg-mustard: #e0b84a;
     --border: #2a2f38;
     --border-strong: #3e444f;
     --brass: #2a2f38;
@@ -139,7 +152,8 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0e1116; --bg-elevated: #171b22; --bg-sunken: #090b0f; --bg-inset: #13171e;
-  --fg: #f2f1ed; --fg-secondary: #bcbfc7; --fg-muted: #9aa0ab;
+  --fg: #f2f1ed; --fg-secondary: #b9c2cf; --fg-muted: #98a4b5;
+  --fg-heading: #eef2f8; --fg-info: #9ebde2; --fg-na: #a09f9a; --fg-mustard: #e0b84a;
   --border: #2a2f38; --border-strong: #3e444f; --brass: #2a2f38; --ring: #8fb3e0;
   --brand: #8fb3e0; --brand-strong: #aecbee; --brand-hover: #aecbee;
   --brand-soft: rgba(143, 179, 224, .14); --brand-fg: #0e1116;
@@ -172,6 +186,10 @@
   --color-fg: var(--fg);
   --color-fg-secondary: var(--fg-secondary);
   --color-fg-muted: var(--fg-muted);
+  --color-fg-heading: var(--fg-heading);
+  --color-fg-info: var(--fg-info);
+  --color-fg-na: var(--fg-na);
+  --color-fg-mustard: var(--fg-mustard);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-brass: var(--brass);
@@ -238,6 +256,9 @@ body {
 }
 
 h1, h2, h3 { letter-spacing: -0.02em; font-weight: 600; text-wrap: balance; line-height: 1.1; }
+/* Inside the app, headings take the heading ink. In the base layer, so any
+   heading that sets its own colour (a micro-label, an energy figure) keeps it. */
+@layer base { [data-app-main] :is(h1, h2, h3, h4) { color: var(--fg-heading); } }
 p { text-wrap: pretty; }
 
 /* The display face: Archivo, tightened. Used for headlines and figures. */
@@ -343,6 +364,74 @@ summary, label[for], select:not(:disabled) { cursor: pointer; touch-action: mani
    immutability and this is presentation anyway. */
 .panel-canvas { cursor: grab; }
 .panel-canvas:active { cursor: grabbing; }
+
+/* ── Inside the app ──────────────────────────────────────────────────────
+   The landing page's vocabulary, for the authenticated pages. The room
+   itself is <Stage> (src/components/layout/Stage.tsx): bone, one hairline,
+   the plotted grid. These are the two moving parts that go with it.
+
+   .flow — the path energy takes between two stops. Still and dashed by
+   default. data-live="true" only when a real production figure exists: it
+   turns amber (an energy mark, so amber is allowed) and moves, slowly.
+   Horizontal from 640px, vertical below, and reversed under RTL so it still
+   runs from the sun toward the home.
+
+   .lift — cards and links rise 2px on hover. Pointer devices only; they
+   never fade (banned). */
+:root { --dur-ambient: 2200ms; }
+
+@keyframes flow-x { to { background-position: 20px 0 } }
+@keyframes flow-y { to { background-position: 0 20px } }
+
+.flow {
+  display: block;
+  width: 1px;
+  min-height: 28px;
+  align-self: stretch;
+  background-image: repeating-linear-gradient(180deg, var(--border-strong) 0 5px, transparent 5px 10px);
+}
+.flow[data-live="true"] {
+  width: 2px;
+  background-image: repeating-linear-gradient(180deg, var(--sun) 0 10px, transparent 10px 20px);
+  background-size: 100% 20px;
+  animation: flow-y var(--dur-ambient) linear infinite;
+}
+@media (min-width: 640px) {
+  .flow {
+    width: 100%;
+    height: 1px;
+    min-height: 0;
+    align-self: auto;
+    background-image: repeating-linear-gradient(90deg, var(--border-strong) 0 5px, transparent 5px 10px);
+  }
+  .flow[data-live="true"] {
+    width: 100%;
+    height: 2px;
+    background-image: repeating-linear-gradient(90deg, var(--sun) 0 10px, transparent 10px 20px);
+    background-size: 20px 100%;
+    animation-name: flow-x;
+  }
+  [dir="rtl"] .flow[data-live="true"] { animation-direction: reverse; }
+}
+
+/* .sun-glow — the sun behind a scene: warm light falling off to nothing, not
+   a coloured fill. It drifts a few percent over sixteen seconds, which is the
+   whole of the "light movement"; reduced motion holds it still. */
+@keyframes sun-drift { to { transform: translate3d(-4%, 3%, 0) scale(1.04) } }
+.sun-glow {
+  background: radial-gradient(circle,
+    color-mix(in oklab, var(--sun) 38%, transparent) 0%,
+    color-mix(in oklab, var(--sun) 14%, transparent) 38%,
+    transparent 68%);
+  animation: sun-drift 16s ease-in-out infinite alternate;
+}
+
+.lift {
+  transition: transform var(--dur-base) var(--ease-out), border-color var(--dur-fast) linear, background-color var(--dur-fast) linear;
+}
+@media (hover: hover) {
+  .lift:hover { transform: translate3d(0, -2px, 0); border-color: var(--border-strong); }
+}
 
 /* ── The opening ──────────────────────────────────────────────────────────
    The film itself is the owner's artifact, styled by

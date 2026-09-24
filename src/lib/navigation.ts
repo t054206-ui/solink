@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Home, Sun, Calculator, Store, GitCompare, Sparkles, PencilRuler, FileBadge,
   Activity, Wrench, AlertOctagon, FileText, TrendingUp, Recycle, Bot, ShieldCheck, HelpCircle,
   Inbox, CalendarDays, Hammer, Settings, BarChart3, Users, Package, Building2, Plug, Database, SprayCan, Search,
-  ClipboardList, Coins, CalendarClock, Upload, FileSpreadsheet, Factory, Bell, Import, PackagePlus, Compass,
+  ClipboardList, CalendarClock, Upload, FileSpreadsheet, Factory, Bell, Import, PackagePlus, Compass,
 } from "lucide-react";
 import type { Role } from "@/lib/roles";
 
@@ -66,7 +66,6 @@ const HOMEOWNER_NAV: NavEntry[] = [
     link("/monitoring/inspection", "Inspection", Search),
     link("/maintenance", "Maintenance History", ClipboardList, { match: any(exact("/maintenance"), (p) => p.startsWith("/maintenance/") && !p.startsWith("/maintenance/book")) }),
     link("/incidents", "Incidents", AlertOctagon),
-    soon("/maintenance/costs", "Maintenance Costs", Coins, "Costs appear inside each maintenance case and on Long-term Performance; a dedicated page is not built yet."),
     link("/maintenance/book", "Maintenance Booking", CalendarClock),
   ]),
   link("/reports", "Reports", FileText),

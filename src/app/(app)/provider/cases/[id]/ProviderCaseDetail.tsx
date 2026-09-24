@@ -78,7 +78,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
             <KindBadge kind={c.kind} /><MaintStatusPill status={c.status} /><UrgencyBadge urgency={c.urgency} />
             <span className="ml-auto font-mono text-[11.5px] text-fg-muted">{c.id}</span>
           </div>
-          <h2 className="mt-3 text-lg font-semibold text-fg">{MAINT_KIND[c.kind].label}{system ? `. ${system.name}` : ""}</h2>
+          <h2 className="mt-3 text-lg font-semibold text-fg-heading">{MAINT_KIND[c.kind].label}{system ? `. ${system.name}` : ""}</h2>
           <p className="mt-1 text-[13px] text-fg-muted">Opened {formatDate(c.created_at)} · last updated {formatDate(c.updated_at)}</p>
           <WorkflowStrip current={stageIndexForCase(c)} className="mt-5" />
         </CardBody>
@@ -119,7 +119,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
             <dl className="grid gap-3 text-[13.5px]">
               <Row k="Customer" v={mode === "demo" ? <span className="inline-flex items-center gap-1.5">Demo homeowner <DataBadge cls="demo" compact /></span> : `Homeowner · ref ${c.user_id.slice(0, 8)}`} />
               <Row k="System" v={system?.name ?? "Not recorded"} />
-              <Row k="Panels" v={panelInfo(system) ?? <span className="text-fg-muted">Not recorded</span>} />
+              <Row k="Panels" v={panelInfo(system) ?? <span className="text-fg-na">Not recorded</span>} />
               <Row k="Location" v={coarseLocation(governorate)} />
               <Row k="Assigned company" v={assigned ? <span className="inline-flex items-center gap-1.5">{assigned.name}{assigned.is_demo && <DataBadge cls="demo" compact />}</span> : "Not assigned"} />
               <Row k="Appointment" v={c.appointment_at ? formatDate(c.appointment_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Not booked"} />

@@ -1,4 +1,5 @@
-import { PageHeader } from "@/components/layout/PageHeader";
+import { Stage } from "@/components/layout/Stage";
+import { StudioVisual } from "@/components/three/StudioVisual";
 import { listProducts, getProfile } from "@/lib/data/repositories";
 import { getPlatformSettings } from "@/lib/data/settings";
 import { specNum } from "@/lib/utils";
@@ -35,11 +36,16 @@ export default async function DesignerPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6">
-      <PageHeader
-        eyebrow="Choose"
-        title="Solar Designer"
-        description="See how many panels fit on your roof. Type its size, pick a panel, press one button, and drag things around if you like. Press any ⓘ for a plain explanation. More tools are one switch away when you want them."
-      />
+      <Stage label="Solar Designer" focus="75% 30%" className="mb-4">
+        <div className="grid items-center md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+          <div className="relative z-10 px-5 pb-2 pt-7 sm:px-8 sm:pt-9 md:py-10 lg:ps-10">
+            <p className="micro wipe">Choose</p>
+            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg-heading" style={{ animationDelay: "90ms" }}>Solar Designer</h1>
+            <p className="wipe mt-4 max-w-xl text-[15.5px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>See how many panels fit on your roof. Type its size, pick a panel, press one button, and drag things around if you like. Press any ⓘ for a plain explanation. More tools are one switch away when you want them.</p>
+          </div>
+          <StudioVisual className="px-3 pb-3 sm:px-6 md:ps-0 md:pe-4 md:pt-4" />
+        </div>
+      </Stage>
       <DesignerCanvas
         mode={mode}
         settings={settings}

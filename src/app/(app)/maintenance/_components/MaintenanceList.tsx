@@ -52,11 +52,13 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Summary icon={ClipboardList} label="Open cases" value={String(openCount)} sub={`${cases.length} total`} />
-        <Summary icon={CalendarClock} label="Next appointment" value={nextAppt ? formatDate(nextAppt.at, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "None scheduled"} sub={nextAppt ? nextAppt.label : "Book one when needed"} />
-        <Summary icon={Droplets} label="Last cleaning" value={lastCleaning ? formatDate(lastCleaning) : "No record"} sub={lastCleaning ? "From a resolved cleaning case" : "No completed cleaning case on file"} />
-      </div>
+      {/* The maintenance path: the same three figures as before, in the order the work happens.
+          A step's colour follows its own record: done green, due amber, nothing on file neutral. */}
+      <ol aria-label="Maintenance path" className="grid gap-3 sm:grid-cols-3">
+        <PathStep n={1} icon={Droplets} label="Clean · last cleaning" value={lastCleaning ? formatDate(lastCleaning) : "No record"} sub={lastCleaning ? "From a resolved cleaning case" : "No completed cleaning case on file"} tone={lastCleaning ? "good" : "none"} />
+        <PathStep n={2} icon={CalendarClock} label="Next appointment" value={nextAppt ? formatDate(nextAppt.at, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "None scheduled"} sub={nextAppt ? nextAppt.label : "Book one when needed"} tone={nextAppt ? "due" : "none"} />
+        <PathStep n={3} icon={ClipboardList} label="Maintain · open cases" value={String(openCount)} sub={`${cases.length} total`} tone={openCount > 0 ? "due" : "good"} last />
+      </ol>
 
       <Card>
         <div className="flex flex-col gap-3 border-b border-border px-5 py-4 md:flex-row md:items-end md:justify-between">
@@ -85,7 +87,9 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
             <ul className="divide-y divide-border">
               {filtered.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/maintenance/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-[10px] px-2 py-3 hover:bg-inset focus-visible:bg-inset focus-visible:outline-none">
+                  <Link href={`/maintenance/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-[10px] px-2 py-3 transition-colors hover:bg-inset focus-visible:bg-inset focus-visible:outline-none">
+                    {/* A rail from the case's own status and urgency: done green, open amber, open and urgent red. The pills beside it say the same in words. */}
+                    <span aria-hidden="true" className={cn("mt-1 w-1 shrink-0 self-stretch rounded-full", OPEN_MAINT_STATUSES.includes(c.status) ? (c.urgency === "urgent" ? "bg-critical" : "bg-warn") : "bg-good")} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <KindBadge kind={c.kind} />
@@ -112,12 +116,27 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
   );
 }
 
-function Summary({ icon: Icon, label, value, sub }: { icon: typeof ClipboardList; label: string; value: string; sub: string }) {
+const PATH_TONE = {
+  good: { dot: "bg-good", value: "var(--good-fg)" },
+  due: { dot: "bg-warn", value: "var(--warn-fg)" },
+  none: { dot: "bg-border-strong", value: "var(--fg)" },
+} as const;
+
+function PathStep({ n, icon: Icon, label, value, sub, tone, last = false }: { n: number; icon: typeof ClipboardList; label: string; value: string; sub: string; tone: keyof typeof PATH_TONE; last?: boolean }) {
+  const t = PATH_TONE[tone];
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-2 text-[12.5px] font-medium text-fg-secondary"><Icon className="size-4 text-fg-muted" aria-hidden />{label}</div>
-      <div className="mt-2 text-xl font-semibold leading-tight text-fg">{value}</div>
-      <div className="mt-1 text-[12px] text-fg-muted">{sub}</div>
-    </Card>
+    <li className="relative">
+      <Card className="lift h-full p-4">
+        <div className="flex items-center gap-2.5">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><Icon className="size-4" aria-hidden /></span>
+          <span className="micro">{label}</span>
+          <span className={cn("ms-auto size-2 rounded-full", t.dot)} aria-hidden />
+        </div>
+        <div className="display mt-3 text-[24px] leading-tight" style={{ color: t.value }}>{value}</div>
+        <div className="mt-1 text-[12px] text-fg-muted">{sub}</div>
+        <span className="figure absolute end-3 top-3 hidden text-[11px] text-fg-muted" aria-hidden>{n}</span>
+      </Card>
+      {!last && <span aria-hidden className="absolute -end-3 top-1/2 z-10 hidden h-px w-3 bg-border-strong sm:block" />}
+    </li>
   );
 }

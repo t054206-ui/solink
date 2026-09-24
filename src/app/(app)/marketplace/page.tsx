@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Database, Upload } from "lucide-react";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageHero } from "@/components/layout/PageHero";
+import { ShowroomVisual } from "@/components/three/PageVisuals";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
@@ -14,7 +15,7 @@ import type { ProductCategory } from "@/lib/types";
 import { CategoryPills } from "./_components/CategoryPills";
 import { CompareTray } from "./_components/CompareTray";
 import { MarketplaceGrid } from "./_components/MarketplaceGrid";
-import { CATEGORY_LABEL, isCategory } from "./_components/product-helpers";
+import { CATEGORY_LABEL, getSpecNum, isCategory } from "./_components/product-helpers";
 
 export const metadata: Metadata = {
   title: "Marketplace",
@@ -45,14 +46,32 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
   const real = all.filter((p) => !p.is_demo);
   const manufacturers = Array.from(new Set(real.map((p) => p.manufacturer_name))).sort();
   const suppliers = Array.from(new Set(real.map((p) => p.source.kuwait_supplier).filter((s): s is string => Boolean(s)))).sort();
+  // The showroom's callouts: this catalogue's own panels, counted and ranged from their records.
+  const panelRows = all.filter((p) => p.category === "solar_panel");
+  const watts = panelRows.map((p) => getSpecNum(p.specs, "rated_power_w")).filter((w): w is number => w !== null);
+  const panelMakers = new Set(panelRows.map((p) => p.manufacturer_name)).size;
+  const calloutCls = real.length > 0 ? "calculated" : "demo";
 
   return (
     <div className="pb-28">
-      <PageHeader
+      <PageHero
+        label="Marketplace"
         eyebrow="Choose"
         title="Marketplace"
         description="Every product carries its data source, verification status and the date it was last updated. Missing fields are shown as missing: never estimated."
         actions={<><Button href="/marketplace/manufacturers" variant="outline">Manufacturers</Button><Button href="/compare" variant="outline">Compare panels</Button></>}
+        visual={
+          <ShowroomVisual
+            caption="An illustrative module. The figures beside it are this catalogue's own, counted from its records."
+            overlay={panelRows.length > 0 ? (
+              <>
+                <Callout className="start-2 top-3 sm:start-4" label="Panels" value={String(panelRows.length)} cls={calloutCls} color="var(--brand-strong)" />
+                {watts.length > 0 && <Callout className="end-2 top-3 text-end sm:end-4" label="Rated power" value={Math.min(...watts) === Math.max(...watts) ? `${Math.min(...watts)} W` : `${Math.min(...watts)}–${Math.max(...watts)} W`} cls={calloutCls} color="var(--sun-ink)" />}
+                <Callout className="bottom-10 start-2 sm:start-4" label="Manufacturers" value={String(panelMakers)} cls={calloutCls} color="var(--data)" />
+              </>
+            ) : undefined}
+          />
+        }
       />
 
       {mode === "demo" && <DemoBanner className="mb-4" text="DEMO CATALOG — NOT REAL" detail="No real product dataset is connected. All products below are labeled demo records." />}
@@ -102,6 +121,17 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
       </div>
 
       <CompareTray />
+    </div>
+  );
+}
+
+/** A catalogue figure parked beside the showroom object, with its data class. */
+function Callout({ label, value, cls, className, color }: { label: string; value: string; cls: "calculated" | "demo"; className: string; color: string }) {
+  return (
+    <div className={`pointer-events-none absolute rounded-[var(--radius)] border border-border bg-elevated/90 px-2.5 py-1.5 shadow-[var(--shadow-sm)] ${className}`}>
+      <span className="micro block">{label}</span>
+      <span className="figure block text-[15px] font-medium" style={{ color }}>{value}</span>
+      <DataBadge cls={cls} compact className="mt-1" />
     </div>
   );
 }

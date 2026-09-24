@@ -121,7 +121,7 @@ export function SourceReferences({ product, className, compact = false }: { prod
           <div key={r.label} className="flex flex-col gap-0.5 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <dt className="shrink-0 text-fg-muted sm:w-40">{r.label}</dt>
             <dd className="min-w-0 break-words text-fg sm:text-right">
-              <span className={cn(r.detail === UNAVAILABLE && "text-fg-muted")}>{r.detail}</span>
+              <span className={cn(r.detail === UNAVAILABLE && "text-fg-na")}>{r.detail}</span>
               {r.href && r.linkLabel ? (
                 <>
                   {" "}

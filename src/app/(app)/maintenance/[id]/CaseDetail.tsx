@@ -17,7 +17,7 @@ import { productionDeviation } from "@/lib/solar/calculations";
 import { cn, formatDate } from "@/lib/utils";
 import { MAINT_KIND, MAINT_STATUS, MAINT_STATUS_ORDER, stageIndexForCase } from "../../_ops/meta";
 import { isLocalId, upsertRecord, useLocalMaintenance } from "../../_ops/localRecords";
-import { CostCell, KindBadge, MaintStatusPill, UrgencyBadge } from "../../_ops/Pills";
+import { KindBadge, MaintStatusPill, UrgencyBadge } from "../../_ops/Pills";
 import { WorkflowStrip } from "../../_ops/WorkflowStrip";
 import { addMaintenanceNote, cancelMaintenanceCase } from "../actions";
 import { InfoTip } from "@/components/help/InfoTip";
@@ -83,7 +83,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
             <KindBadge kind={c.kind} /><MaintStatusPill status={c.status} /><UrgencyBadge urgency={c.urgency} />
             <span className="ml-auto font-mono text-[11.5px] text-fg-muted">{c.id}</span>
           </div>
-          <h2 className="mt-3 text-lg font-semibold text-fg">{MAINT_KIND[c.kind].label}{system ? `. ${system.name}` : ""}</h2>
+          <h2 className="mt-3 text-lg font-semibold text-fg-heading">{MAINT_KIND[c.kind].label}{system ? `. ${system.name}` : ""}</h2>
           <p className="mt-1 text-[13px] text-fg-muted">Opened {formatDate(c.created_at)} · last updated {formatDate(c.updated_at)}</p>
           <WorkflowStrip current={stageIndexForCase(c)} className="mt-5" />
         </CardBody>
@@ -140,12 +140,11 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
           </CardBody>
         </Card>
         <Card>
-          <CardHeader title="Work, parts & cost" />
+          <CardHeader title="Work & parts" />
           <CardBody>
             <dl className="grid gap-3 text-[13.5px]">
-              <Row k="Work performed" v={c.work_performed ?? <span className="text-fg-muted">Not recorded yet</span>} />
+              <Row k="Work performed" v={c.work_performed ?? <span className="text-fg-na">Not recorded yet</span>} />
               <Row k="Parts" v={c.parts ?? <span className="text-fg-muted">None recorded</span>} />
-              <Row k="Cost" v={<CostCell cost={c.cost} />} />
             </dl>
           </CardBody>
         </Card>

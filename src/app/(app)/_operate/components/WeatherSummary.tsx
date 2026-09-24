@@ -13,7 +13,7 @@ export function WeatherFallback({ state, compact = false }: { state: WeatherStat
   if (state.status === "no_location") {
     return (
       <UnavailableState title="Location needed" className={compact ? "py-6" : undefined}>
-        Add your location in the <Link href="/profile" className="underline underline-offset-2">Solar Profile</Link> to see weather and air-quality conditions for your home.
+        Run a site analysis in <Link href="/analysis" className="underline underline-offset-2">Solar Potential</Link>, or find your place in the <Link href="/placement" className="underline underline-offset-2">Placement Guide</Link>. The location either one resolves is kept, and weather and air quality for your home appear here.
       </UnavailableState>
     );
   }

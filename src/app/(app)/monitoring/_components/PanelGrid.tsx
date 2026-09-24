@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { HealthMark } from "./health";
 
 /**
  * Panel-array visual. Every cell is in the "unknown" state because no
@@ -13,13 +14,14 @@ export function PanelGrid({ count, className }: { count: number; className?: str
         style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
         {Array.from({ length: count }, (_, i) => (
           <div key={i} title={`Panel ${i + 1}: unknown`}
-            className={cn("aspect-[3/5] rounded-[4px] border border-dashed border-border-strong bg-[repeating-linear-gradient(135deg,transparent_0_4px,var(--border)_4px_8px)]")}>
+            className={cn("relative grid aspect-[3/5] place-items-center rounded-[4px] border border-dashed border-border-strong bg-[repeating-linear-gradient(135deg,transparent_0_4px,var(--border)_4px_8px)]")}>
+            <HealthMark health="unknown" size="sm" />
             <span className="sr-only">Panel {i + 1}: unknown</span>
           </div>
         ))}
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-fg-muted">
-        <span className="inline-flex items-center gap-1.5"><span className="inline-block size-3 rounded-[2px] border border-dashed border-border-strong" aria-hidden /> Unknown (no data source)</span>
+        <HealthMark health="unknown" size="sm" label="Unknown (no data source)" />
         <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-good" aria-hidden /> Normal: not available yet</span>
         <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-warn" aria-hidden /> Underperforming: not available yet</span>
         <span className="inline-flex items-center gap-1.5 opacity-60"><span className="inline-block size-3 rounded-[2px] bg-critical" aria-hidden /> Fault: not available yet</span>

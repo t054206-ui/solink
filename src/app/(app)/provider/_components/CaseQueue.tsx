@@ -102,7 +102,7 @@ export function CaseQueue({ mode, providerId, serverCases, serverAppointments, p
             return (
               <section key={u} aria-labelledby={`group-${u}`}>
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <h2 id={`group-${u}`} className="text-[15px] font-semibold text-fg">{URGENCY[u].label}</h2>
+                  <h2 id={`group-${u}`} className="text-[15px] font-semibold text-fg-heading">{URGENCY[u].label}</h2>
                   <UrgencyBadge urgency={u} />
                   <span className="tabular text-[12.5px] text-fg-muted">{group.length}</span>
                 </div>
@@ -132,7 +132,7 @@ export function CaseQueue({ mode, providerId, serverCases, serverAppointments, p
 
           <section aria-labelledby="group-healthy">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <h2 id="group-healthy" className="text-[15px] font-semibold text-fg">Healthy</h2>
+              <h2 id="group-healthy" className="text-[15px] font-semibold text-fg-heading">Healthy</h2>
               <Badge tone="good" icon={<HeartPulse className="size-3" aria-hidden />}>No open case</Badge>
               <span className="tabular text-[12.5px] text-fg-muted">{healthySystems.length}</span>
             </div>
@@ -194,7 +194,7 @@ function CaseCard({ c, mode, providerId, system, providerName, appointment, hist
             {otherCompany && <Badge tone="neutral">Assigned to {providerName ?? "another company"}</Badge>}
           </div>
 
-          <h3 className="mt-2 text-[14.5px] font-semibold leading-snug text-fg">{system?.name ?? "System"}</h3>
+          <h3 className="mt-2 text-[14.5px] font-semibold leading-snug text-fg-heading">{system?.name ?? "System"}</h3>
           <p className="mt-0.5 text-[12.5px] text-fg-muted">
             {mode === "demo" ? "Demo homeowner" : `Homeowner · ref ${c.user_id.slice(0, 8)}`}
           </p>

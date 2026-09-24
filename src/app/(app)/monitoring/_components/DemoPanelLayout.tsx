@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { cn } from "@/lib/utils";
+import { HEALTH_STYLE, HealthMark, type Health } from "./health";
 
 /**
  * An illustration of what panel-by-panel monitoring will look like once
@@ -45,11 +46,8 @@ function demoCells(count: number, ratedW: number): DemoCell[] {
   });
 }
 
-const STATUS_BG: Record<DemoCell["status"], string> = {
-  good: "bg-good/70 border-good",
-  warn: "bg-warn/70 border-warn",
-  critical: "bg-critical/70 border-critical",
-};
+/** The demo's existing three example states, in the Monitor pages' health language. */
+const HEALTH: Record<DemoCell["status"], Health> = { good: "good", warn: "attention", critical: "problem" };
 const STATUS_LABEL: Record<DemoCell["status"], string> = { good: "Normal", warn: "Underperforming", critical: "Fault" };
 
 export function DemoPanelLayout({ count, panelLabel, ratedW }: { count: number; panelLabel: string | null; ratedW: number | null }) {
@@ -69,20 +67,29 @@ export function DemoPanelLayout({ count, panelLabel, ratedW }: { count: number; 
           <div role="img" aria-label={`Illustrative layout of ${count} panels with example production and performance figures, not real readings`}
             className="grid gap-1.5 rounded-[var(--radius-lg)] border border-border bg-inset p-3"
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-            {cells.map((c) => (
-              <div
-                key={c.index}
-                title={`Panel ${c.index}: ${c.productionKwh} kWh today, ${c.performancePct}% of expected (${STATUS_LABEL[c.status]}) — demo figure, not real`}
-                className={cn("aspect-[3/5] rounded-[4px] border", STATUS_BG[c.status])}
-              >
-                <span className="sr-only">Panel {c.index}: {c.productionKwh} kWh, {c.performancePct}% of expected, {STATUS_LABEL[c.status]}. Demo figure, not real.</span>
-              </div>
-            ))}
+            {cells.map((c) => {
+              const h = HEALTH[c.status];
+              return (
+                <div
+                  key={c.index}
+                  title={`Panel ${c.index}: ${c.productionKwh} kWh today, ${c.performancePct}% of expected (${STATUS_LABEL[c.status]}) — demo figure, not real`}
+                  className={cn(
+                    "group relative aspect-[3/5] overflow-hidden rounded-[4px] border-2 transition-transform duration-200 hover:-translate-y-0.5",
+                    HEALTH_STYLE[h].ring,
+                  )}
+                  style={{ backgroundImage: "linear-gradient(#0b1a2e 1px, transparent 1px), linear-gradient(90deg, #0b1a2e 1px, transparent 1px)", backgroundSize: "33.4% 16.7%", backgroundColor: "#1b3657" }}
+                >
+                  <span className="absolute end-0.5 top-0.5"><HealthMark health={h} size="sm" /></span>
+                  <span className="figure absolute bottom-0.5 start-1 text-[9px] text-white/80">{c.index}</span>
+                  <span className="sr-only">Panel {c.index}: {c.productionKwh} kWh, {c.performancePct}% of expected, {STATUS_LABEL[c.status]}. Demo figure, not real.</span>
+                </div>
+              );
+            })}
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-[12px] text-fg-muted">
-            <span className="inline-flex items-center gap-1.5"><span className="inline-block size-3 rounded-[2px] border border-good bg-good/70" aria-hidden /> Normal (example)</span>
-            <span className="inline-flex items-center gap-1.5"><span className="inline-block size-3 rounded-[2px] border border-warn bg-warn/70" aria-hidden /> Underperforming (example)</span>
-            <span className="inline-flex items-center gap-1.5"><span className="inline-block size-3 rounded-[2px] border border-critical bg-critical/70" aria-hidden /> Fault (example)</span>
+            <HealthMark health="good" size="sm" label="Normal (example)" />
+            <HealthMark health="attention" size="sm" label="Underperforming (example)" />
+            <HealthMark health="problem" size="sm" label="Fault (example)" />
           </div>
         </div>
         <div className="flex flex-col gap-3">

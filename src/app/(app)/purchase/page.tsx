@@ -55,7 +55,7 @@ export default async function PurchasePage({ searchParams }: { searchParams: Pro
       />
 
       <div className="mb-5 rounded-[var(--radius-lg)] border border-border bg-inset p-4">
-        <h2 className="text-[14px] font-semibold text-fg">Solink does not sell panels</h2>
+        <h2 className="text-[14px] font-semibold text-fg-heading">Solink does not sell panels</h2>
         <p className="mt-1 max-w-3xl text-[13px] leading-relaxed text-fg-secondary">
           Solink is a solar planning and product discovery platform. It does not sell panels or process payments, and
           there is no cart or checkout anywhere in it. Once you have chosen a panel, the product page links to the
