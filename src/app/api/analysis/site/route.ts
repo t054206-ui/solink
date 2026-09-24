@@ -71,7 +71,7 @@ export async function POST(req: Request) {
   if (!user) {
     return fail(401, { ok: false, stage: "auth", reason: "unauthenticated", message: "Sign in to run a site analysis." });
   }
-  const limited = checkRateLimit(rateLimitKey(req, user.id, "analysis/site"), LIMITS.analysis);
+  const limited = await checkRateLimit(rateLimitKey(req, user.id, "analysis/site"), LIMITS.analysis);
   if (limited) return limited;
 
   /** Records the run and returns the row id, or null when even that failed. */

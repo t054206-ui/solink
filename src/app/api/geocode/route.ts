@@ -9,7 +9,7 @@ const Q = z.object({ address: z.string().min(2).max(300).optional(), lat: z.coer
 export async function GET(req: Request) {
   const gate = await requireUser();
   if ("response" in gate) return gate.response;
-  const limited = checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "geocode"), LIMITS.lookup);
+  const limited = await checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "geocode"), LIMITS.lookup);
   if (limited) return limited;
   const parsed = Q.safeParse(Object.fromEntries(new URL(req.url).searchParams));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Provide an address or lat/lng." }, { status: 400 });

@@ -24,7 +24,7 @@ export interface PlacementSuggestion {
 export async function POST(req: Request) {
   const gate = await requireUser();
   if ("response" in gate) return gate.response;
-  const limited = checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/placement"), LIMITS.ai);
+  const limited = await checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/placement"), LIMITS.ai);
   if (limited) return limited;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });

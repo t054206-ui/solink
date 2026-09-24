@@ -9,7 +9,7 @@ const Q = z.object({ lat: z.coerce.number().min(-90).max(90), lng: z.coerce.numb
 export async function GET(req: Request) {
   const gate = await requireUser();
   if ("response" in gate) return gate.response;
-  const limited = checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "weather"), LIMITS.lookup);
+  const limited = await checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "weather"), LIMITS.lookup);
   if (limited) return limited;
   const url = new URL(req.url);
   const parsed = Q.safeParse(Object.fromEntries(url.searchParams));
