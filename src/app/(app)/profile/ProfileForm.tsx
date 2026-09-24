@@ -332,7 +332,7 @@ function OverviewTile({ icon: Icon, label, value, detail, href, color, detailCol
       <div className="mt-3 min-h-[1.75rem]">
         {value !== null
           ? <span className="figure text-[17px] font-medium leading-snug" style={{ color }}>{value}</span>
-          : <span className="text-[13.5px] font-medium text-fg-muted">Not set</span>}
+          : <span className="text-[13.5px] font-medium text-fg-na">Not set</span>}
       </div>
       {detail ? <p className="mt-1 text-[12px] leading-snug" style={{ color: detailColor ?? "var(--fg-muted)" }}>{detail}</p> : null}
       <a href={href} className="mt-auto pt-3 text-[12.5px] font-medium text-fg-secondary underline decoration-border-strong underline-offset-2 hover:text-fg">Edit</a>

@@ -43,7 +43,7 @@ export default async function RecommendPage() {
         <ol className="grid gap-2 sm:grid-cols-3" aria-label="How this works">
           {[["01", "Describe", "Your budget, roof, use and priorities."], ["02", "Filter and rank", "Solink's arithmetic on the catalogue records."], ["03", "Explain", "The AI Solar Agent's trade-offs, labelled as AI."]].map(([n, t, d]) => (
             <li key={n} className="border-t border-border pt-2">
-              <span className="micro" style={{ color: "var(--sun-ink)" }}>{n}</span>
+              <span className="micro" style={{ color: "var(--fg-mustard)" }}>{n}</span>
               <span className="mt-0.5 block text-[13.5px] font-semibold text-fg">{t}</span>
               <span className="block text-[12.5px] leading-snug text-fg-muted">{d}</span>
             </li>

@@ -131,8 +131,8 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
       {cls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} detail="Every figure below is computed from a simulated production series. None of it describes a real system." />}
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Overall">
-        <Metric label="Total production recorded" term="energy_production" data={totalRecorded} format={(v) => fmtKwh(v)} />
-        <Metric label={<span className="inline-flex items-center gap-1">Specific yield, last 365 days <InfoTip term="specific_yield" /></span>} data={trailingYield} format={(v) => `${formatNumber(v)} kWh/kWp`} />
+        <Metric label="Total production recorded" term="energy_production" data={totalRecorded} format={(v) => fmtKwh(v)} energy />
+        <Metric label={<span className="inline-flex items-center gap-1">Specific yield, last 365 days <InfoTip term="specific_yield" /></span>} data={trailingYield} format={(v) => `${formatNumber(v)} kWh/kWp`} energy />
         <Metric label="Years with records" term="years_with_records" data={{ value: rows.length, cls: "calculated", source: `${completeRows.length} complete, ${rows.length - completeRows.length} partial` }} />
       </section>
 
@@ -247,8 +247,8 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
             help="The price you pay per kWh. Savings cannot be calculated without it."
           />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricWithNotes label="Year-1 production (baseline)" data={year1} format={(v) => fmtKwh(v)} />
-            <MetricWithNotes label={`Production over ${a.horizonYears ?? "the"} ${a.horizonYears ? "years" : "period"}`} data={lifetime} format={(v) => fmtKwh(v)} />
+            <MetricWithNotes label="Year-1 production (baseline)" data={year1} format={(v) => fmtKwh(v)} energy />
+            <MetricWithNotes label={`Production over ${a.horizonYears ?? "the"} ${a.horizonYears ? "years" : "period"}`} data={lifetime} format={(v) => fmtKwh(v)} energy />
             <MetricWithNotes label="Savings in year 1" data={yearOneSavings} format={(v) => formatMoney(v, currency)} />
             <MetricWithNotes label="Savings over the period" data={lifetimeSavings} format={(v) => formatMoney(v, currency)} />
           </div>

@@ -97,7 +97,7 @@ export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems
                     <ChevronRight className="mt-5 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
                   </div>
                   <div className="mt-3 flex items-end justify-between gap-2">
-                    <div className="figure text-2xl font-medium text-[color:var(--sun-ink)]">{r.energy.total_kwh === null ? <span className="text-base font-medium text-fg-muted">Unavailable</span> : fmtKwh(r.energy.total_kwh)}</div>
+                    <div className="figure text-2xl font-medium text-[color:var(--sun-ink)]">{r.energy.total_kwh === null ? <span className="text-base font-medium text-fg-na">Unavailable</span> : fmtKwh(r.energy.total_kwh)}</div>
                     <DataBadge cls={r.energy.cls} compact />
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[12.5px] text-fg-secondary">

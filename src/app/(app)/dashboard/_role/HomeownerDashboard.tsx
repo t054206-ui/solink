@@ -191,7 +191,7 @@ function StatusCard({ title, icon: Icon, href, status, cls, lines, statusLabelOv
         <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-fg-secondary truncate"><Icon className="size-3.5 text-fg-muted" aria-hidden />{title}</div>
         <DataBadge cls={cls} compact />
       </div>
-      <div>{statusLabelOverride ? <span className="text-[15px] font-semibold text-fg">{statusLabelOverride}</span> : <StatusPill status={status} />}</div>
+      <div>{statusLabelOverride ? <span className={`text-[15px] font-semibold ${status === "normal" ? "text-good-fg" : status === "monitor" ? "text-warn-fg" : "text-fg-heading"}`}>{statusLabelOverride}</span> : <StatusPill status={status} />}</div>
       <ul className="space-y-0.5 text-[12.5px] leading-snug text-fg-muted">{lines.map((l) => <li key={l}>{l}</li>)}</ul>
     </Link>
   );

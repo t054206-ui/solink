@@ -47,7 +47,7 @@ export function ProductCard({ product: p }: { product: Product }) {
         {p.is_demo && <DemoBanner text={DEMO_PRODUCT_BANNER} className="py-1.5 text-[12px]" />}
         <div className="min-w-0">
           <div className="micro truncate" style={{ color: "var(--data)" }}><ManufacturerLink product={p} />{p.series ? <> · {p.series}</> : null}</div>
-          <h3 className="mt-1 text-[16px] font-semibold leading-snug tracking-[-0.01em] text-fg"><Link href={href} className="hover:underline underline-offset-2">{p.name}</Link></h3>
+          <h3 className="mt-1 text-[16px] font-semibold leading-snug tracking-[-0.01em] text-fg-heading"><Link href={href} className="hover:underline underline-offset-2">{p.name}</Link></h3>
           <div className="mt-0.5 font-mono text-[12px] text-fg-muted">{p.model}</div>
         </div>
         {headline.length > 0 && (

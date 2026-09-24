@@ -8,7 +8,7 @@ function Shell({ icon: Icon, title, children, tone = "neutral", className }: { i
       <div className={cn("mb-3 grid size-11 place-items-center rounded-[var(--radius)]", tone === "warn" ? "bg-warn-soft text-warn-fg" : tone === "critical" ? "bg-critical-soft text-critical-fg" : "bg-elevated text-fg-muted border border-border")}>
         <Icon className="size-5" aria-hidden />
       </div>
-      <h4 className="text-[15px] font-semibold text-fg">{title}</h4>
+      <h4 className="text-[15px] font-semibold text-fg-heading">{title}</h4>
       {children && <div className="mt-1.5 max-w-md text-[13px] text-fg-secondary leading-relaxed">{children}</div>}
     </div>
   );

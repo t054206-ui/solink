@@ -185,7 +185,7 @@ function WarrantyRow({ label, term, years, from, cls, nowIso }: { label: string;
   return (
     <li className="rounded-[var(--radius-md)] border border-border bg-inset p-3">
       <div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1 font-medium text-fg">{label}{term && <InfoTip term={term} />}</span><DataBadge cls={years == null ? "unavailable" : cls} compact /></div>
-      {years == null ? <p className="mt-1 text-[12.5px] text-fg-muted">Not recorded.</p> : (
+      {years == null ? <p className="mt-1 text-[12.5px] text-fg-na">Not recorded.</p> : (
         <div className="mt-1 flex flex-wrap items-center justify-between gap-2 text-[13px]">
           <span className="text-fg-secondary">{years} years</span>
           <span className="inline-flex items-center gap-1.5 text-fg-secondary">{expiry ? <>until <span className="tabular font-medium text-fg">{formatDate(expiry)}</span>{expired && <Badge tone="serious">expired</Badge>}</> : "start date unknown"}<DataBadge cls="calculated" compact /></span>
@@ -212,9 +212,9 @@ function ManufacturerAtInstallation({ snapshot, cls }: { snapshot: NonNullable<S
       </div>
       <dl className="mt-2 grid gap-x-4 gap-y-1 sm:grid-cols-2">
         <div className="flex justify-between gap-2"><dt className="text-fg-muted">Company</dt><dd className="text-right font-medium text-fg">{snapshot.manufacturer}</dd></div>
-        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Legal name</dt><dd className="text-right text-fg">{ms?.legal_name ?? <span className="text-fg-muted">Not recorded</span>}</dd></div>
-        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Headquarters</dt><dd className="text-right text-fg">{ms?.headquarters_country ?? <span className="text-fg-muted">Not recorded</span>}</dd></div>
-        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Company verification then</dt><dd className="text-right text-fg">{ms ? VERIFICATION_LABEL[ms.verification_status] : <span className="text-fg-muted">Not recorded</span>}</dd></div>
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Legal name</dt><dd className="text-right text-fg">{ms?.legal_name ?? <span className="text-fg-na">Not recorded</span>}</dd></div>
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Headquarters</dt><dd className="text-right text-fg">{ms?.headquarters_country ?? <span className="text-fg-na">Not recorded</span>}</dd></div>
+        <div className="flex justify-between gap-2"><dt className="text-fg-muted">Company verification then</dt><dd className="text-right text-fg">{ms ? VERIFICATION_LABEL[ms.verification_status] : <span className="text-fg-na">Not recorded</span>}</dd></div>
         <div className="flex justify-between gap-2 sm:col-span-2"><dt className="text-fg-muted">Manufacturer data version</dt><dd className="text-right font-mono text-[12px] text-fg">{snapshot.manufacturer_version_id ?? "not recorded (issued before company versioning)"}</dd></div>
       </dl>
       <p className="mt-2 text-[12px] leading-relaxed text-fg-muted">

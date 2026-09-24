@@ -38,7 +38,7 @@ export function Modal({ open, onClose, title, children, className }: { open: boo
       <button aria-label="Close" className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div ref={panelRef} tabIndex={-1} className={cn("relative w-full sm:max-w-lg max-h-[92dvh] overflow-y-auto rounded-t-[var(--radius-lg)] sm:rounded-[var(--radius-lg)] border border-border bg-elevated shadow-card outline-none", className)}>
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3.5">
-          <h3 id={titleId} className="text-[15px] font-semibold">{title}</h3>
+          <h3 id={titleId} className="text-[15px] font-semibold text-fg-heading">{title}</h3>
           <button onClick={onClose} aria-label="Close dialog" className="grid size-8 place-items-center rounded-md text-fg-muted hover:bg-inset hover:text-fg"><X className="size-4" /></button>
         </div>
         <div className="p-5">{children}</div>

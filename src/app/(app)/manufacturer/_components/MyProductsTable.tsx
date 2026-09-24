@@ -37,7 +37,7 @@ export function MyProductsTable({ products, me, mode }: { products: Product[]; m
 
   const num = (v: unknown, unit: string, digits = 0) => {
     const n = specNum(v as { value: unknown } | undefined);
-    return n === null ? <span className="text-fg-muted">Not provided</span> : <span className="figure">{n.toFixed(digits)} {unit}</span>;
+    return n === null ? <span className="text-fg-na">Not provided</span> : <span className="figure">{n.toFixed(digits)} {unit}</span>;
   };
 
   return (

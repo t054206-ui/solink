@@ -39,7 +39,7 @@ export function EquipmentTable({ rows, cls, repairCount }: { rows: EquipmentRow[
               </th>
               <td className="tabular py-3 pr-3 text-fg-secondary">{r.installedIso ? formatDate(r.installedIso) : "—"}</td>
               <td className="py-3 pr-3">
-                {r.ageYears === null ? <span className="text-fg-muted">—</span> : (
+                {r.ageYears === null ? <span className="text-fg-na">—</span> : (
                   <span className="inline-flex items-center gap-1.5"><span className="tabular text-fg">{r.ageYears.toFixed(1)} years</span><DataBadge cls="calculated" compact /></span>
                 )}
               </td>
@@ -62,7 +62,7 @@ export function EquipmentTable({ rows, cls, repairCount }: { rows: EquipmentRow[
 }
 
 function WarrantyCell({ w }: { w: WarrantyInfo }) {
-  if (w.years === null) return <span className="text-fg-muted">Not recorded</span>;
+  if (w.years === null) return <span className="text-fg-na">Not recorded</span>;
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5">
       <span className="tabular font-medium text-fg">{w.endIso ? formatDate(w.endIso) : "start date unknown"}</span>

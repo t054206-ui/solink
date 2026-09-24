@@ -83,7 +83,7 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
               {facts.map((f) => (
                 <div key={f.label}>
                   <dt className="micro">{f.label}</dt>
-                  <dd className={`figure text-[15px] ${f.muted ? "text-fg-muted" : "text-fg"}`}>{f.value}</dd>
+                  <dd className={`figure text-[15px] ${factInk(f)}`}>{f.value}</dd>
                 </div>
               ))}
             </dl>
@@ -95,7 +95,7 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
               <ol className="mt-2 space-y-1.5">
                 {match.reasons.map((r, i) => (
                   <li key={r} className="flex gap-2.5 rounded-[var(--radius)] border border-border bg-inset px-3 py-2 text-[13px] leading-relaxed text-fg-secondary">
-                    <span className="figure grid size-5 shrink-0 place-items-center rounded-full bg-sun-soft text-[11px] text-[var(--sun-ink)]" aria-hidden="true">{i + 1}</span>
+                    <span className="figure grid size-5 shrink-0 place-items-center rounded-full bg-sun-soft text-[11px] text-fg-mustard" aria-hidden="true">{i + 1}</span>
                     <span>{r}</span>
                   </li>
                 ))}
@@ -117,7 +117,7 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
               <span className="micro rounded-full border border-border bg-inset px-2 py-0.5 text-fg-secondary">#{rank}</span>
               <VerificationBadge status={p.source.verification_status} />
             </div>
-            <h3 className="mt-1.5 text-[16px] font-semibold leading-snug text-fg">
+            <h3 className="mt-1.5 text-[16px] font-semibold leading-snug text-fg-heading">
               <Link href={`/marketplace/${p.id}`} className="underline-offset-2 hover:underline">
                 {p.name}
               </Link>
@@ -133,7 +133,7 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
           {facts.map((f) => (
             <div key={f.label}>
               <dt className="micro">{f.label}</dt>
-              <dd className={`figure text-[14.5px] ${f.muted ? "text-fg-muted" : "text-fg"}`}>{f.value}</dd>
+              <dd className={`figure text-[14.5px] ${factInk(f)}`}>{f.value}</dd>
             </div>
           ))}
         </dl>
@@ -200,7 +200,7 @@ function Actions({ p, openSources, setOpenSources }: { p: Match["product"]; open
 
       {openSources ? (
         <div id={`sources-${p.id}`} className="rounded-[10px] border border-border bg-elevated p-3">
-          <h4 className="text-[13px] font-medium text-fg">Sources &amp; References</h4>
+          <h4 className="text-[13px] font-medium text-fg-heading">Sources &amp; References</h4>
           <SourceReferences product={p} compact className="mt-1" />
         </div>
       ) : null}
@@ -209,11 +209,16 @@ function Actions({ p, openSources, setOpenSources }: { p: Match["product"]; open
 }
 
 /** One of the match's own facts, parked beside the presented module. */
+/** A fact's ink: amber for the power figure, navy for the rest, grey when missing. */
+function factInk(f: { label: string; muted?: boolean }) {
+  return f.muted ? "text-fg-na" : f.label === "Rated power" ? "text-[color:var(--sun-ink)]" : "text-[color:var(--brand-strong)]";
+}
+
 function FactChip({ label, value, muted, className, color }: { label: string; value: string; muted?: boolean; className: string; color: string }) {
   return (
     <div className={`pointer-events-none absolute rounded-[var(--radius)] border border-border bg-elevated/90 px-2.5 py-1.5 shadow-[var(--shadow-sm)] ${className}`}>
       <span className="micro block">{label}</span>
-      <span className="figure block text-[15px] font-medium" style={{ color: muted ? "var(--fg-muted)" : color }}>{value}</span>
+      <span className="figure block text-[15px] font-medium" style={{ color: muted ? "var(--fg-na)" : color }}>{value}</span>
     </div>
   );
 }

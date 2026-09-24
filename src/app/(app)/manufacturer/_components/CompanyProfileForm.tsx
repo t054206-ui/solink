@@ -77,8 +77,8 @@ export function CompanyProfileForm({ me, productCount, mode }: { me: Manufacture
           <CardHeader title={<>Public profile <InfoTip term="company_verification" /></>} subtitle="What a homeowner sees. The rows marked Solink are Solink's decisions and are read-only here." />
           <CardBody className="space-y-2.5 text-[13px]">
             <div className="flex items-center gap-3"><ManufacturerLogo name={preview.name} logoUrl={preview.logo_url} /><div className="min-w-0"><div className="truncate font-medium text-fg">{preview.name || "—"}</div><div className="truncate text-[12px] text-fg-muted">{preview.legal_name ?? "Legal name not provided"}</div></div></div>
-            <Line k="Headquarters" v={headquartersText(preview) ?? <span className="text-fg-muted">Not provided</span>} />
-            <Line k="Website" v={preview.website ? <a href={preview.website} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 truncate text-fg underline underline-offset-2" dir="ltr">{hostOf(preview.website)} <ExternalLink className="size-3" aria-hidden /></a> : <span className="text-fg-muted">Not provided</span>} />
+            <Line k="Headquarters" v={headquartersText(preview) ?? <span className="text-fg-na">Not provided</span>} />
+            <Line k="Website" v={preview.website ? <a href={preview.website} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 truncate text-fg underline underline-offset-2" dir="ltr">{hostOf(preview.website)} <ExternalLink className="size-3" aria-hidden /></a> : <span className="text-fg-na">Not provided</span>} />
             <Line k="Products listed" v={<span className="figure text-fg">{productCount}</span>} />
             <Line k={<>Type <Badge tone="neutral">Solink</Badge></>} v={me.manufacturer_type ?? <span className="text-fg-muted">Not classified</span>} />
             <Line k={<>Market <InfoTip term="market_classification" /></>} v={me.market_regions.length ? me.market_regions.join(" / ") : <span className="text-fg-muted">Not classified</span>} />

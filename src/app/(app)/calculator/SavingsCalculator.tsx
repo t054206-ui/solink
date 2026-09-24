@@ -231,7 +231,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
       {/* -------- outputs -------- */}
       <div className="grid gap-5 lg:col-span-7">
         <section aria-labelledby="yearly-heading">
-          <h2 id="yearly-heading" className="mb-3 text-[17px] font-semibold text-fg">Each year</h2>
+          <h2 id="yearly-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Each year</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <MetricWithNotes label={<>Monthly consumption <InfoTip term="kwh" /></>} data={consumption} unit="kWh" format={(v) => formatNumber(v, 0)} />
             <MetricWithNotes label={<>System capacity <InfoTip term="kwp" /></>} data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
@@ -243,7 +243,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
         </section>
 
         <section aria-labelledby="lifetime-heading">
-          <h2 id="lifetime-heading" className="mb-3 text-[17px] font-semibold text-fg">Over the analysis period</h2>
+          <h2 id="lifetime-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Over the analysis period</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <MetricWithNotes label={<>Payback period <InfoTip term="payback_period" /></>} data={payback} unit="years" format={(v) => formatNumber(v, 1)} />
             <MetricWithNotes label="Upfront cost" data={upfront} format={(v) => formatMoney(v, CURRENCY, 0)} />

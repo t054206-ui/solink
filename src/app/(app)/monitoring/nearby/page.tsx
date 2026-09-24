@@ -64,7 +64,7 @@ export default async function NearbyPage() {
           <ul className="grid gap-3 sm:grid-cols-3">
             {ANSWERS.map((a) => (
               <li key={a.label} className="rounded-[var(--radius-md)] border border-border bg-inset p-3">
-                <h3 className="text-[13.5px] font-semibold text-fg">{a.label}</h3>
+                <h3 className="text-[13.5px] font-semibold text-fg-heading">{a.label}</h3>
                 <p className="mt-1 text-[13px] leading-relaxed text-fg-secondary">{a.text}</p>
               </li>
             ))}

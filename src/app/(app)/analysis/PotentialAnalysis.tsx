@@ -118,7 +118,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
       <Card>
         <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-start justify-between gap-3 px-5 pt-5 pb-3 text-left">
           <div>
-            <h3 className="flex items-center gap-1.5 text-[15px] font-semibold text-fg"><SlidersHorizontal className="size-4 text-fg-muted" aria-hidden /> Assumptions</h3>
+            <h3 className="flex items-center gap-1.5 text-[15px] font-semibold text-fg-heading"><SlidersHorizontal className="size-4 text-fg-muted" aria-hidden /> Assumptions</h3>
             <p className="mt-1 text-[13px] text-fg-muted">{missingAssumptions === 0 ? "All four assumptions are set." : `${missingAssumptions} of 4 assumptions are not set by the platform: supply your own to unlock estimates.`}</p>
           </div>
           <ChevronDown className={cn("mt-1 size-4 shrink-0 text-fg-muted transition-transform", open && "rotate-180")} aria-hidden />
@@ -183,7 +183,7 @@ export function PotentialAnalysis({ profile: serverProfile, mode, settings, pane
 
       {/* Results */}
       <section aria-labelledby="results-heading">
-        <h2 id="results-heading" className="mb-3 text-[17px] font-semibold text-fg">What your roof could do</h2>
+        <h2 id="results-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">What your roof could do</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MetricWithNotes label={<>Recommended capacity <InfoTip term="system_capacity" /></>} data={recommended} unit="kWp" format={(v) => formatNumber(v, 2)} />
           <MetricWithNotes label="Panels that fit your roof" data={fit} unit="panels" format={(v) => formatNumber(v, 0)} />

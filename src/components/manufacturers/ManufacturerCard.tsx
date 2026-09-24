@@ -20,7 +20,7 @@ export function ManufacturerCard({ m, href }: { m: Manufacturer; href: string })
       <div className="flex items-start gap-3">
         <ManufacturerLogo name={m.name} logoUrl={m.logo_url} />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-[15px] font-semibold leading-snug text-fg"><Link href={href} className="hover:underline underline-offset-2">{m.name}</Link></h3>
+          <h3 className="truncate text-[15px] font-semibold leading-snug text-fg-heading"><Link href={href} className="hover:underline underline-offset-2">{m.name}</Link></h3>
           <p className="mt-0.5 truncate text-[12.5px] text-fg-muted">{m.manufacturer_type ?? <span>Type not provided</span>}</p>
         </div>
         {m.is_demo ? <DataBadge cls="demo" compact /> : m.is_archived ? <Badge tone="neutral">Archived</Badge> : null}

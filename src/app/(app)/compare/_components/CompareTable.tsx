@@ -42,7 +42,7 @@ function specCell(p: Product, key: string): Cell {
 function additionalCell(p: Product, key: string): Cell {
   const s = getAdditional(p.specs, key);
   const has = !!s && s.value !== null;
-  return { node: has ? specText(s) : <span className="text-fg-muted">Not stated</span>, num: specNum(s), cls: has ? (p.is_demo ? "demo" : "source") : "unavailable", source: p.source.data_source };
+  return { node: has ? specText(s) : <span className="text-fg-na">Not stated</span>, num: specNum(s), cls: has ? (p.is_demo ? "demo" : "source") : "unavailable", source: p.source.data_source };
 }
 
 /** Bifaciality: the stated ratio when the datasheet prints one, else what the record says about the module type. */
@@ -52,19 +52,19 @@ function bifacialCell(p: Product): Cell {
   const b = isBifacial(p.specs);
   if (b === false) return { node: "Mono-facial", num: 0, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
   if (b === true) return { node: "Bifacial (ratio not stated)", num: null, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
-  return { node: <span className="text-fg-muted">Not stated</span>, num: null, cls: "unavailable" };
+  return { node: <span className="text-fg-na">Not stated</span>, num: null, cls: "unavailable" };
 }
 
 /** Annual degradation after year one, from the panel's own performance-warranty curve (never a platform default). */
 function annualDegradationCell(p: Product): Cell {
   const d = warrantyDegradation(p.specs, p.manufacturer_name);
-  if (!d) return { node: <span className="text-fg-muted">Not stated</span>, num: null, cls: "unavailable" };
+  if (!d) return { node: <span className="text-fg-na">Not stated</span>, num: null, cls: "unavailable" };
   const pctPerYear = d.annualFraction * 100;
   return { node: <span title={d.source}>{Number(pctPerYear.toFixed(3))} %/year</span>, num: pctPerYear, cls: p.is_demo ? "demo" : "source", source: p.source.data_source };
 }
 
 function classifiedCell(c: Classified, format: (v: number) => string): Cell {
-  if (c.value === null) return { node: <span className="text-fg-muted">{c.reason ?? "Unavailable"}</span>, num: null, cls: "unavailable", reason: c.reason };
+  if (c.value === null) return { node: <span className="text-fg-na">{c.reason ?? "Unavailable"}</span>, num: null, cls: "unavailable", reason: c.reason };
   return { node: <span title={c.notes?.join(" · ")}>{format(c.value)}</span>, num: c.value, cls: c.cls, source: c.source };
 }
 

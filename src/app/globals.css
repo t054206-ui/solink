@@ -26,8 +26,17 @@
   --bg-inset: #faf9f6;
 
   --fg: #0e1116;
-  --fg-secondary: #4a4e57;
-  --fg-muted: #6b6e77;
+  --fg-secondary: #445166;
+  --fg-muted: #5d6a7e;
+  /* Text roles. Headings take the panel's navy-ink, source and
+     informational lines a muted blue, and anything unavailable or not
+     recorded a neutral grey, so "missing" never reads as a finding. */
+  --fg-heading: #13233b;
+  --fg-info: #355d8c;
+  --fg-na: #6d6c68;
+  /* Mustard: attention, in-progress and accent labels (eyebrows, step
+     numbers). Amber stays for energy figures. */
+  --fg-mustard: #806200;
 
   --border: #d8d6cf;
   --border-strong: #bdbab1;
@@ -54,7 +63,7 @@
   --data-soft: #e7ecf3;
 
   --good: #1f6b3e; --good-soft: #e6f1ea; --good-fg: #175331;
-  --warn: #8a5a06; --warn-soft: #fdf1dd; --warn-fg: #6d4705;
+  --warn: #8a5a06; --warn-soft: #fdf1dd; --warn-fg: #735600;
   --serious: #a2410c; --serious-soft: #fbeae0; --serious-fg: #7d3209;
   --critical: #a41d1d; --critical-soft: #fae9e9; --critical-fg: #831717;
 
@@ -100,8 +109,12 @@
     --bg-sunken: #090b0f;
     --bg-inset: #13171e;
     --fg: #f2f1ed;
-    --fg-secondary: #bcbfc7;
-    --fg-muted: #9aa0ab;
+    --fg-secondary: #b9c2cf;
+    --fg-muted: #98a4b5;
+    --fg-heading: #eef2f8;
+    --fg-info: #9ebde2;
+    --fg-na: #a09f9a;
+    --fg-mustard: #e0b84a;
     --border: #2a2f38;
     --border-strong: #3e444f;
     --brass: #2a2f38;
@@ -139,7 +152,8 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0e1116; --bg-elevated: #171b22; --bg-sunken: #090b0f; --bg-inset: #13171e;
-  --fg: #f2f1ed; --fg-secondary: #bcbfc7; --fg-muted: #9aa0ab;
+  --fg: #f2f1ed; --fg-secondary: #b9c2cf; --fg-muted: #98a4b5;
+  --fg-heading: #eef2f8; --fg-info: #9ebde2; --fg-na: #a09f9a; --fg-mustard: #e0b84a;
   --border: #2a2f38; --border-strong: #3e444f; --brass: #2a2f38; --ring: #8fb3e0;
   --brand: #8fb3e0; --brand-strong: #aecbee; --brand-hover: #aecbee;
   --brand-soft: rgba(143, 179, 224, .14); --brand-fg: #0e1116;
@@ -172,6 +186,10 @@
   --color-fg: var(--fg);
   --color-fg-secondary: var(--fg-secondary);
   --color-fg-muted: var(--fg-muted);
+  --color-fg-heading: var(--fg-heading);
+  --color-fg-info: var(--fg-info);
+  --color-fg-na: var(--fg-na);
+  --color-fg-mustard: var(--fg-mustard);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-brass: var(--brass);
@@ -238,6 +256,9 @@ body {
 }
 
 h1, h2, h3 { letter-spacing: -0.02em; font-weight: 600; text-wrap: balance; line-height: 1.1; }
+/* Inside the app, headings take the heading ink. In the base layer, so any
+   heading that sets its own colour (a micro-label, an energy figure) keeps it. */
+@layer base { [data-app-main] :is(h1, h2, h3, h4) { color: var(--fg-heading); } }
 p { text-wrap: pretty; }
 
 /* The display face: Archivo, tightened. Used for headlines and figures. */

@@ -242,7 +242,7 @@ export function PlacementGuide({ heading }: { heading: { eyebrow: string; title:
         <div className="grid items-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="relative z-10 px-5 py-8 sm:px-8 md:py-12 lg:ps-10">
             <p className="micro wipe">{heading.eyebrow}</p>
-            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
+            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg-heading" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
             <p className="wipe mt-4 max-w-md text-[15.5px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{heading.description}</p>
           </div>
           <div className="hidden px-3 pb-3 md:block md:pe-4 md:ps-0 md:pt-4">{wide ? visual : <div className="aspect-[5/4]" />}</div>
@@ -403,7 +403,7 @@ function Result({ rec, source }: { rec: PlacementRecommendation; source: Source 
           <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-sunken p-4">
             <TriangleAlert className="mt-0.5 size-4 shrink-0 text-[var(--warn-fg)]" aria-hidden="true" />
             <div>
-              <h3 className="text-[14px] font-semibold text-fg">This is a direction, not a spot on your roof</h3>
+              <h3 className="text-[14px] font-semibold text-fg-heading">This is a direction, not a spot on your roof</h3>
               <p className="mt-1 text-[13.5px] leading-relaxed text-fg-secondary">
                 Location alone cannot determine the exact best spot on your roof. Buildings, trees, walls, roof
                 structures, and shading can change the final placement. This is a recommended direction based on your

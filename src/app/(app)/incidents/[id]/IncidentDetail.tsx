@@ -44,7 +44,7 @@ export function IncidentDetail({ id, mode, serverIncident, systems, cases }: { i
             {inc.is_demo && <DataBadge cls="demo" compact />}
             <span className="ml-auto font-mono text-[11.5px] text-fg-muted">{inc.id}</span>
           </div>
-          <h2 className="mt-3 text-lg font-semibold leading-snug text-fg">{inc.reported_problem.split("\n")[0]}</h2>
+          <h2 className="mt-3 text-lg font-semibold leading-snug text-fg-heading">{inc.reported_problem.split("\n")[0]}</h2>
           <dl className="mt-4 grid grid-cols-2 gap-3 text-[13.5px] sm:grid-cols-4">
             <Row k="Date" v={formatDate(inc.occurred_at)} />
             <Row k="Time" v={Number.isNaN(occurred.getTime()) ? "—" : occurred.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} />
@@ -94,10 +94,10 @@ export function IncidentDetail({ id, mode, serverIncident, systems, cases }: { i
         <CardHeader title="Action & outcome" subtitle="Filled in as the incident is handled. Empty fields mean nothing has been recorded: not that nothing happened." />
         <CardBody>
           <dl className="grid gap-3 text-[13.5px] sm:grid-cols-2">
-            <Row k="Action taken" v={inc.action_taken ?? <span className="text-fg-muted">Not recorded</span>} />
-            <Row k="Technician" v={inc.technician_name ?? <span className="text-fg-muted">Not recorded</span>} />
+            <Row k="Action taken" v={inc.action_taken ?? <span className="text-fg-na">Not recorded</span>} />
+            <Row k="Technician" v={inc.technician_name ?? <span className="text-fg-na">Not recorded</span>} />
             <Row k="Cost" v={<CostCell cost={inc.cost} />} />
-            <Row k="Result" v={inc.result ?? <span className="text-fg-muted">Not recorded</span>} />
+            <Row k="Result" v={inc.result ?? <span className="text-fg-na">Not recorded</span>} />
             <Row k="Final status" v={<IncidentStatusPill status={inc.status} />} />
           </dl>
         </CardBody>

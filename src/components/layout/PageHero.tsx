@@ -26,7 +26,7 @@ export function PageHero({ label, eyebrow, title, description, actions, visual, 
 }) {
   const words = (
     <div className="relative z-10 min-w-0 px-5 pb-2 pt-7 sm:px-8 sm:pt-9 md:py-10 lg:px-10">
-      <p className="micro wipe" style={{ color: "var(--sun-ink)" }}>{eyebrow}</p>
+      <p className="micro wipe" style={{ color: "var(--fg-mustard)" }}>{eyebrow}</p>
       <h1 className="display wipe mt-4 text-[clamp(2.2rem,4.4vw,3.6rem)] text-[color:var(--brand-strong)]" style={{ animationDelay: "90ms" }}>{title}</h1>
       <p className="wipe mt-4 max-w-xl text-[15px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{description}</p>
       {actions && <div className="rise mt-6 flex flex-wrap gap-2" style={{ animationDelay: "280ms" }}>{actions}</div>}

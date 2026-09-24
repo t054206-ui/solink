@@ -17,7 +17,7 @@ export function CardHeader({ title, subtitle, action, className }: { title: Reac
   return (
     <div className={cn("flex items-start justify-between gap-3 border-b border-border px-3 py-2.5", className)}>
       <div className="min-w-0">
-        <h3 className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-fg">{title}</h3>
+        <h3 className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-fg-heading">{title}</h3>
         {subtitle && <p className="mt-1 text-[12px] leading-snug text-fg-muted">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}

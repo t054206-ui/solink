@@ -37,7 +37,7 @@ export function OverviewHero({ label, eyebrow, title, description, actions, capt
       <div className="grid items-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <div className="relative z-10 px-5 pb-2 pt-8 sm:px-8 sm:pt-10 md:py-12 md:pe-0 lg:py-14 lg:ps-10 lg:pe-2">
           <p className="micro wipe">{eyebrow}</p>
-          <h1 className="display wipe mt-4 text-[clamp(2.4rem,4.6vw,4rem)] text-fg" style={{ animationDelay: "90ms" }}>{title}</h1>
+          <h1 className="display wipe mt-4 text-[clamp(2.4rem,4.6vw,4rem)] text-fg-heading" style={{ animationDelay: "90ms" }}>{title}</h1>
           <p className="wipe mt-5 max-w-md text-[16px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{description}</p>
           {actions.length > 0 && (
             <div className="rise mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "300ms" }}>

@@ -60,12 +60,12 @@ function Node({ node }: { node: FlowNode }) {
       </div>
       <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         {node.figure ? (
-          <span className="text-[26px] font-medium leading-none text-fg">
+          <span className="text-[26px] font-medium leading-none text-[color:var(--brand-strong)]">
             <RevealCount to={node.figure.value} decimals={node.figure.decimals} className={node.energy ? "text-[color:var(--sun-ink)]" : ""} />
             <span className="ms-1 text-[13px] font-medium text-fg-muted">{node.figure.unit}</span>
           </span>
         ) : null}
-        {node.text ? <span className={node.figure ? "text-[13px] text-fg-secondary" : "text-[14px] font-medium text-fg-secondary"}>{node.text}</span> : null}
+        {node.text ? <span className={node.figure ? "text-[13px] text-fg-secondary" : "text-[14px] font-medium text-fg-na"}>{node.text}</span> : null}
       </div>
       {node.detail ? <p className="mt-1 line-clamp-2 text-[12px] leading-snug text-fg-muted">{node.detail}</p> : null}
     </li>

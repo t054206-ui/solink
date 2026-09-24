@@ -109,7 +109,7 @@ function NotificationRow({ notification: n }: { notification: Notification }) {
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-[14px] font-semibold text-fg">{n.title}</h2>
+          <h2 className="text-[14px] font-semibold text-fg-heading">{n.title}</h2>
           {!n.read && <Badge tone="brand">New</Badge>}
         </div>
         <p className="mt-0.5 text-[13.5px] leading-relaxed text-fg-secondary">{n.body}</p>

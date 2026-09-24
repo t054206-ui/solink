@@ -90,7 +90,7 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
     <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-[15px] font-semibold text-fg">{def.label}</h3>
+          <h3 className="text-[15px] font-semibold text-fg-heading">{def.label}</h3>
           <div className="font-mono text-[11.5px] text-fg-muted">{def.key}</div>
         </div>
         {current ? <DataBadge cls="source" source={row?.source ?? undefined} /> : <DataBadge cls="unavailable" compact />}
@@ -99,7 +99,7 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
       <div className="mt-3 rounded-[10px] border border-border bg-inset p-3 text-[13px]">
         <div className="text-[11.5px] font-semibold uppercase tracking-wider text-fg-muted">Current value</div>
         {current ? (
-          <div className="mt-1"><span className="tabular font-medium text-fg">{current}</span><div className="mt-0.5 text-[12px] text-fg-muted">Source: {row?.source ?? "—"} · updated {formatDate(row?.updated_at)}</div></div>
+          <div className="mt-1"><span className="tabular font-medium text-fg">{current}</span><div className="mt-0.5 text-[12px] text-fg-info">Source: {row?.source ?? "—"} · updated {formatDate(row?.updated_at)}</div></div>
         ) : <div className="mt-1"><Placeholder k={def.placeholder} /><div className="mt-0.5 text-[12px] text-fg-muted">Not provided. Homeowners can enter their own value, labeled user-provided.</div></div>}
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">

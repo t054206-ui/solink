@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { VerificationBadge } from "../../_components/VerificationBadge";
 
 function LinkOrNone({ href, label }: { href: string | null | undefined; label: string }) {
-  if (!href) return <span className="text-fg-muted">Not provided</span>;
+  if (!href) return <span className="text-fg-na">Not provided</span>;
   let host = href;
   try { host = new URL(href).hostname; } catch { /* keep raw */ }
   return (

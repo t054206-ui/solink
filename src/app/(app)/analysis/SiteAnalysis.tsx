@@ -212,7 +212,7 @@ export function SiteAnalysis({ latest, heading }: { latest: SiteAnalysisRow | nu
         <div className="grid items-center md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="relative z-10 px-5 py-8 sm:px-8 md:py-12 lg:ps-10">
             <p className="micro wipe">{heading.eyebrow}</p>
-            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
+            <h1 className="display wipe mt-4 text-[clamp(2.3rem,4.6vw,3.8rem)] text-fg-heading" style={{ animationDelay: "90ms" }}>{heading.title}</h1>
             <p className="wipe mt-4 max-w-md text-[15.5px] leading-relaxed text-fg-secondary" style={{ animationDelay: "180ms" }}>{heading.description}</p>
             {shown && (
               <dl className="rise mt-6 grid gap-2 text-[13px]" style={{ animationDelay: "300ms" }}>
@@ -505,7 +505,7 @@ function Environment({ env }: { env: EnvironmentAssessment }) {
 
   return (
     <section>
-      <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+      <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
         Environmental conditions <DataBadge cls="calculated" compact />
       </h3>
       <div className="mt-1.5 rounded-[10px] border border-border bg-inset p-3">
@@ -570,25 +570,25 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Roof</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Roof</h3>
               <div className="mt-1.5">
                 <List items={a.roofAssessment.findings} />
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Solar potential</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Solar potential</h3>
               <div className="mt-1.5">
                 <List items={a.solarPotential.findings} />
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Weather considerations</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Weather considerations</h3>
               <div className="mt-1.5">
                 <List items={a.weatherConsiderations.findings} />
               </div>
             </section>
             <section>
-              <h3 className="text-[14px] font-medium text-fg">Maintenance considerations</h3>
+              <h3 className="text-[14px] font-medium text-fg-heading">Maintenance considerations</h3>
               <div className="mt-1.5">
                 <List items={a.systemConsiderations} />
               </div>
@@ -596,7 +596,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </div>
 
           <section>
-            <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+            <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
               Annual energy <DataBadge cls={a.energy.annualEnergyDcKwh === null ? "unavailable" : "source"} compact />
             </h3>
             <p className="figure mt-0.5 text-[18px] text-fg">
@@ -606,13 +606,13 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </section>
 
           <section>
-            <h3 className="text-[14px] font-medium text-fg">How this was reached</h3>
+            <h3 className="text-[14px] font-medium text-fg-heading">How this was reached</h3>
             <p className="mt-1 whitespace-pre-wrap text-[13.5px] leading-relaxed text-fg-secondary">{a.reasoning}</p>
           </section>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <section>
-              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
                 Taken from the providers <DataBadge cls="source" compact />
               </h3>
               <div className="mt-1.5">
@@ -620,7 +620,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
               </div>
             </section>
             <section>
-              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg">
+              <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
                 Worked out by Solink <DataBadge cls="calculated" compact />
               </h3>
               <div className="mt-1.5">
@@ -630,7 +630,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </div>
 
           <section>
-            <h3 className="text-[14px] font-medium text-fg">Limitations</h3>
+            <h3 className="text-[14px] font-medium text-fg-heading">Limitations</h3>
             <div className="mt-1.5">
               <List items={[...a.limitations, ...a.roofAssessment.limitations]} />
             </div>

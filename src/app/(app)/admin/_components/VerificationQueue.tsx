@@ -81,7 +81,7 @@ export function VerificationQueue({ products, mode }: { products: Product[]; mod
         {target && (
           <div className="space-y-3">
             <p className="text-[13.5px] text-fg-secondary">You are about to mark <strong className="text-fg">{target.manufacturer_name} {target.model}</strong> as <strong>Verified</strong>. This is a human statement that every stored value was checked against the source below. Describe what you checked (document, revision, date).</p>
-            <p className="text-[12.5px] text-fg-muted">Source: {target.source.data_source}{target.source.datasheet_url ? ` · ${target.source.datasheet_url}` : ""}</p>
+            <p className="text-[12.5px] text-fg-info">Source: {target.source.data_source}{target.source.datasheet_url ? ` · ${target.source.datasheet_url}` : ""}</p>
             <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Compared all 19 spec fields with manufacturer datasheet rev. 2026-03 (PDF page 2). Price confirmed by participating company quote dated …" aria-label="Verified against source note" />
             {note.trim().length > 0 && note.trim().length < 10 && <p className="text-[12px] text-critical-fg">Please write a meaningful note (at least 10 characters).</p>}
             <div className="flex justify-end gap-2"><Button variant="outline" onClick={() => setTarget(null)}>Cancel</Button><Button onClick={confirmVerify} disabled={note.trim().length < 10}>Mark Verified</Button></div>
