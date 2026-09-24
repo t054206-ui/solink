@@ -1,6 +1,6 @@
 "use client";
 import { useId } from "react";
-import { RotateCcw } from "lucide-react";
+import { BarChart3, LineChart as LineChartIcon, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select } from "@/components/ui/Form";
@@ -143,157 +143,179 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
   const sizeId = useId();
 
   return (
-    <div className="grid gap-5 lg:grid-cols-12">
-      {/* -------- visual summary: full width on top on desktop; after the inputs on phones -------- */}
-      <div className="order-2 lg:order-first lg:col-span-12">
-        <CalculatorShowcase
-          production={production} savings={savings} payback={payback} lifetimeSavings={lifetimeSavings} netBenefit={netBenefit}
-          monthlyBill={isNum(inp.monthlyBill) ? inp.monthlyBill : null}
-          cumulativeSavings={series ? series.map((r) => r.cumSavings) : null}
-          horizonYears={isNum(a.horizonYears) ? a.horizonYears : null}
-          currency={CURRENCY}
-        />
-      </div>
+    <div className="space-y-8">
+      {mode === "demo" && <DemoBanner text="LOCAL DEMO MODE" detail="Inputs are saved in this browser only." />}
 
-      {/* -------- inputs -------- */}
-      <div className="order-1 grid gap-5 lg:order-none lg:col-span-5">
-        {mode === "demo" && <DemoBanner text="LOCAL DEMO MODE" detail="Inputs are saved in this browser only." />}
+      {/* 1. The visual summary: its own contained area, in the normal page flow. */}
+      <CalculatorShowcase
+        production={production} savings={savings} payback={payback} lifetimeSavings={lifetimeSavings} netBenefit={netBenefit}
+        cumulativeSavings={series ? series.map((r) => r.cumSavings) : null}
+        currency={CURRENCY}
+      />
 
-        <Card>
-          <CardHeader title="Your electricity" subtitle="Enter consumption in kWh, or your bill. Converting a bill needs the tariff below." />
-          <CardBody className="grid gap-4 sm:grid-cols-2">
-            <Field label={<>Monthly consumption <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />}>
-              <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.monthlyKwh)} onChange={(e) => set("monthlyKwh", toNum(e.target.value))} aria-label="Monthly consumption in kWh" /><span className="text-[12.5px] text-fg-muted">kWh</span></div>
-            </Field>
-            <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={tariff.value === null ? "Or enter your monthly use in kWh." : "Used only when kWh is empty."}>
-              <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="0.001" value={show(inp.monthlyBill)} onChange={(e) => set("monthlyBill", toNum(e.target.value))} aria-label="Monthly bill" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
-            </Field>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader title={<>System size <InfoTip term="system_capacity" /></>} subtitle="Directly in kWp, or as panel count × panel rating." />
-          <CardBody className="grid gap-4">
-            <div role="radiogroup" aria-label="How to enter system size" className="inline-flex w-fit rounded-[10px] border border-border bg-inset p-0.5 text-[13px]">
-              {(["kwp", "panels"] as const).map((m) => (
-                <button key={m} type="button" role="radio" aria-checked={inp.sizeMode === m} onClick={() => set("sizeMode", m)} className={cn("rounded-[8px] px-3 py-1.5 font-medium", inp.sizeMode === m ? "bg-elevated text-fg shadow-sm" : "text-fg-muted hover:text-fg-secondary")}>
-                  {m === "kwp" ? "kWp" : "Panels × watts"}
-                </button>
-              ))}
-            </div>
-            {inp.sizeMode === "kwp" ? (
-              <Field label={<>System size <InfoTip term="kwp" /></>} hint={<DataBadge cls="user" compact />} className="sm:max-w-xs">
-                <div className="flex items-center gap-2"><Input id={sizeId} aria-label="System size in kWp" type="number" inputMode="decimal" min={0} step="0.1" value={show(inp.kwp)} onChange={(e) => set("kwp", toNum(e.target.value))} /><span className="text-[12.5px] text-fg-muted">kWp</span></div>
-              </Field>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Panel from the catalogue" className="sm:col-span-2" hint={chosenPanel ? <DataBadge cls={chosenPanel.isDemo ? "demo" : "source"} compact source={chosenPanel.source} /> : undefined} help={panels.length === 0 ? "No panels are in the catalogue yet; type the rating below." : "Choosing a panel fills its rated power from the record. You can still type a rating of your own."}>
-                  <Select value={chosenPanel?.id ?? ""} onChange={(e) => choosePanel(e.target.value)} disabled={panels.length === 0} aria-label="Panel from the catalogue">
-                    <option value="">Type the rating myself</option>
-                    {panels.map((o) => <option key={o.id} value={o.id}>{o.label} ({o.ratedW} W){o.isDemo ? " (DEMO)" : ""}</option>)}
-                  </Select>
+      {/* 2. Inputs: the main focus. Columns may shrink (min-w-0) so long sources can never push them under each other. */}
+      <section aria-labelledby="inputs-heading" className="space-y-4">
+        <SectionHeading id="inputs-heading" title="Your inputs" subtitle="Change any value and every figure below updates."
+          action={<Button type="button" variant="ghost" size="sm" onClick={() => setInp(EMPTY)}><RotateCcw className="size-4" aria-hidden /> Reset all inputs</Button>} />
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          <div className="grid min-w-0 content-start gap-5">
+            <Card>
+              <CardHeader title="Your electricity" subtitle="Enter consumption in kWh, or your bill. Converting a bill needs the tariff below." />
+              <CardBody className="grid gap-4 sm:grid-cols-2">
+                <Field label={<>Monthly consumption <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />}>
+                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.monthlyKwh)} onChange={(e) => set("monthlyKwh", toNum(e.target.value))} aria-label="Monthly consumption in kWh" /><span className="text-[12.5px] text-fg-muted">kWh</span></div>
                 </Field>
-                <Field label="Number of panels" hint={<DataBadge cls="user" compact />}>
-                  <Input type="number" inputMode="numeric" min={0} step="1" value={show(inp.panelCount)} onChange={(e) => set("panelCount", toNum(e.target.value))} aria-label="Number of panels" />
+                <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={tariff.value === null ? "Or enter your monthly use in kWh." : "Used only when kWh is empty."}>
+                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="0.001" value={show(inp.monthlyBill)} onChange={(e) => set("monthlyBill", toNum(e.target.value))} aria-label="Monthly bill" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
                 </Field>
-                <Field label={<>Panel rating <InfoTip term="peak_power" /></>} hint={ratingFromCatalogue && chosenPanel ? <DataBadge cls={chosenPanel.isDemo ? "demo" : "source"} compact source={chosenPanel.source} /> : <DataBadge cls="user" compact />} help={ratingFromCatalogue && chosenPanel ? `From the ${chosenPanel.label} record.` : "From the panel datasheet or the Marketplace."}>
-                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.panelW)} onChange={(e) => { const v = toNum(e.target.value); setInp((p) => ({ ...p, panelW: v, panelId: chosenPanel && v === chosenPanel.ratedW ? p.panelId : null })); }} aria-label="Panel rated power in watts" /><span className="text-[12.5px] text-fg-muted">W</span></div>
+              </CardBody>
+            </Card>
+            <Card>
+              <CardHeader title={<>System size <InfoTip term="system_capacity" /></>} subtitle="Directly in kWp, or as panel count × panel rating." />
+              <CardBody className="grid gap-4">
+                <div role="radiogroup" aria-label="How to enter system size" className="inline-flex w-fit rounded-[10px] border border-border bg-inset p-0.5 text-[13px]">
+                  {(["kwp", "panels"] as const).map((m) => (
+                    <button key={m} type="button" role="radio" aria-checked={inp.sizeMode === m} onClick={() => set("sizeMode", m)} className={cn("rounded-[8px] px-3 py-1.5 font-medium", inp.sizeMode === m ? "bg-elevated text-fg shadow-sm" : "text-fg-muted hover:text-fg-secondary")}>
+                      {m === "kwp" ? "kWp" : "Panels × watts"}
+                    </button>
+                  ))}
+                </div>
+                {inp.sizeMode === "kwp" ? (
+                  <Field label={<>System size <InfoTip term="kwp" /></>} hint={<DataBadge cls="user" compact />} className="sm:max-w-xs">
+                    <div className="flex items-center gap-2"><Input id={sizeId} aria-label="System size in kWp" type="number" inputMode="decimal" min={0} step="0.1" value={show(inp.kwp)} onChange={(e) => set("kwp", toNum(e.target.value))} /><span className="text-[12.5px] text-fg-muted">kWp</span></div>
+                  </Field>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Field label="Panel from the catalogue" className="sm:col-span-2" hint={chosenPanel ? <DataBadge cls={chosenPanel.isDemo ? "demo" : "source"} compact source={chosenPanel.source} /> : undefined} help={panels.length === 0 ? "No panels are in the catalogue yet; type the rating below." : "Choosing a panel fills its rated power from the record. You can still type a rating of your own."}>
+                      <Select value={chosenPanel?.id ?? ""} onChange={(e) => choosePanel(e.target.value)} disabled={panels.length === 0} aria-label="Panel from the catalogue">
+                        <option value="">Type the rating myself</option>
+                        {panels.map((o) => <option key={o.id} value={o.id}>{o.label} ({o.ratedW} W){o.isDemo ? " (DEMO)" : ""}</option>)}
+                      </Select>
+                    </Field>
+                    <Field label="Number of panels" hint={<DataBadge cls="user" compact />}>
+                      <Input type="number" inputMode="numeric" min={0} step="1" value={show(inp.panelCount)} onChange={(e) => set("panelCount", toNum(e.target.value))} aria-label="Number of panels" />
+                    </Field>
+                    <Field label={<>Panel rating <InfoTip term="peak_power" /></>} hint={ratingFromCatalogue && chosenPanel ? <DataBadge cls={chosenPanel.isDemo ? "demo" : "source"} compact source={chosenPanel.source} /> : <DataBadge cls="user" compact />} help={ratingFromCatalogue && chosenPanel ? `From the ${chosenPanel.label} record.` : "From the panel datasheet or the Marketplace."}>
+                      <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.panelW)} onChange={(e) => { const v = toNum(e.target.value); setInp((p) => ({ ...p, panelW: v, panelId: chosenPanel && v === chosenPanel.ratedW ? p.panelId : null })); }} aria-label="Panel rated power in watts" /><span className="text-[12.5px] text-fg-muted">W</span></div>
+                    </Field>
+                  </div>
+                )}
+                <Field label="Expected annual production (optional override)" hint={<DataBadge cls="user" compact />} help="If an installer or datasheet gave you a figure, enter it to replace Solink's estimate." className="sm:max-w-xs">
+                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.productionOverride)} onChange={(e) => set("productionOverride", toNum(e.target.value))} aria-label="Expected annual production override in kWh" /><span className="text-[12.5px] text-fg-muted">kWh/yr</span></div>
                 </Field>
-              </div>
-            )}
-            <Field label="Expected annual production (optional override)" hint={<DataBadge cls="user" compact />} help="If an installer or datasheet gave you a figure, enter it to replace Solink's estimate." className="sm:max-w-xs">
-              <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.productionOverride)} onChange={(e) => set("productionOverride", toNum(e.target.value))} aria-label="Expected annual production override in kWh" /><span className="text-[12.5px] text-fg-muted">kWh/yr</span></div>
-            </Field>
-          </CardBody>
-        </Card>
-
+              </CardBody>
+            </Card>
+          </div>
+          <div className="grid min-w-0 content-start gap-5">
+            <Card>
+              <CardHeader title={<>Costs <InfoTip term="tco" /></>} subtitle="Enter the amounts from your quotes. Solink never assumes a cost." />
+              <CardBody className="grid gap-3">
+                <Field label="System (equipment) cost" hint={<DataBadge cls="user" compact />} help="Panels, inverter and mounting: from a quote or the Marketplace.">
+                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.systemCost)} onChange={(e) => set("systemCost", toNum(e.target.value))} aria-label="System cost" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
+                </Field>
+                <AssumptionField dense label="Installation cost" placeholderKey="INSTALLATION_PRICE" unit={CURRENCY} platform={null} value={inp.installCost} onChange={(v) => set("installCost", v)} help="One-off labour, permits and commissioning." step="1" min={0} />
+                <AssumptionField dense label="Annual maintenance cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.maintenance} onChange={(v) => set("maintenance", v)} help="Yearly inspection and servicing." step="1" min={0} />
+                <AssumptionField dense label="Annual cleaning cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.cleaning} onChange={(v) => set("cleaning", v)} help="Dust and sand removal: important in Kuwait." step="1" min={0} />
+                <Field label="Repairs / replacements reserve over the period" hint={<DataBadge cls="user" compact />} help="A lump sum you set aside for inverter replacement or repairs. Required for total cost of ownership.">
+                  <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.repairs)} onChange={(e) => set("repairs", toNum(e.target.value))} aria-label="Repairs and replacements reserve" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
+                </Field>
+              </CardBody>
+            </Card>
+          </div>
+        </div>
         <Card>
-          <CardHeader title={<>Costs <InfoTip term="tco" /></>} subtitle="Enter the amounts from your quotes. Solink never assumes a cost." />
-          <CardBody className="grid gap-3">
-            <Field label="System (equipment) cost" hint={<DataBadge cls="user" compact />} help="Panels, inverter and mounting: from a quote or the Marketplace.">
-              <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.systemCost)} onChange={(e) => set("systemCost", toNum(e.target.value))} aria-label="System cost" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
-            </Field>
-            <AssumptionField label="Installation cost" placeholderKey="INSTALLATION_PRICE" unit={CURRENCY} platform={null} value={inp.installCost} onChange={(v) => set("installCost", v)} help="One-off labour, permits and commissioning." step="1" min={0} />
-            <AssumptionField label="Annual maintenance cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.maintenance} onChange={(v) => set("maintenance", v)} help="Yearly inspection and servicing." step="1" min={0} />
-            <AssumptionField label="Annual cleaning cost" placeholderKey="MAINTENANCE_PRICE" unit={`${CURRENCY}/yr`} platform={null} value={inp.cleaning} onChange={(v) => set("cleaning", v)} help="Dust and sand removal: important in Kuwait." step="1" min={0} />
-            <Field label="Repairs / replacements reserve over the period" hint={<DataBadge cls="user" compact />} help="A lump sum you set aside for inverter replacement or repairs. Required for total cost of ownership.">
-              <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.repairs)} onChange={(e) => set("repairs", toNum(e.target.value))} aria-label="Repairs and replacements reserve" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
-            </Field>
+          <CardHeader title="Assumptions" subtitle="Pre-filled from sourced platform settings. Type your own value to override any of them." />
+          <CardBody className="grid gap-3 sm:grid-cols-2">
+            <AssumptionField dense label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${CURRENCY}/kWh`} platform={settings.electricity_tariff_per_kwh} value={inp.tariff} onChange={(v) => set("tariff", v)} help="What you pay per kWh. Turns production into savings." step="0.001" min={0} />
+            <AssumptionField dense label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={inp.psh} onChange={(v) => set("psh", v)} help="Equivalent hours of full-strength sun per day at your site." step="0.1" min={0} />
+            <AssumptionField dense label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={inp.pr} onChange={(v) => set("pr", v)} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
+            <AssumptionField dense label="Analysis horizon" placeholderKey="TCO_PERIOD" unit="years" platform={settings.tco_period_years} value={inp.horizon} onChange={(v) => set("horizon", v)} help="How many years the lifetime savings and cost of ownership cover." step="1" min={1} />
+            <AssumptionField dense label="Annual degradation" term="degradation" placeholderKey="EXPECTED_PANEL_DEGRADATION_RATE" unit="%/yr" platform={degPlatform} value={inp.degradationPct} onChange={(v) => set("degradationPct", v)} help="Yearly output loss from the panel's performance warranty." step="0.01" min={0} />
+            <AssumptionField dense label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={inp.co2} onChange={(v) => set("co2", v)} help="Kilograms of CO₂ the grid emits per kWh." step="0.01" min={0} />
           </CardBody>
         </Card>
+      </section>
 
-        <Card>
-          <CardHeader title="Assumptions" subtitle="Pre-filled from platform settings where an admin has supplied them; otherwise you must enter them." />
-          <CardBody className="grid gap-3">
-            <AssumptionField label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${CURRENCY}/kWh`} platform={settings.electricity_tariff_per_kwh} value={inp.tariff} onChange={(v) => set("tariff", v)} help="What you pay per kWh. Turns production into savings." step="0.001" min={0} />
-            <AssumptionField label="Peak sun hours per day" term="peak_sun_hours" placeholderKey="SOLAR_RESOURCE_DATA_SOURCE" unit="h/day" platform={settings.peak_sun_hours_per_day} value={inp.psh} onChange={(v) => set("psh", v)} help="Equivalent hours of full-strength sun per day at your site." step="0.1" min={0} />
-            <AssumptionField label="Performance ratio" term="performance_ratio" placeholderKey="SYSTEM_LOSS_FACTOR" unit="0–1" platform={settings.performance_ratio} value={inp.pr} onChange={(v) => set("pr", v)} help="Share of theoretical output left after heat, dust, wiring and inverter losses." step="0.01" min={0} />
-            <AssumptionField label="Analysis horizon" placeholderKey="TCO_PERIOD" unit="years" platform={settings.tco_period_years} value={inp.horizon} onChange={(v) => set("horizon", v)} help="How many years the lifetime savings and cost of ownership cover." step="1" min={1} />
-            <AssumptionField label="Annual degradation" term="degradation" placeholderKey="EXPECTED_PANEL_DEGRADATION_RATE" unit="%/yr" platform={degPlatform} value={inp.degradationPct} onChange={(v) => set("degradationPct", v)} help="Yearly output loss from the panel's performance warranty." step="0.01" min={0} />
-            <AssumptionField label="Grid CO₂ factor" term="co2_reduction" placeholderKey="GRID_CO2_EMISSION_FACTOR" unit="kg/kWh" platform={settings.grid_co2_kg_per_kwh} value={inp.co2} onChange={(v) => set("co2", v)} help="Kilograms of CO₂ the grid emits per kWh." step="0.01" min={0} />
-          </CardBody>
-        </Card>
-
-        <Button type="button" variant="ghost" onClick={() => setInp(EMPTY)} className="w-fit"><RotateCcw className="size-4" aria-hidden /> Reset all inputs</Button>
-      </div>
-
-      {/* -------- outputs -------- */}
-      <div className="order-3 grid gap-5 lg:order-none lg:col-span-7">
-        <section aria-labelledby="yearly-heading">
-          <h2 id="yearly-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Each year</h2>
+      {/* 3. Results. */}
+      <section aria-labelledby="yearly-heading" className="space-y-4">
+        <SectionHeading id="yearly-heading" title="Each year" />
           {(() => {
-            const items = [
-              [consumption, <MetricWithNotes key="c" label={<>Monthly consumption <InfoTip term="kwh" /></>} data={consumption} unit="kWh" format={(v) => formatNumber(v, 0)} />],
-              [capacity, <MetricWithNotes key="k" label={<>System capacity <InfoTip term="kwp" /></>} data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />],
-              [production, <MetricWithNotes key="p" label={<>Estimated production <InfoTip term="energy_production" /></>} data={production} unit="kWh/yr" format={(v) => formatNumber(v, 0)} energy />],
-              [offset, <MetricWithNotes key="o" label={<>Energy offset <InfoTip term="energy_offset" /></>} data={offset} format={(v) => pct(v, 0)} />],
-              [savings, <MetricWithNotes key="s" label="Annual savings" data={savings} format={(v) => formatMoney(v, CURRENCY, 0)} />],
-              [co2Kg, <MetricWithNotes key="co2" label={<>CO₂ avoided <InfoTip term="co2_reduction" /></>} data={co2Kg} unit="kg/yr" format={(v) => formatNumber(v, 0)} />],
-            ] as const;
-            const shown = items.filter(([d]) => d.value !== null).map(([, n]) => n);
-            return shown.length ? <div className="grid gap-4 sm:grid-cols-2">{shown}</div> : <ResultsHint>Enter your monthly use (or bill) and a system size on the left, and the yearly figures appear here.</ResultsHint>;
-          })()}
-        </section>
+          const items = [
+            [consumption, <MetricWithNotes key="c" label={<>Monthly consumption <InfoTip term="kwh" /></>} data={consumption} unit="kWh" format={(v) => formatNumber(v, 0)} />],
+            [capacity, <MetricWithNotes key="k" label={<>System capacity <InfoTip term="kwp" /></>} data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />],
+            [production, <MetricWithNotes key="p" label={<>Estimated production <InfoTip term="energy_production" /></>} data={production} unit="kWh/yr" format={(v) => formatNumber(v, 0)} energy />],
+            [offset, <MetricWithNotes key="o" label={<>Energy offset <InfoTip term="energy_offset" /></>} data={offset} format={(v) => pct(v, 0)} />],
+            [savings, <MetricWithNotes key="s" label="Annual savings" data={savings} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+            [co2Kg, <MetricWithNotes key="co2" label={<>CO₂ avoided <InfoTip term="co2_reduction" /></>} data={co2Kg} unit="kg/yr" format={(v) => formatNumber(v, 0)} />],
+          ] as const;
+          const shown = items.filter(([d]) => d.value !== null).map(([, n]) => n);
+          return shown.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{shown}</div> : <ResultsHint>Enter your monthly use (or bill) and a system size above, and the yearly figures appear here.</ResultsHint>;
+        })()}
+      </section>
 
-        <section aria-labelledby="lifetime-heading">
-          <h2 id="lifetime-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Over the analysis period</h2>
+      <section aria-labelledby="lifetime-heading" className="space-y-4">
+        <SectionHeading id="lifetime-heading" title="Over the analysis period" />
           {(() => {
-            const items = [
-              [payback, <MetricWithNotes key="pb" label={<>Payback period <InfoTip term="payback_period" /></>} data={payback} unit="years" format={(v) => formatNumber(v, 1)} />],
-              [upfront, <MetricWithNotes key="u" label="Upfront cost" data={upfront} format={(v) => formatMoney(v, CURRENCY, 0)} />],
-              [lifetimeSavings, <MetricWithNotes key="ls" label={<>Lifetime savings <InfoTip term="degradation" /></>} data={lifetimeSavings} format={(v) => formatMoney(v, CURRENCY, 0)} />],
-              [tco, <MetricWithNotes key="t" label={<>Total cost of ownership <InfoTip term="tco" /></>} data={tco} format={(v) => formatMoney(v, CURRENCY, 0)} />],
-              [netBenefit, <MetricWithNotes key="n" label="Net benefit over the period" data={netBenefit} format={(v) => formatMoney(v, CURRENCY, 0)} className="sm:col-span-2" />],
-            ] as const;
-            const shown = items.filter(([d]) => d.value !== null).map(([, n]) => n);
-            return shown.length ? <div className="grid gap-4 sm:grid-cols-2">{shown}</div> : <ResultsHint>Add the system and installation costs from your quotes, and payback, lifetime savings and cost of ownership appear here.</ResultsHint>;
-          })()}
-        </section>
+          const items = [
+            [payback, <MetricWithNotes key="pb" label={<>Payback period <InfoTip term="payback_period" /></>} data={payback} unit="years" format={(v) => formatNumber(v, 1)} />],
+            [upfront, <MetricWithNotes key="u" label="Upfront cost" data={upfront} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+            [lifetimeSavings, <MetricWithNotes key="ls" label={<>Lifetime savings <InfoTip term="degradation" /></>} data={lifetimeSavings} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+            [tco, <MetricWithNotes key="t" label={<>Total cost of ownership <InfoTip term="tco" /></>} data={tco} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+            [netBenefit, <MetricWithNotes key="n" label="Net benefit over the period" data={netBenefit} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+          ] as const;
+          const shown = items.filter(([d]) => d.value !== null).map(([, n]) => n);
+          return shown.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{shown}</div> : <ResultsHint>Add the system and installation costs from your quotes, and payback, lifetime savings and cost of ownership appear here.</ResultsHint>;
+        })()}
+      </section>
 
+      {/* 4. Charts: an appropriate height with data, a compact state without. */}
+      <section aria-label="Charts" className="grid items-start gap-5 lg:grid-cols-2">
         <Card>
-          <CardHeader title="Cost of ownership breakdown" subtitle={isNum(tco.value) ? `Over ${a.horizonYears} years, undiscounted.` : "Fill in every cost and the horizon to see the breakdown."} action={isNum(tco.value) ? <DataBadge cls="estimated" compact /> : undefined} />
+          <CardHeader title="Cost of ownership breakdown" subtitle={isNum(tco.value) ? `Over ${a.horizonYears} years, undiscounted.` : "Each cost over the analysis period."} action={isNum(tco.value) ? <DataBadge cls="estimated" compact /> : undefined} />
           <CardBody>
             {tco.breakdown ? (
               <BarChart ariaLabel="Total cost of ownership breakdown" data={Object.entries(tco.breakdown).map(([label, value]) => ({ label, value }))} formatY={(v) => formatNumber(v, 0)} color="var(--series-2)" height={220} />
             ) : (
-              <p className="text-[13px] leading-relaxed text-fg-secondary">The breakdown draws here once each cost and the analysis period have amounts.</p>
+              <ChartEmpty icon={BarChart3}>Complete the required inputs to see this chart: every cost and the analysis period.</ChartEmpty>
             )}
           </CardBody>
         </Card>
-
         <Card>
           <CardHeader title="Cumulative savings vs cost" subtitle="Where the lines cross is the payback point. Savings fall slightly each year with degradation." action={cumulative ? <DataBadge cls="estimated" compact /> : undefined} />
           <CardBody>
             {cumulative ? (
               <LineChart series={cumulative} area={false} height={240} formatX={(x) => `Y${x}`} formatY={(v) => formatNumber(v, 0)} yLabel={CURRENCY} ariaLabel="Cumulative savings versus cumulative cost by year" />
             ) : (
-              <p className="text-[13px] leading-relaxed text-fg-secondary">The payback chart draws here once production, the costs and the analysis period are all set.</p>
+              <ChartEmpty icon={LineChartIcon}>Complete the required inputs to see this chart: production, the system and installation costs, the analysis period and degradation.</ChartEmpty>
             )}
           </CardBody>
         </Card>
+      </section>
 
-        <DataLegend classes={["source", "calculated", "estimated", "user"]} />
+      {/* 5. Transparency, quietly at the end. */}
+      <DataLegend classes={["source", "calculated", "estimated", "user"]} />
+    </div>
+  );
+}
+
+function SectionHeading({ id, title, subtitle, action }: { id: string; title: string; subtitle?: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-2">
+      <div>
+        <h2 id={id} className="text-[17px] font-semibold text-fg-heading">{title}</h2>
+        {subtitle && <p className="mt-0.5 text-[13px] text-fg-muted">{subtitle}</p>}
       </div>
+      {action}
+    </div>
+  );
+}
+
+/** A chart that cannot be drawn yet: small, calm, and says which inputs bring it. */
+function ChartEmpty({ icon: Icon, children }: { icon: typeof BarChart3; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-[var(--radius)] bg-inset p-3">
+      <span className="grid size-9 shrink-0 place-items-center rounded-[var(--radius)] border border-border bg-elevated text-[var(--brand)]"><Icon className="size-4" strokeWidth={1.75} aria-hidden /></span>
+      <p className="text-[13px] leading-relaxed text-fg-secondary">{children}</p>
     </div>
   );
 }
