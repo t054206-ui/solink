@@ -5,6 +5,7 @@ import { useMemo, useRef, type ReactNode } from "react";
 import { useSceneGate } from "./useSceneGate";
 import type { BenchPanel } from "./BenchScene";
 import type { Health } from "./LiveArrayScene";
+import type { CalcSceneData } from "./CalculatorScene";
 import { SolinkMark } from "@/components/brand/Logo";
 
 /**
@@ -21,6 +22,7 @@ const LiveArrayScene = dynamic(() => import("./LiveArrayScene"), { ssr: false, l
 const CareScene = dynamic(() => import("./CareScene"), { ssr: false, loading: () => null });
 const ProfileScene = dynamic(() => import("./ProfileScene"), { ssr: false, loading: () => null });
 const ReportDeskScene = dynamic(() => import("./ReportDeskScene"), { ssr: false, loading: () => null });
+const CalculatorScene = dynamic(() => import("./CalculatorScene"), { ssr: false, loading: () => null });
 
 function Frame({ label, caption, aspect, children, fade = true, overlay }: {
   label: string; caption?: ReactNode; aspect: string; children: (gate: ReturnType<typeof useSceneGate>) => ReactNode; fade?: boolean; overlay?: ReactNode;
@@ -145,6 +147,20 @@ export function ReportDeskVisual({ systemName, panelCount, reportCount, monthCou
       aspect="aspect-[4/3] md:aspect-[5/4]"
     >
       {(g) => <ReportDeskScene data={data} paused={g.paused} still={g.still} economy={g.economy} parallax={g.parallax} />}
+    </Frame>
+  );
+}
+
+/** Savings Calculator: panel → energy → calculation → savings, drawn only from the calculator's own results. */
+export function CalculatorVisual({ data, caption, overlay }: { data: CalcSceneData; caption?: ReactNode; overlay?: ReactNode }) {
+  return (
+    <Frame
+      label={data.display ? `A solar module feeding a desk calculator that shows annual savings of ${data.display.value} ${data.display.unit}, beside a row of year slabs tracing cumulative savings.` : "A solar module connected to a desk calculator, ready for your inputs, beside a row of neutral year slabs."}
+      caption={caption}
+      aspect="aspect-[4/3] sm:aspect-[16/10]"
+      overlay={overlay}
+    >
+      {(g) => <CalculatorScene data={data} paused={g.paused} still={g.still} economy={g.economy} parallax={g.parallax} />}
     </Frame>
   );
 }

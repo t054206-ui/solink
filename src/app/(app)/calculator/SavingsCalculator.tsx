@@ -18,6 +18,7 @@ import { cn, formatMoney, pct } from "@/lib/utils";
 import { AssumptionField, resolveAssumption } from "../_plan/AssumptionField";
 import { MetricWithNotes } from "../_plan/MetricWithNotes";
 import { DataLegend } from "../_plan/DataLegend";
+import { CalculatorShowcase } from "./CalculatorShowcase";
 
 /** A catalogue panel the calculator can take its rating from. Built by the page from real product rows. */
 export interface CalcPanelOption { id: string; label: string; ratedW: number | null; isDemo: boolean; source: string }
@@ -143,8 +144,19 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
 
   return (
     <div className="grid gap-5 lg:grid-cols-12">
+      {/* -------- visual summary: full width on top on desktop; after the inputs on phones -------- */}
+      <div className="order-2 lg:order-first lg:col-span-12">
+        <CalculatorShowcase
+          production={production} savings={savings} payback={payback} lifetimeSavings={lifetimeSavings} netBenefit={netBenefit}
+          monthlyBill={isNum(inp.monthlyBill) ? inp.monthlyBill : null}
+          cumulativeSavings={series ? series.map((r) => r.cumSavings) : null}
+          horizonYears={isNum(a.horizonYears) ? a.horizonYears : null}
+          currency={CURRENCY}
+        />
+      </div>
+
       {/* -------- inputs -------- */}
-      <div className="grid gap-5 lg:col-span-5">
+      <div className="order-1 grid gap-5 lg:order-none lg:col-span-5">
         {mode === "demo" && <DemoBanner text="LOCAL DEMO MODE" detail="Inputs are saved in this browser only." />}
 
         <Card>
@@ -226,7 +238,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
       </div>
 
       {/* -------- outputs -------- */}
-      <div className="grid gap-5 lg:col-span-7">
+      <div className="order-3 grid gap-5 lg:order-none lg:col-span-7">
         <section aria-labelledby="yearly-heading">
           <h2 id="yearly-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Each year</h2>
           {(() => {
