@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Textarea } from "@/components/ui/Form";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { ErrorState, UnavailableState } from "@/components/ui/States";
+import { ErrorState } from "@/components/ui/States";
+import { AiResting } from "@/components/ui/AiResting";
 import type { InspectionResult } from "@/app/api/ai/inspect-image/route";
 
 const MAX_BYTES = 6 * 1024 * 1024;
@@ -120,10 +120,7 @@ export function ImageInspector() {
         )}
         {state.kind === "loading" && <div className="flex h-full min-h-40 items-center justify-center gap-2 text-[13px] text-fg-secondary"><Loader2 className="size-4 animate-spin" aria-hidden /> Looking at the photo…</div>}
         {state.kind === "not_configured" && (
-          <div className="space-y-3">
-            <UnavailableState title="Image inspection is not connected">{state.message}</UnavailableState>
-            <PlaceholderNote k="CLAUDE_API_KEY" />
-          </div>
+          <AiResting title="Photo screening isn't available right now">You can still book an inspection, and a technician will check the panels in person.</AiResting>
         )}
         {state.kind === "error" && <ErrorState title="Inspection failed">{state.message}</ErrorState>}
         {state.kind === "done" && <Result r={state.result} />}

@@ -5,17 +5,16 @@ import { Plus, RotateCw, Trash2, Undo2, Grid3x3, Sparkles, Save, ArrowRight, Arr
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
-import { Metric } from "@/components/ui/Metric";
+import { Metric, hasValue } from "@/components/ui/Metric";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
+import { AiResting } from "@/components/ui/AiResting";
 import { UnavailableState } from "@/components/ui/States";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTip } from "@/components/help/InfoTip";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import { systemCapacityKwp, annualProductionKwh, formatNumber } from "@/lib/solar/calculations";
 import { classified, unavailable, type Classified } from "@/lib/classification";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { DataMode } from "@/lib/data/mode";
 import type { PlatformSettings } from "@/lib/data/settings";
 import { resolveAssumption } from "../_plan/AssumptionField";
@@ -437,7 +436,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
     if (!product) return unavailable("Select a panel.");
     const missing: string[] = [];
     if (product.price === null) missing.push("panel price not provided");
-    if (product.installation_cost === null) missing.push(PLACEHOLDERS.INSTALLATION_PRICE);
+    if (product.installation_cost === null) missing.push("installation (your installer's quote)");
     if (missing.length) return unavailable(missing.join(" · "));
     return classified(placed.length * (product.price as number) + (product.installation_cost as number), "calculated", "Catalog prices", [`${placed.length} × ${product.price} + installation ${product.installation_cost}`]);
   })();
@@ -621,10 +620,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
                     <Button size="sm" variant="secondary" onClick={readPhoto} disabled={scan.status === "loading"}>{scan.status === "loading" ? "Reading…" : "Read photo"}</Button>
                   </div>
                   {scan.status === "not_configured" && (
-                    <UnavailableState title="Photo reading is not connected">
-                      <p>{scan.message}</p>
-                      <PlaceholderNote k="CLAUDE_API_KEY" className="mt-3 text-left" />
-                    </UnavailableState>
+                    <AiResting title="Photo reading isn't available right now">Trace the roof on the photo by hand; every tool below works without it.</AiResting>
                   )}
                   {scan.status === "error" && <UnavailableState title="Could not read the photo">{scan.message}</UnavailableState>}
                   {scan.status === "ready" && (
@@ -692,10 +688,10 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
               {product && geom && (
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[12.5px]">
                   <dt className="text-fg-muted">Size</dt><dd className="tabular text-right text-fg">{geom.length_m.toFixed(3)} × {geom.width_m.toFixed(3)} m <DataBadge cls={product.is_demo ? "demo" : "source"} compact /></dd>
-                  <dt className="text-fg-muted">Power <InfoTip term="rated_power" /></dt><dd className="tabular text-right text-fg">{geom.rated_power_w !== null ? `${geom.rated_power_w} W` : "Unavailable"}</dd>
-                  <dt className="text-fg-muted">Weight</dt><dd className="tabular text-right text-fg">{geom.weight_kg !== null && geom.weight_kg !== undefined ? `${geom.weight_kg} kg` : "Unavailable"}</dd>
+                  <dt className="text-fg-muted">Power <InfoTip term="rated_power" /></dt><dd className="tabular text-right text-fg">{geom.rated_power_w !== null ? `${geom.rated_power_w} W` : "Not stated"}</dd>
+                  <dt className="text-fg-muted">Weight</dt><dd className="tabular text-right text-fg">{geom.weight_kg !== null && geom.weight_kg !== undefined ? `${geom.weight_kg} kg` : "Not stated"}</dd>
                   <dt className="text-fg-muted">Area / panel</dt><dd className="tabular text-right text-fg">{(geom.length_m * geom.width_m).toFixed(2)} m² <DataBadge cls="calculated" compact /></dd>
-                  <dt className="text-fg-muted">Price</dt><dd className="tabular text-right text-fg">{product.price !== null ? formatMoney(product.price, product.currency) : "Unavailable"}</dd>
+                  <dt className="text-fg-muted">Price</dt><dd className="tabular text-right text-fg">{product.price !== null ? formatMoney(product.price, product.currency) : "Price on request from supplier"}</dd>
                 </dl>
               )}
             </CardBody>
@@ -941,10 +937,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
               {ai.status === "idle" && <p className="text-[13px] text-fg-muted">No suggestion requested yet. Suggestions are labeled <DataBadge cls="ai" compact /> and can be wrong: check them against the overlap warnings.</p>}
               {ai.status === "loading" && <p className="text-[13px] text-fg-muted">Requesting a layout…</p>}
               {ai.status === "not_configured" && (
-                <UnavailableState title="Smart placement is not connected">
-                  <p>{ai.message}</p>
-                  <PlaceholderNote k="CLAUDE_API_KEY" className="mt-3 text-left" />
-                </UnavailableState>
+                <AiResting title="Smart placement isn't available right now">Place panels yourself, or try one of the three &ldquo;Get inspired&rdquo; layouts.</AiResting>
               )}
               {ai.status === "error" && <UnavailableState title="Suggestion failed">{ai.message}</UnavailableState>}
               {ai.status === "ready" && (
@@ -968,21 +961,21 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
         <div className="space-y-3">
           {aiSuggested && <div className="flex items-center gap-2 text-[12.5px] text-fg-secondary"><DataBadge cls="ai" /> Layout applied from an AI suggestion.</div>}
           <Metric label="Panels that fit" term="panel_count" data={countCls} format={(v) => String(v)} />
-          <Metric label="Roof used" term="coverage" data={coverageCls} unit="%" format={(v) => formatNumber(v, 0)} />
-          <Metric label="System size" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
-          <Metric label="Yearly production, roughly" term="yearly_production" data={production} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={production.value !== null ? production.notes?.[production.notes.length - 1] : undefined} />
+          {hasValue(coverageCls) && <Metric label="Roof used" term="coverage" data={coverageCls} unit="%" format={(v) => formatNumber(v, 0)} />}
+          {hasValue(capacity) && <Metric label="System size" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />}
+          {hasValue(production) && <Metric label="Yearly production, roughly" term="yearly_production" data={production} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={production.value !== null ? production.notes?.[production.notes.length - 1] : undefined} />}
           {advanced && <>
-          <Metric label="Panel area" data={usedCls} unit="m²" format={(v) => formatNumber(v, 1)} />
-          <Metric label="Space left" term="remaining_area" data={remainingCls} unit="m²" format={(v) => formatNumber(v, 1)} />
+          {hasValue(usedCls) && <Metric label="Panel area" data={usedCls} unit="m²" format={(v) => formatNumber(v, 1)} />}
+          {hasValue(remainingCls) && <Metric label="Space left" term="remaining_area" data={remainingCls} unit="m²" format={(v) => formatNumber(v, 1)} />}
           </>}
 
           {advanced && <Card>
             <CardHeader title={<><Scale className="size-4 text-fg-muted" aria-hidden /> Weight on the roof <InfoTip term="panel_weight" /></>} subtitle="What the panels weigh is known from the manufacturer. What the roof can carry is not: that is a fact about this building." />
             <CardBody className="space-y-3">
-              <Metric label="Total panel weight" data={weightCls} unit="kg" format={(v) => formatNumber(v, 0)} />
-              <Metric label="Panel load over its footprint" data={loadCls} unit="kg/m²" format={(v) => formatNumber(v, 1)} />
-              <div className="rounded-[var(--radius)] border border-dashed border-border-strong bg-inset px-3 py-2 text-[12.5px] text-fg-secondary">
-                <div className="flex flex-wrap items-center gap-1.5">What the roof can carry <InfoTip term="roof_load" />: <Placeholder k="ROOF_LOAD_CAPACITY" /></div>
+              {hasValue(weightCls) && <Metric label="Total panel weight" data={weightCls} unit="kg" format={(v) => formatNumber(v, 0)} />}
+              {hasValue(loadCls) && <Metric label="Panel load over its footprint" data={loadCls} unit="kg/m²" format={(v) => formatNumber(v, 1)} />}
+              <div className="rounded-[var(--radius)] border border-border bg-inset px-3 py-2 text-[12.5px] text-fg-secondary">
+                <div className="flex flex-wrap items-center gap-1.5">What the roof can carry <InfoTip term="roof_load" /> comes from your building&apos;s structural engineer.</div>
                 <p className="mt-1 text-fg-muted">Mounting, ballast and wind uplift are not in the catalogue. Compare the figures above with the engineer’s permissible load before anything is ordered.</p>
               </div>
             </CardBody>
@@ -1023,17 +1016,22 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
             <CardHeader title={<>Your own assumptions <InfoTip term="energy_production" /></>} subtitle="Yearly production uses the platform's sourced sun hours and losses. Type a value here to override it; it is then labelled as yours." />
             <CardBody className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <Field label={<>Peak sun h/day <InfoTip term="peak_sun_hours" /></>} help={settings.peak_sun_hours_per_day ? `Platform: ${settings.peak_sun_hours_per_day.value}` : <Placeholder k="SOLAR_RESOURCE_DATA_SOURCE" />}>
+                <Field label={<>Peak sun h/day <InfoTip term="peak_sun_hours" /></>} help={settings.peak_sun_hours_per_day ? `Platform: ${settings.peak_sun_hours_per_day.value}` : "Optional · your own value"}>
                   <div className="relative"><Input type="number" step={0.1} min={0} max={12} value={psh} onChange={(e) => setPsh(e.target.value)} placeholder={settings.peak_sun_hours_per_day ? String(settings.peak_sun_hours_per_day.value) : "e.g. 5.5"} aria-label="Peak sun hours per day (your assumption)" /><DataBadge cls={pshR.cls === "user" ? "user" : "source"} compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
                 </Field>
-                <Field label={<>Performance ratio <InfoTip term="performance_ratio" /></>} help={settings.performance_ratio ? `Platform: ${settings.performance_ratio.value}` : <Placeholder k="SYSTEM_LOSS_FACTOR" />}>
+                <Field label={<>Performance ratio <InfoTip term="performance_ratio" /></>} help={settings.performance_ratio ? `Platform: ${settings.performance_ratio.value}` : "Optional · your own value"}>
                   <div className="relative"><Input type="number" step={0.01} min={0} max={1} value={pr} onChange={(e) => setPr(e.target.value)} placeholder={settings.performance_ratio ? String(settings.performance_ratio.value) : "0–1, e.g. 0.8"} aria-label="Performance ratio (your assumption)" /><DataBadge cls={prR.cls === "user" ? "user" : "source"} compact className="absolute right-2 top-1/2 -translate-y-1/2" /></div>
                 </Field>
               </div>
             </CardBody>
           </Card>}
 
-          <Metric label="Estimated cost" term="estimated_cost" data={cost} format={(v) => formatMoney(v, product?.currency ?? "KWD")} footnote={cost.value === null ? <span className="flex flex-wrap items-center gap-1">Installation: <Placeholder k="INSTALLATION_PRICE" /></span> : undefined} />
+          {hasValue(cost) ? <Metric label="Estimated cost" term="estimated_cost" data={cost} format={(v) => formatMoney(v, product?.currency ?? "KWD")} /> : (
+            <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-3 text-[13px] shadow-sm">
+              <p className="font-medium text-fg-heading">Estimated cost</p>
+              <p className="mt-0.5 leading-relaxed text-fg-secondary">Save the design and request an installation quote; the installer&apos;s price completes the estimate.</p>
+            </div>
+          )}
 
           <Card>
             <CardHeader title="Save this design" subtitle="Keep it, and use it to ask installers for a quote." />
@@ -1043,7 +1041,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
                 <Button onClick={save} disabled={saving || !placed.length || !geom}><Save className="size-4" aria-hidden /> {saving ? "Saving…" : "Save design"}</Button>
                 <Button variant="outline" disabled={!savedId} onClick={() => savedId && router.push(`/purchase?design=${encodeURIComponent(savedId)}`)}>Continue to purchase <ArrowRight className="size-4" aria-hidden /></Button>
               </div>
-              {mode === "demo" && <p className="text-[11.5px] text-fg-muted">Demo mode: designs are stored in this browser only. <Placeholder k="SUPABASE_PROJECT" /></p>}
+              {mode === "demo" && <p className="text-[11.5px] text-fg-muted">Demo mode: designs are stored in this browser only.</p>}
             </CardBody>
           </Card>
 

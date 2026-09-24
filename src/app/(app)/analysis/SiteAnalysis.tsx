@@ -422,7 +422,8 @@ function LevelMeter({ level }: { level: EnvironmentLevel }) {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: string | null | undefined }) {
+  if (value === null || value === undefined) return null;
   return (
     <div className="flex flex-col gap-0.5 border-t border-border/70 py-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <dt className="shrink-0 text-fg-muted sm:w-52">{label}</dt>
@@ -431,8 +432,9 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
+// A provider value, or null when none came back: the row is then left out, never shown as zero.
 const n = (v: number | null, unit = "", digits = 0) =>
-  v === null ? "Unavailable" : `${v.toLocaleString("en-US", { maximumFractionDigits: digits })}${unit}`;
+  v === null ? null : `${v.toLocaleString("en-US", { maximumFractionDigits: digits })}${unit}`;
 
 function List({ items }: { items: string[] }) {
   if (items.length === 0) return <p className="text-[13px] text-fg-muted">None reported.</p>;
@@ -454,11 +456,11 @@ const VERDICT: Record<Analysis["feasibility"]["verdict"], string> = {
   promising: "Promising",
   mixed: "Mixed",
   poor: "Poor",
-  insufficient_data: "Not enough data",
+  insufficient_data: "Needs more site data",
 };
 
 const LEVEL_LABEL: Record<EnvironmentLevel, string> = {
-  unavailable: "Unavailable",
+  unavailable: "Not reported",
   low: "Low",
   moderate: "Moderate",
   high: "High",
@@ -474,7 +476,7 @@ const LEVEL_TONE: Record<EnvironmentLevel, "neutral" | "good" | "warn" | "seriou
 };
 
 const STATUS_LABEL: Record<EnvironmentAssessment["overallStatus"], string> = {
-  unavailable: "Unavailable",
+  unavailable: "Not assessed",
   low: "Low",
   moderate: "Moderate",
   high: "High",
@@ -595,15 +597,17 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
             </section>
           </div>
 
+          {a.energy.annualEnergyDcKwh !== null && (
           <section>
             <h3 className="flex items-center gap-2 text-[14px] font-medium text-fg-heading">
-              Annual energy <DataBadge cls={a.energy.annualEnergyDcKwh === null ? "unavailable" : "source"} compact />
+              Annual energy <DataBadge cls="source" compact />
             </h3>
             <p className="figure mt-0.5 text-[18px] text-fg">
-              {a.energy.annualEnergyDcKwh === null ? "Unavailable" : `${Math.round(a.energy.annualEnergyDcKwh).toLocaleString("en-US")} kWh`}
+              {`${Math.round(a.energy.annualEnergyDcKwh).toLocaleString("en-US")} kWh`}
             </p>
             <p className="mt-0.5 text-[12.5px] leading-relaxed text-fg-muted">{a.energy.basis}</p>
           </section>
+          )}
 
           <section>
             <h3 className="text-[14px] font-medium text-fg-heading">How this was reached</h3>
@@ -647,7 +651,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
         <CardBody>
           <dl className="text-[13px]">
             <Row label="Requested address" value={location.address} />
-            <Row label="Resolved address" value={location.formattedAddress ?? "Unavailable"} />
+            <Row label="Resolved address" value={location.formattedAddress} />
             <Row label="Coordinates" value={`${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`} />
             <Row
               label="Match precision"
@@ -658,20 +662,20 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
               }
             />
             <Row label="Roof area" value={n(solar.wholeRoofAreaM2, " m²", 1)} />
-            <Row label="Roof segments" value={solar.roofSegments.length > 0 ? String(solar.roofSegments.length) : "Unavailable"} />
+            <Row label="Roof segments" value={solar.roofSegments.length > 0 ? String(solar.roofSegments.length) : null} />
             <Row
               label="Pitch / azimuth (largest segment)"
               value={
                 solar.roofSegments.length > 0
-                  ? `${n(solar.roofSegments[0].pitchDegrees, "°", 1)} / ${n(solar.roofSegments[0].azimuthDegrees, "°", 0)}`
-                  : "Unavailable"
+                  ? `${n(solar.roofSegments[0].pitchDegrees, "°", 1) ?? "not reported"} / ${n(solar.roofSegments[0].azimuthDegrees, "°", 0) ?? "not reported"}`
+                  : null
               }
             />
             <Row label="Maximum sunshine" value={n(solar.maxSunshineHoursPerYear, " hours/year", 0)} />
             <Row label="Maximum panels modelled" value={n(solar.maxArrayPanelsCount)} />
             <Row label="Modelled annual energy (DC)" value={n(solar.bestConfigYearlyEnergyDcKwh, " kWh", 0)} />
-            <Row label="Imagery date" value={solar.imageryDate ? formatDate(solar.imageryDate) : "Unavailable"} />
-            <Row label="Condition now" value={weather.condition ?? "Unavailable"} />
+            <Row label="Imagery date" value={solar.imageryDate ? formatDate(solar.imageryDate) : null} />
+            <Row label="Condition now" value={weather.condition} />
             <Row label="Temperature now" value={n(weather.temperatureC, " °C", 1)} />
             <Row label="Cloud cover" value={n(weather.cloudCoverPct, " %", 0)} />
             <Row label="Humidity" value={n(weather.humidityPct, " %", 0)} />
@@ -679,11 +683,11 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
             <Row label="PM10 (airborne dust indicator)" value={n(weather.pm10, " µg/m³", 1)} />
             <Row label="PM2.5" value={n(weather.pm2_5, " µg/m³", 1)} />
             <Row label="US EPA air-quality index" value={n(weather.usEpaIndex, "", 0)} />
-            <Row label="Forecast days returned" value={weather.forecast.length > 0 ? String(weather.forecast.length) : "Unavailable"} />
+            <Row label="Forecast days returned" value={weather.forecast.length > 0 ? String(weather.forecast.length) : null} />
           </dl>
           {result.unavailable.length > 0 && (
             <p className="mt-3 text-[12.5px] leading-relaxed text-fg-muted">
-              Not returned by any provider: {result.unavailable.join(", ")}. These are left empty rather than estimated.
+              Left out rather than estimated: {result.unavailable.join(", ")}.
             </p>
           )}
         </CardBody>
@@ -713,8 +717,8 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
           </dl>
           <p className="mt-3 text-[12px] leading-relaxed text-fg-muted">
             The analysis applies Solink&apos;s environmental rules to the provider data. No AI model takes part in it, and
-            roof measurements are optional: when they are unavailable the rest of the analysis still runs, and the
-            roof rows above read &ldquo;Unavailable&rdquo; rather than zero. It is not a survey and it does not measure this
+            roof measurements are optional: without them the rest of the analysis still runs, and the roof rows are
+            left out rather than shown as zero. It is not a survey and it does not measure this
             building: a roof still has to be inspected before anything is installed.
           </p>
           <p className="mt-2 text-[12px] leading-relaxed text-fg-muted">

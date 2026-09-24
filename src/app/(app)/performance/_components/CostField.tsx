@@ -2,7 +2,6 @@
 import { useId } from "react";
 import { RotateCcw } from "lucide-react";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { Input, Label } from "@/components/ui/Form";
 import { InfoTip } from "@/components/help/InfoTip";
 import type { PlaceholderKey } from "@/lib/config/placeholders";
@@ -32,8 +31,8 @@ export function resolveCost(user: number | null | undefined, recorded: Prefilled
 /**
  * One cost row for the TCO model. Pre-filled from the costs recorded against
  * this system when they exist (labeled calculated, with the formula); otherwise
- * empty, with the matching [PLACEHOLDER] and a field you can fill in yourself —
- * anything you type is labeled user-provided.
+ * an ordinary optional input for your own quote (owner, 2026-09-24: no
+ * placeholder text for homeowners). Anything you type is labeled user-provided.
  */
 export function CostField({ label, term, placeholderKey, unit = "KWD", recorded, value, onChange, help }: {
   label: string;
@@ -56,7 +55,7 @@ export function CostField({ label, term, placeholderKey, unit = "KWD", recorded,
       </div>
       <p className="mt-1 text-[12px] leading-snug text-fg-muted">{help}</p>
       <div className="mt-2 flex items-center gap-2">
-        <Input id={id} type="number" inputMode="decimal" step="any" min={0} value={shown ?? ""} placeholder="Enter a value"
+        <Input id={id} type="number" inputMode="decimal" step="any" min={0} value={shown ?? ""} placeholder="Enter amount"
           aria-describedby={`${id}-help`} onChange={(e) => { const raw = e.target.value; onChange(raw === "" ? null : Number(raw)); }} />
         <span className="shrink-0 text-[12.5px] text-fg-muted">{unit}</span>
         {value !== null && (
@@ -68,9 +67,7 @@ export function CostField({ label, term, placeholderKey, unit = "KWD", recorded,
       </div>
       <div id={`${id}-help`} className="mt-1.5 space-y-0.5 text-[11.5px] leading-snug text-fg-muted">
         {resolved.cls === "unavailable" && (
-          <div>
-            Not available from your records{placeholderKey ? <> : <Placeholder k={placeholderKey} /></> : "."} Any value you enter is labeled user-provided.
-          </div>
+          <div data-placeholder={placeholderKey}>Optional · your quote. It is labelled as yours.</div>
         )}
         {resolved.cls === "calculated" && <div>From your own records: {resolved.source}. Type your own figure to override it.</div>}
         {resolved.cls === "user" && recorded?.value !== null && recorded?.value !== undefined && <div>Your figure replaces the {recorded.value} {unit} derived from your records.</div>}

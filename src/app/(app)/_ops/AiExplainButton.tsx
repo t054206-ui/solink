@@ -3,7 +3,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
+import { AiResting } from "@/components/ui/AiResting";
 
 type Subject = "report" | "alert" | "maintenance" | "performance";
 type State =
@@ -43,12 +43,7 @@ export function AiExplainButton({ subject, payload, systemId, label = "Ask the A
         {state.kind === "loading" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />}
         {state.kind === "loading" ? "Asking…" : label}
       </Button>
-      {state.kind === "not_configured" && (
-        <div className="mt-3">
-          <PlaceholderNote k="CLAUDE_API_KEY" />
-          {state.message && <p className="mt-1 text-[12px] text-fg-muted">{state.message}</p>}
-        </div>
-      )}
+      {state.kind === "not_configured" && <AiResting className="mt-3">Everything on this page is worked out without it.</AiResting>}
       {state.kind === "error" && <p role="alert" className="mt-3 text-[13px] text-critical-fg">{state.message}</p>}
       {state.kind === "answer" && (
         <div className="mt-3 rounded-[10px] border border-[var(--cls-ai)]/40 bg-[var(--cls-ai-soft)]/50 p-3">

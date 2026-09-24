@@ -3,6 +3,7 @@ import { ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
+import { AuditMode } from "@/components/ui/AuditMode";
 import { getProviderAccess } from "./_lib/access";
 
 /**
@@ -33,6 +34,7 @@ export default async function ProviderLayout({ children }: { children: ReactNode
     );
   }
   return (
+    <AuditMode>
     <div className="space-y-4">
       {access.mode === "demo" && (
         <DemoBanner
@@ -42,5 +44,6 @@ export default async function ProviderLayout({ children }: { children: ReactNode
       )}
       {children}
     </div>
+    </AuditMode>
   );
 }

@@ -1,5 +1,7 @@
+"use client";
 import { DATA_CLASS_LABEL, DATA_CLASS_DESCRIPTION, type DataClass } from "@/lib/classification";
 import { cn } from "@/lib/utils";
+import { useAuditMode } from "./AuditMode";
 
 /**
  * Data-classification label. Use next to every metric so users always know
@@ -7,6 +9,10 @@ import { cn } from "@/lib/utils";
  * interpretation, or demo data.
  */
 export function DataBadge({ cls, className, compact = false, source }: { cls: DataClass; className?: string; compact?: boolean; source?: string }) {
+  // Homeowners never see an "N/A" badge: an unavailable value is hidden or
+  // asked for instead (owner, 2026-09-24). Audit screens keep it.
+  const audit = useAuditMode();
+  if (cls === "unavailable" && !audit) return null;
   const style: React.CSSProperties = { color: `var(--cls-${cls})`, background: `var(--cls-${cls}-soft)` };
   const label = compact ? SHORT[cls] : DATA_CLASS_LABEL[cls];
   return (

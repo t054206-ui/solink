@@ -81,8 +81,8 @@ const ERROR_COPY: Record<Extract<State, { status: "error" }>["kind"], { title: s
     body: "Solink could not reach the address service, so no location was resolved and no recommendation was made.",
   },
   address_not_configured: {
-    title: "Address lookup is not connected",
-    body: "The Google Maps key this site uses for addresses is not configured, so an address cannot be turned into coordinates here. Your browser's own location still works.",
+    title: "Address lookup isn't available right now",
+    body: "An address cannot be turned into coordinates right now. Your browser's own location still works.",
   },
 };
 

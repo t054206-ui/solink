@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { InfoTip } from "@/components/help/InfoTip";
@@ -7,8 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input, Textarea } from "@/components/ui/Form";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { EmptyState, ErrorState, UnavailableState } from "@/components/ui/States";
+import { AiResting } from "@/components/ui/AiResting";
+import { EmptyState, ErrorState } from "@/components/ui/States";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import type { DataMode } from "@/lib/data/mode";
 import type { Product, SolarProfile } from "@/lib/types";
@@ -100,7 +99,7 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
         aiStatus = "ok";
         aiModel = typeof body.model === "string" ? body.model : null;
       } else if (body?.reason === "not_configured") {
-        setResult({ status: "not_configured", message: body.message ?? "AI recommendations are not connected yet." });
+        setResult({ status: "not_configured", message: body.message ?? "The AI explanation isn't available right now." });
         aiStatus = "not_configured";
       } else {
         setResult({ status: "error", message: body?.message ?? body?.error ?? `The AI service returned an error (HTTP ${res.status}).` });
@@ -278,11 +277,7 @@ export function RecommendForm({ panels, mode }: { panels: Product[]; mode: DataM
           <Card><CardBody className="flex items-center gap-3 pt-5 text-[13.5px] text-fg-secondary"><Loader2 className="size-4 animate-spin text-[var(--cls-ai)]" aria-hidden /> The ranking above is ready. Asking the AI Solar Agent for the trade-offs in words…</CardBody></Card>
         )}
         {result.status === "not_configured" && (
-          <UnavailableState title="AI recommendations are not connected">
-            <p>{result.message}</p>
-            <PlaceholderNote k="CLAUDE_API_KEY" className="mt-3 text-left" />
-            <p className="mt-3">Once connected, the AI compares <strong>only the products actually in the catalog</strong> and their recorded specifications. It will not invent prices, production figures or products that are not there. Until then, use the <Link href="/compare" className="underline underline-offset-2">comparison table</Link>.</p>
-          </UnavailableState>
+          <AiResting title="The AI explanation isn't available right now">The ranking above is worked out from the catalogue records and does not need it.</AiResting>
         )}
         {result.status === "error" && <ErrorState title="The AI could not answer">{result.message}</ErrorState>}
         {result.status === "ok" && (

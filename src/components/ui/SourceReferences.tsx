@@ -27,7 +27,7 @@ export interface ReferenceRow {
   linkLabel?: string;
 }
 
-const UNAVAILABLE = "Source unavailable";
+const UNAVAILABLE = "Not recorded";
 
 /** True when the specifications came from a manufacturer datasheet rather than a reseller. */
 export function specsAreManufacturerConfirmed(p: Product): boolean {

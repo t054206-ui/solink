@@ -158,11 +158,13 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
             <ImageSlot label="Before" path={c.before_image_path} />
             <ImageSlot label="After" path={c.after_image_path} />
           </div>
+          {c.production_before_kwh != null && c.production_after_kwh != null && (
           <div className="grid gap-3 sm:grid-cols-3">
             <Metric label="Production before" term="cleaning_effect" data={c.production_before_kwh === null || c.production_before_kwh === undefined ? { value: null, cls: "unavailable", reason: "Not recorded on this case." } : { value: c.production_before_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }} unit="kWh/day" format={(v) => v.toFixed(1)} />
             <Metric label="Production after" term="cleaning_effect" data={c.production_after_kwh === null || c.production_after_kwh === undefined ? { value: null, cls: "unavailable", reason: "Not recorded on this case." } : { value: c.production_after_kwh, cls: c.is_demo ? "demo" : "source", source: "Daily kWh recorded with the case" }} unit="kWh/day" format={(v) => v.toFixed(1)} />
             <Metric label="Change" term="cleaning_effect" data={changeCls} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`} footnote="(after − before) ÷ before" />
           </div>
+          )}
           <p className="rounded-[10px] border border-dashed border-border-strong bg-inset p-3 text-[13px] leading-relaxed text-fg-secondary">
             This change coincides with the maintenance; it does not prove the maintenance caused it. Weather, season and other events also move daily production.
           </p>

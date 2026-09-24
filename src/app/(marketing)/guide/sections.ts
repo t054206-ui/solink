@@ -3,12 +3,11 @@ import {
   Rocket, Home, Calculator, Store, GitCompare, PencilRuler, Hammer, Bot,
   Activity, Wrench, Coins, FileText, FileBadge,
 } from "lucide-react";
-import type { PlaceholderKey } from "@/lib/config/placeholders";
 
 export interface GuideLink { href: string; label: string }
 
-/** An honest statement about what is not connected yet, and the placeholders it waits on. */
-export interface GuideNote { text: string; keys?: PlaceholderKey[] }
+/** A short "good to know" about how a feature behaves, in product words. */
+export interface GuideNote { text: string }
 
 export interface GuideSection {
   id: string;
@@ -34,8 +33,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/dashboard", label: "Go to the Dashboard" }],
     note: {
-      text: "Solink also runs without a database. In that mode everything you save stays in this browser only, nothing is shared with anyone, and every demonstration figure carries a red DEMO DATA label so it is never mistaken for your own.",
-      keys: ["SUPABASE_PROJECT"],
+      text: "Solink also has a demo mode that runs without an account. In it everything you save stays in this browser only, nothing is shared with anyone, and every demonstration figure carries a red DEMO DATA label so it is never mistaken for your own.",
     },
   },
   {
@@ -54,8 +52,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/workflow", label: "How a site analysis works" },
     ],
     note: {
-      text: "Roof direction, tilt and shading are recorded but not yet used in the maths. Until a site data source is connected, every roof is treated the same, so treat the result as a rough size guide. Sunlight figures for your exact address need a solar resource source, and the map view needs a Google Maps key. Without the map you can still type your coordinates by hand.",
-      keys: ["SOLAR_RESOURCE_DATA_SOURCE", "GOOGLE_SOLAR_SITE_DATA_SOURCE", "GOOGLE_MAPS_API_KEY"],
+      text: "Roof direction, tilt and shading are kept with your profile for your installer. The estimate uses the regional sun-hours figure for Kuwait, the same for every roof, so treat the result as a sizing guide rather than a survey.",
     },
   },
   {
@@ -70,8 +67,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/calculator", label: "Go to the Savings Calculator" }],
     note: {
-      text: "Money saved and payback need a price per kilowatt-hour; Solink will not supply one, because an invented tariff produces an invented saving. The same is true of the system loss assumption and the CO₂ figure for grid electricity. Until you provide them, those results stay empty and the charts say exactly what is missing.",
-      keys: ["ELECTRICITY_TARIFF", "SYSTEM_LOSS_FACTOR", "GRID_CO2_EMISSION_FACTOR"],
+      text: "Savings and payback use the electricity rate for your property's sector, and CO₂ uses the grid emission factor, each with its source. Where Solink has no figure, such as your installer's price, you add your own and it is labelled as yours.",
     },
   },
   {
@@ -88,8 +84,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/recommend", label: "Go to AI Recommendation" },
     ],
     note: {
-      text: "A verified manufacturer dataset has not been chosen yet, so the catalogue is demonstration data and no real price can be shown. Use it to learn what to look at, not to pick a product. AI Recommendation additionally needs the AI service to be connected.",
-      keys: ["REAL_SOLAR_PANEL_DATA_SOURCE", "CLAUDE_API_KEY"],
+      text: "The catalogue holds real panels from the manufacturers' own datasheets, each with its source. Prices come from suppliers; where none is listed, the product says so and you ask the supplier. The ranking always works; the AI's written explanation is added when the AI assistant is available.",
     },
   },
   {
@@ -104,8 +99,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/compare", label: "Go to Compare" }],
     note: {
-      text: "A comparison is only as good as the data behind it. While the catalogue is demonstration data, the cost rows have no real price to work from and stay unavailable.",
-      keys: ["REAL_SOLAR_PANEL_DATA_SOURCE"],
+      text: "A comparison is only as good as the data behind it. Every figure is the manufacturer's own, and anything a datasheet does not state reads “Not stated” rather than being guessed.",
     },
   },
   {
@@ -120,8 +114,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/designer", label: "Go to the Solar Designer" }],
     note: {
-      text: "A layout made here is not an engineering drawing. Structure, wiring, safety distances and permits are the installer’s job. Yearly production and cost figures for a design stay empty until you supply the assumptions and a real panel price exists. Smart placement needs the AI service connected.",
-      keys: ["SOLAR_RESOURCE_DATA_SOURCE", "INSTALLATION_PRICE", "CLAUDE_API_KEY"],
+      text: "A layout made here is not an engineering drawing. Structure, wiring, safety distances and permits are the installer’s job. Yearly production uses the regional sun-hours figure, and the cost completes with your installer’s quote. Smart placement is offered when the AI assistant is available.",
     },
   },
   {
@@ -139,8 +132,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/marketplace", label: "Browse panels and their suppliers" },
     ],
     note: {
-      text: "Installation prices are missing until providers enter them, no email or message is sent to anyone, and if no installer company is registered there will be none to choose. Panel prices come from supplier listings an administrator or the supplier recorded, so a model with no listing shows no price and no purchase link.",
-      keys: ["INSTALLATION_PRICE", "EMAIL_NOTIFICATION_PROVIDER"],
+      text: "Installation is priced by your installer's quote. Updates about your request appear in Solink, and panel prices come from supplier listings.",
     },
   },
   {
@@ -155,8 +147,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/agent", label: "Go to the AI Solar Agent" }],
     note: {
-      text: "The agent runs on a Claude API key held on the server. Without that key it cannot answer at all: it replies with a notice saying it is not connected, rather than a guess. The same applies to AI recommendations, smart placement, photo inspection and AI monitoring.",
-      keys: ["CLAUDE_API_KEY"],
+      text: "Ask Solink uses the AI assistant. When the assistant is not available it says so plainly instead of guessing, and every other page keeps working without it.",
     },
   },
   {
@@ -175,8 +166,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/monitoring/inspection", label: "Go to Photo Inspection" },
     ],
     note: {
-      text: "There is no live monitoring. Real readings have to come from your inverter or monitoring hardware, and panel-by-panel figures need extra equipment; neither is connected, so any production chart you see is a simulated series, clearly banner-labelled. Weather needs a weather service key and your coordinates, past weather is never fetched, and Solink will not judge a system as underperforming until alert thresholds are set.",
-      keys: ["SOLAR_MONITORING_HARDWARE_API", "PANEL_LEVEL_MONITORING_DATA_SOURCE", "WEATHER_API_KEY", "PRODUCTION_ALERT_THRESHOLDS"],
+      text: "Production charts draw from your inverter or monitoring hardware once it reports to Solink, and per-panel figures need optimizers or micro-inverters. Solink never draws a reading it has not received.",
     },
   },
   {
@@ -193,8 +183,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/incidents", label: "Go to Incidents" },
     ],
     note: {
-      text: "A booking is stored in Solink, but nothing is sent to the provider: no email, no message. So contact them yourself and use the record to keep track. Photos are previews only until file storage is connected. Solink will also not predict a failure: it goes no further than saying an inspection may be worth booking.",
-      keys: ["EMAIL_NOTIFICATION_PROVIDER", "SUPABASE_PROJECT", "PRODUCTION_ALERT_THRESHOLDS"],
+      text: "A booking is kept in Solink and the provider sees it there. Photos you attach help you describe the problem. Solink will not predict a failure: the strongest thing it says is that an inspection may be worth it.",
     },
   },
   {
@@ -211,8 +200,7 @@ export const SECTIONS: GuideSection[] = [
       { href: "/calculator", label: "Model costs in the Calculator" },
     ],
     note: {
-      text: "Providers have not entered prices, and the number of years a total-cost figure should cover has not been chosen. Until both are set, every cost cell shows the missing decision by name, and totals only include jobs with a real recorded price.",
-      keys: ["MAINTENANCE_PRICE", "TCO_PERIOD"],
+      text: "Costs are filled in from what providers and technicians recorded against your system; anything else you add from your own quotes. Totals only include real, recorded or entered amounts.",
     },
   },
   {
@@ -226,8 +214,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/reports", label: "Go to Reports" }],
     note: {
-      text: "A report needs production records, which need monitoring hardware. The financial section needs an electricity price, the environmental section needs a CO₂ figure for grid electricity, and the written summary needs the AI service. Any of those missing, and that part of the report is shown as unavailable rather than estimated.",
-      keys: ["SOLAR_MONITORING_HARDWARE_API", "ELECTRICITY_TARIFF", "GRID_CO2_EMISSION_FACTOR", "CLAUDE_API_KEY"],
+      text: "A monthly report is generated from a full month of production records. Savings use your electricity rate and CO₂ uses the grid emission factor; the written AI summary is added when the AI assistant is available.",
     },
   },
   {
@@ -242,8 +229,7 @@ export const SECTIONS: GuideSection[] = [
     ],
     links: [{ href: "/passport", label: "Go to Solar Passport" }],
     note: {
-      text: "A passport can only describe what has been recorded. Where a warranty length or a specification was never entered it says “not recorded” rather than filling it in, and the monitoring source reads “not connected” until hardware is linked.",
-      keys: ["SOLAR_MONITORING_HARDWARE_API"],
+      text: "A passport describes only what has been recorded. A warranty length or a specification that was never entered reads “not recorded” rather than being filled in.",
     },
   },
 ];

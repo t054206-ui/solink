@@ -1,5 +1,4 @@
 import { askClaudeJson, isClaudeConfigured } from "@/lib/ai/claude";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { HouseType, RoofOrientation } from "@/lib/types";
 import { requireUser } from "@/lib/api/auth";
 import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
@@ -56,7 +55,7 @@ export async function POST(req: Request) {
   if (limited) return limited;
   if (!isClaudeConfigured()) {
     return Response.json(
-      { ok: false, reason: "not_configured", message: `Roof analysis is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` },
+      { ok: false, reason: "not_configured", message: "Roof reading isn't available right now." },
       { status: 503 },
     );
   }

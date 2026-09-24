@@ -8,7 +8,7 @@ export default function MonitoringLayout({ children }: { children: ReactNode }) 
       <PageHeader
         eyebrow="Operate"
         title="Monitoring"
-        description="How your system is performing, what the weather is doing, and whether cleaning or an inspection may be useful. Live hardware is not connected yet; everything shown says where its numbers come from."
+        description="How your system is performing, what the weather is doing, and whether cleaning or an inspection may be useful. Every figure says where it comes from."
         className="mb-4"
       />
       <MonitoringNav />

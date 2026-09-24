@@ -13,6 +13,7 @@ import { AgentDrawer } from "./AgentDrawer";
 import { BasketHeaderIcon } from "./BasketHeaderIcon";
 import { SkipLink } from "./SkipLink";
 import { SignOutButton } from "./SignOutButton";
+import { PlaceholderGuard } from "@/components/ui/AuditMode";
 import type { Role } from "@/lib/roles";
 
 /** isDemo: no Supabase connected, so there is no account at all. isAuthenticated: false for a signed-out guest even when Supabase IS connected — distinct from isDemo, since making pages like the marketplace public means both now render for people with no session. */
@@ -163,6 +164,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
             </div>
           </header>
           <main id="main" data-app-main className="flex-1 px-3 py-4 sm:px-4 lg:px-5 pb-24 lg:pb-8">
+            <PlaceholderGuard />
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>

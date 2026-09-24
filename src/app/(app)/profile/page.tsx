@@ -1,16 +1,18 @@
 import { getProfile } from "@/lib/data/repositories";
+import { getPlatformSettings } from "@/lib/data/settings";
 import { ProfileForm } from "./ProfileForm";
 
 export const metadata = { title: "Solar Profile" };
 
 export default async function ProfilePage() {
-  const { data: profile, mode } = await getProfile();
+  const [{ data: profile, mode }, settings] = await Promise.all([getProfile(), getPlatformSettings()]);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
       <ProfileForm
         profile={profile}
         mode={mode}
+        tariff={settings.electricity_tariff_per_kwh}
         heading={{
           eyebrow: "Plan · Step 1",
           title: "Solar Profile",

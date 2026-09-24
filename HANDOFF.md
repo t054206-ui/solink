@@ -2386,3 +2386,139 @@ transcript, not duplicated here; this is the pointer for Session 11.
 
 The owner was told, plainly, to re-run the security check in a **new
 chat** once these land, since this session shouldn't grade its own fixes.
+
+---
+
+## Addendum, 2026-09-23/24 — visual passes from Home Overview to Solar Profile
+
+
+### 1. Where things stand right now
+
+| | |
+|---|---|
+| `main` = `origin/main` | Superseded: the work below was merged as **`bbeeb0e`**, then **`02a56d4`** (text colours, Maintenance Costs nav item removed). See the addendum after this one. |
+| Former in-progress branch | `ci/final-visual-polish` (`77dee76`), amended into `bbeeb0e` and merged on 2026-09-24. |
+| State | Merged, CI green, deployed and verified by asset fingerprint. |
+| Untracked | The eight `… 2.*` duplicate files (never touch/commit) and this file. |
+
+### To finish the in-progress work (next session)
+1. `git switch ci/final-visual-polish` (the commit is local only in this folder).
+2. Start the demo app (see §5), check `/profile`, `/maintenance`, `/maintenance/book`, `/maintenance/[id]`, `/reports`, `/marketplace`, `/compare`, `/recommend`, `/monitoring` on desktop (1280) and phone (375, 390).
+3. Things to look at closely (written but never seen rendered):
+   - **ProfileScene** (whole villa: plot, boundary wall + navy gate at `GATE_X`, courtyard palms, house with windows, roof tanks/AC/bulkhead, dashed amber "solar-ready" area). Check framing, that the gate gap lines up with the wall segments, and palm/shrub scale.
+   - **ReportDeskScene** (sheet on stone desk, sheet texture drawn from data + Solink mark in title block, window-mullion shadows via invisible casters). Check the sheet is legible and the logo appears in the title block (it draws after the SVG image loads).
+   - **CareScene** additions: fog, background parapet + a hazed row, tool case with logo decal; "Clean → Inspect → Maintain" chip overlay.
+   - **LogoDecal** on showroom plinth top, bench base, reveal plinth front, inverter face: check they are visible, small, and not z-fighting.
+   - Profile overview tiles + hero notes show real values or "Not set".
+4. `npm run build`, then push the branch, wait for CI green, amend commit message, fast-forward `main`, push, verify production (build ID on `/login` HTML matches the new deployment).
+
+### What `77dee76` contains
+- **Solar Profile**: `PageHero` + `ProfileVisual` (new `ProfileScene`) inside `ProfileForm` (heading passed from `page.tsx`); hero notes (Home, Roof area, Electricity) and a **Profile overview** row of 4 tiles (Your home, Roof, Electricity, Budget) from the live form `values`, "Not set" when missing, each with an Edit anchor to `#home` / `#roof` / `#energy` (ids added to the existing cards). Form fields/behaviour unchanged. Page width `max-w-5xl`.
+- **Solink logo in visuals**: `solinkMarkSvg()` exported from `src/components/brand/Logo.tsx` (identical geometry to `SolinkMark`, unchanged); `three/logoTexture.ts` + `three/LogoDecal.tsx`; decals in Showroom, Bench, Reveal, LiveArray, Care; mark drawn in the Report sheet title block; Profile uses the real `SolinkMark` in an HTML annotation plate.
+- **Maintenance costs removed (presentation only)**: `MaintenanceCostsCard` deleted from the page (file removed), "costs" phrase removed from the page description and metadata; booking wizard Cost rows and per-provider "Price" line removed; case detail "Work, parts & cost" → "Work & parts", Cost row removed. Data model/actions untouched (`cost` still written as unavailable). Provider pages, incidents and replacement still show `CostCell` — deliberately untouched.
+- **Maintenance path**: the three summary cards became a Clean → Next appointment → Maintain path (same three values; tone from record: green done, amber due, neutral none). Predictive card now full width.
+- **Reports**: `ReportDeskVisual` replaces the SVG `RecordSheet` (file removed).
+- **Colour pass** (existing palette only): `PageHero` eyebrow amber (`--sun-ink`) + h1 navy (`--brand-strong`); product cards: manufacturer blue (`--data`), first headline figure amber, second navy, supplier name blue; Marketplace callouts coloured; Compare letters A navy / B amber-ink / C `--brand-hover` / D grey (`LETTER_BG`); Recommendation power amber, efficiency navy, reason numbers amber, title navy; Monitor "Live system view" label navy, headline in health colour; Report cards month navy, system name blue.
+
+---
+
+### 2. What was merged and deployed this session (in order)
+
+| Commit | What |
+|---|---|
+| `4312916`, `faecd21`, `cc7e434` | Home Overview first pass: `Stage`, energy path sun→panels→home (`SystemStage`), `.flow`/`.lift` CSS, quick-links phone overflow fix, `RevealCount` (real value first, count-up only as transition; never shows 0). |
+| `d3e9a11` | Home Overview hero: `OverviewHero` + `RoofVisual` + `RoofScene` (code-built Kuwaiti rooftop), Welcome state cards, feature Ask Solink card, "Get started" button → first unfinished step. |
+| `fef6579` | Rooftop realism: `roofDetails.ts` (plaster/paver/gravel/bark/contact textures, palm, agave, grass, shrubs — seeded), hollow module frames, clamps, braced racks, windows, tank ribs, AC guards, dish, sky env. |
+| `f522f06` | Solar Potential `SiteScene` (atmosphere from rule-engine dust/heat/wind levels), Placement `OrientationScene` (compass, real azimuth, tiltMid + band wedge, equinox sun path), Designer live "Your layout in 3D" (`DesignScene`) + module-look 2D panels. Shared `SolarModule`, `useSceneGate`. `RoofScene` exports `Building`, `Planting`, `Sky`, `makeRoofKit`. |
+| `8329389` | Placement result cards (big compass/tilt SVGs, rounded coords to fix hydration mismatch), turntable pre-location pose; Designer hero `StudioVisual` (RoofScene with optional `view`); Solar Potential compact assumptions (`AssumptionField dense` — fixes the one-line SOURCE badge overflow); feasibility display. |
+| `11569fe` | Group 2+3: Marketplace `ShowroomScene` + toolbar + cards; Compare `BenchScene` (real dims) + A/B letters; Recommendation `RevealScene` featured top match; Monitor live view (`LiveArrayScene`, `monitoring/_components/health.tsx`, health marks on demo + real grids); Maintenance `CareScene` + case rails; Reports record sheet + document cards. `PageHero`, `PageVisuals`. |
+
+All were CI-green and verified in production by build ID.
+
+---
+
+### 3. Decisions and rules established this session (keep them)
+
+- **No fake data, ever.** Unavailable stays "Unavailable"/"Not set"; demo stays labelled DEMO.
+- **Monitor panel states**: no real per-panel data exists. Real panels = **unknown** (grey "?"). Green/amber/red appear **only** on the existing DEMO panel layout (its own example states). In the 3D array only the inverter lamp shows the system-level status (`deriveStatus` → `healthOf`). Cable pulse only when today has a production record.
+- **Recommendation**: #1 is "Your top match", with the line "not an objective best"; ranking untouched.
+- **Compare**: no winner; highest/lowest markers only.
+- Owner accepted: glass/glow banned → depth via landing means; amber also used for the sun/eyebrows/heading word (bends DIRECTION.md "energy only"); maintenance **costs removed** from homeowner maintenance screens (owner, 2026-09-24).
+- Each page has its **own** scene; don't reuse compositions: Home rooftop · Placement compass · Potential site · Designer layout + studio · Marketplace showroom · Compare bench · Recommendation reveal · Monitor overhead array · Maintenance close-up · Reports desk · Profile villa.
+- Landing page, intro film, `PanelStudio`/`PanelScene`, landing `Count` were never touched.
+
+### 4. Known gaps / to-do
+
+- **Phone widths were never fully verified** for most pages (the browser pane kept going hidden, which freezes streaming/layout). Do a real 375/390 pass.
+- Reduced-motion was only verified by code reading.
+- `AssumptionField` one-line SOURCE-badge overflow still exists on Savings Calculator, Designer and Performance (only Solar Potential uses `dense`).
+- `HANDOFF.md` / `CLAUDE.md` need an addendum summarising §1–§3 (not done).
+- Many spent `ci/*` branches on origin (listed by `git branch -r | grep ci/`); all merged content is on main. Delete only with the owner's word.
+- `src/app/(app)/profile/RoofCapture.tsx` is tracked but unused (HANDOFF says it was deleted; it is still in the tree). Not touched.
+- Rotate the API keys pasted in an earlier chat (from HANDOFF).
+
+### 5. How to work on this machine
+
+- **No Node installed.** Temporary setup used every time (owner approved):
+  ```
+  S=<scratchpad>; cd $S && V=node-v22.23.3-darwin-arm64.tar.gz && curl -sO https://nodejs.org/dist/v22.23.3/$V && curl -s https://nodejs.org/dist/v22.23.3/SHASUMS256.txt | grep " $V$" | shasum -a 256 -c - && tar xzf $V
+  git worktree add --detach $S/wt HEAD      # no .env.local → demo mode
+  cd $S/wt && PATH=$S/node-v22.23.3-darwin-arm64/bin:$PATH npm ci
+  npx next typegen && npx tsc --noEmit && npm run lint && npm run build
+  npx next dev -p <port>                    # demo mode; /dashboard?as=homeowner
+  ```
+  Copy edited files into the worktree (or re-create it from the commit); remove the worktree and Node afterwards.
+- **Browser pane quirks**: it often goes `visibilityState: hidden` a few seconds after `preview_start`; then streamed content stays in hidden holders (rects 0) and screenshots are stale. Re-open with `preview_start`, act immediately. The intro film plays in each new tab: set `sessionStorage['solink:intro-seen-v2']='1'` and reload.
+- Test states that demo mode can't produce (Placement result, long citation, idle production) were seeded in the **worktree only**, marked `TEST ONLY`, and removed before commit. Grep for `TEST ONLY` before committing.
+- CI status without `gh`: `curl -s "https://api.github.com/repos/t054206-ui/solink/actions/runs?head_sha=<sha>"`; production deploy status via `.../deployments?sha=<sha>&environment=Production` → `statuses_url`.
+- Git: branch → CI green → `git merge --ff-only` → `git push origin main`. Never force-push.
+
+---
+
+## Addendum, 2026-09-24 — homeowner screens without "N/A", placeholders or "not connected"
+
+The owner changed direction: homeowner screens must look like a finished
+product. **Never fabricate missing data; do not expose raw unavailable,
+placeholder or developer states to homeowners; hide an unavailable metric or
+replace it with a useful visual, input, workflow or explanation.** The rule is
+in CLAUDE.md (working conventions). Admin, provider and manufacturer pages keep
+the audit detail.
+
+How it works:
+- `src/components/ui/AuditMode.tsx`: `<AuditMode>` wraps the admin, provider
+  and manufacturer layouts. Outside it, `DataBadge` hides "N/A",
+  `<Placeholder>` renders the product phrase from `PLACEHOLDER_PRODUCT`
+  (`src/lib/config/placeholders.ts`, `null` = say nothing) and
+  `<PlaceholderNote>` renders nothing. `PlaceholderGuard` (in `AppShell`) is the
+  safety net that rewrites any stray `[PLACEHOLDER: …]` text with
+  `productText()`. The registry, the notes and every null check are unchanged.
+- `Metric`: pages render one only when `hasValue()`; the fallback shows the
+  sanitised reason. `specText()` now says "Not stated" for a missing datasheet
+  value; `PriceCell` says "Price on request from supplier".
+- Stale placeholders fixed by reading the real settings
+  (`src/lib/content/platformFacts.ts`): dashboard CO₂ factor and thresholds,
+  Reports "inputs not provided", Solar Profile tariff hint, Maintenance
+  predictive thresholds, and the Replacement page now lists the stored
+  end-of-life criteria (display only; no new replacement logic).
+- Illustrations: `src/components/illustrations/Illustrations.tsx` (EnergyFlow,
+  ChartFrame, RoofSun, PerformanceTimeline, WarrantyCurve, MaintenanceArt,
+  ReadinessRing), thin navy lines with amber for sun/energy only.
+- Pages: dashboard leads with a real "Your system" card and a monitoring flow
+  instead of empty charts; Solar Potential has a "Your roof's potential"
+  builder and shows only computed results; Monitoring draws Panels → Inverter →
+  Monitoring → Solink with an empty chart frame, a Signals readiness ring
+  (real record days of 37) and, on real accounts, the real array instead of the
+  DEMO per-panel figures (demo mode keeps them); Performance shows a timeline and
+  the manufacturer's warranty curve (labelled as a warranty, not a
+  measurement); costs are plain optional inputs; Maintenance shows a compact
+  overview with booking actions when there are no cases; Reports shows the
+  rates used and a first-report preview.
+- AI: every feature calls Claude directly (`src/lib/ai/claude.ts`); n8n is
+  only named on the About page. Production has no `CLAUDE_API_KEY`, so AI
+  features show `<AiResting>` (product words, no env-var names). Ask Solink and
+  its navigation stay. Server messages no longer name keys.
+- The public Help guide no longer teaches placeholder markers; its per-section
+  notes are "Good to know" product guidance.
+- Not in scope and unchanged: the About page team placeholders (owner's open
+  item), admin pages, the database, RLS, calculations.
+

@@ -6,8 +6,6 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select } from "@/components/ui/Form";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Placeholder } from "@/components/ui/Placeholder";
-import { UnavailableState } from "@/components/ui/States";
 import { InfoTip } from "@/components/help/InfoTip";
 import { BarChart } from "@/components/charts/BarChart";
 import { LineChart } from "@/components/charts/LineChart";
@@ -15,7 +13,6 @@ import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import type { DataMode } from "@/lib/data/mode";
 import type { PlatformSettings } from "@/lib/data/settings";
 import { type Classified, unavailable } from "@/lib/classification";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { annualProductionKwh, annualSavings, co2AvoidedKg, energyOffset, formatNumber, paybackYears, systemCapacityKwp, totalCostOfOwnership, type SolarAssumptions } from "@/lib/solar/calculations";
 import { cn, formatMoney, pct } from "@/lib/utils";
 import { AssumptionField, resolveAssumption } from "../_plan/AssumptionField";
@@ -73,7 +70,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
   const consumption: Classified = (() => {
     if (isNum(inp.monthlyKwh)) return { value: inp.monthlyKwh, cls: "user" };
     if (isNum(inp.monthlyBill)) {
-      if (tariff.value === null) return unavailable(`A bill can only be converted to kWh with a tariff: ${PLACEHOLDERS.ELECTRICITY_TARIFF}`);
+      if (tariff.value === null) return unavailable("A bill can only be converted to kWh with an electricity rate.");
       return { value: inp.monthlyBill / tariff.value, cls: "estimated", source: "Solink calculator", notes: [`${inp.monthlyBill} ${CURRENCY} ÷ ${tariff.value} ${CURRENCY}/kWh`] };
     }
     return unavailable("Enter your monthly consumption (kWh) or monthly bill.");
@@ -95,14 +92,14 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
   const upfront: Classified = (() => {
     const missing: string[] = [];
     if (!isNum(inp.systemCost)) missing.push("system cost");
-    if (!isNum(inp.installCost)) missing.push(`installation cost (${PLACEHOLDERS.INSTALLATION_PRICE})`);
+    if (!isNum(inp.installCost)) missing.push("installation cost (your installer's quote)");
     if (missing.length) return unavailable(`Missing: ${missing.join(", ")}.`);
     return { value: inp.systemCost! + inp.installCost!, cls: "user", notes: [`${inp.systemCost} + ${inp.installCost}`] };
   })();
   const opexKnown = isNum(inp.maintenance) && isNum(inp.cleaning);
   const opex = opexKnown ? inp.maintenance! + inp.cleaning! : 0;
   const paybackRaw = paybackYears(upfront.value, savings.value, opex);
-  const payback: Classified = paybackRaw.value === null ? paybackRaw : { ...paybackRaw, notes: [...(paybackRaw.notes ?? []), opexKnown ? "Annual costs = maintenance + cleaning." : `Maintenance and cleaning were not provided, so no annual costs are subtracted: ${PLACEHOLDERS.MAINTENANCE_PRICE}`] };
+  const payback: Classified = paybackRaw.value === null ? paybackRaw : { ...paybackRaw, notes: [...(paybackRaw.notes ?? []), opexKnown ? "Annual costs = maintenance + cleaning." : "Maintenance and cleaning were not entered, so no annual costs are subtracted."] };
 
   /* ---------- lifetime series ---------- */
   const series = (() => {
@@ -122,9 +119,9 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
   })();
   const lifetimeSavings: Classified = (() => {
     if (!isNum(production.value)) return unavailable("Annual production is required.");
-    if (!isNum(a.horizonYears)) return unavailable(PLACEHOLDERS.TCO_PERIOD);
-    if (!isNum(a.annualDegradation)) return unavailable(PLACEHOLDERS.EXPECTED_PANEL_DEGRADATION_RATE);
-    if (!isNum(a.tariffPerKwh)) return unavailable(PLACEHOLDERS.ELECTRICITY_TARIFF);
+    if (!isNum(a.horizonYears)) return unavailable("Set the analysis period.");
+    if (!isNum(a.annualDegradation)) return unavailable("Set the annual degradation.");
+    if (!isNum(a.tariffPerKwh)) return unavailable("Set the electricity rate.");
     const total = series ? series[series.length - 1]?.cumSavings ?? 0 : 0;
     return { value: total, cls: "estimated", source: "Solink calculator", notes: [`Σ year-1 production × (1 − ${a.annualDegradation})^(y−1) × ${a.tariffPerKwh} ${CURRENCY}/kWh over ${a.horizonYears} years`, "Undiscounted; assumes a constant tariff."] };
   })();
@@ -156,7 +153,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
             <Field label={<>Monthly consumption <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />}>
               <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.monthlyKwh)} onChange={(e) => set("monthlyKwh", toNum(e.target.value))} aria-label="Monthly consumption in kWh" /><span className="text-[12.5px] text-fg-muted">kWh</span></div>
             </Field>
-            <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={tariff.value === null ? <>Needs <Placeholder k="ELECTRICITY_TARIFF" /></> : "Used only when kWh is empty."}>
+            <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={tariff.value === null ? "Or enter your monthly use in kWh." : "Used only when kWh is empty."}>
               <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="0.001" value={show(inp.monthlyBill)} onChange={(e) => set("monthlyBill", toNum(e.target.value))} aria-label="Monthly bill" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
             </Field>
           </CardBody>
@@ -199,7 +196,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
         </Card>
 
         <Card>
-          <CardHeader title={<>Costs <InfoTip term="tco" /></>} subtitle="No cost is ever assumed. Leave a field empty and the metrics that need it stay unavailable." />
+          <CardHeader title={<>Costs <InfoTip term="tco" /></>} subtitle="Enter the amounts from your quotes. Solink never assumes a cost." />
           <CardBody className="grid gap-3">
             <Field label="System (equipment) cost" hint={<DataBadge cls="user" compact />} help="Panels, inverter and mounting: from a quote or the Marketplace.">
               <div className="flex items-center gap-2"><Input type="number" inputMode="decimal" min={0} step="1" value={show(inp.systemCost)} onChange={(e) => set("systemCost", toNum(e.target.value))} aria-label="System cost" /><span className="text-[12.5px] text-fg-muted">{CURRENCY}</span></div>
@@ -232,25 +229,33 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
       <div className="grid gap-5 lg:col-span-7">
         <section aria-labelledby="yearly-heading">
           <h2 id="yearly-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Each year</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <MetricWithNotes label={<>Monthly consumption <InfoTip term="kwh" /></>} data={consumption} unit="kWh" format={(v) => formatNumber(v, 0)} />
-            <MetricWithNotes label={<>System capacity <InfoTip term="kwp" /></>} data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
-            <MetricWithNotes label={<>Estimated production <InfoTip term="energy_production" /></>} data={production} unit="kWh/yr" format={(v) => formatNumber(v, 0)} />
-            <MetricWithNotes label={<>Energy offset <InfoTip term="energy_offset" /></>} data={offset} format={(v) => pct(v, 0)} />
-            <MetricWithNotes label="Annual savings" data={savings} format={(v) => formatMoney(v, CURRENCY, 0)} />
-            <MetricWithNotes label={<>CO₂ avoided <InfoTip term="co2_reduction" /></>} data={co2Kg} unit="kg/yr" format={(v) => formatNumber(v, 0)} />
-          </div>
+          {(() => {
+            const items = [
+              [consumption, <MetricWithNotes key="c" label={<>Monthly consumption <InfoTip term="kwh" /></>} data={consumption} unit="kWh" format={(v) => formatNumber(v, 0)} />],
+              [capacity, <MetricWithNotes key="k" label={<>System capacity <InfoTip term="kwp" /></>} data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />],
+              [production, <MetricWithNotes key="p" label={<>Estimated production <InfoTip term="energy_production" /></>} data={production} unit="kWh/yr" format={(v) => formatNumber(v, 0)} energy />],
+              [offset, <MetricWithNotes key="o" label={<>Energy offset <InfoTip term="energy_offset" /></>} data={offset} format={(v) => pct(v, 0)} />],
+              [savings, <MetricWithNotes key="s" label="Annual savings" data={savings} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+              [co2Kg, <MetricWithNotes key="co2" label={<>CO₂ avoided <InfoTip term="co2_reduction" /></>} data={co2Kg} unit="kg/yr" format={(v) => formatNumber(v, 0)} />],
+            ] as const;
+            const shown = items.filter(([d]) => d.value !== null).map(([, n]) => n);
+            return shown.length ? <div className="grid gap-4 sm:grid-cols-2">{shown}</div> : <ResultsHint>Enter your monthly use (or bill) and a system size on the left, and the yearly figures appear here.</ResultsHint>;
+          })()}
         </section>
 
         <section aria-labelledby="lifetime-heading">
           <h2 id="lifetime-heading" className="mb-3 text-[17px] font-semibold text-fg-heading">Over the analysis period</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <MetricWithNotes label={<>Payback period <InfoTip term="payback_period" /></>} data={payback} unit="years" format={(v) => formatNumber(v, 1)} />
-            <MetricWithNotes label="Upfront cost" data={upfront} format={(v) => formatMoney(v, CURRENCY, 0)} />
-            <MetricWithNotes label={<>Lifetime savings <InfoTip term="degradation" /></>} data={lifetimeSavings} format={(v) => formatMoney(v, CURRENCY, 0)} />
-            <MetricWithNotes label={<>Total cost of ownership <InfoTip term="tco" /></>} data={tco} format={(v) => formatMoney(v, CURRENCY, 0)} />
-            <MetricWithNotes label="Net benefit over the period" data={netBenefit} format={(v) => formatMoney(v, CURRENCY, 0)} className="sm:col-span-2" />
-          </div>
+          {(() => {
+            const items = [
+              [payback, <MetricWithNotes key="pb" label={<>Payback period <InfoTip term="payback_period" /></>} data={payback} unit="years" format={(v) => formatNumber(v, 1)} />],
+              [upfront, <MetricWithNotes key="u" label="Upfront cost" data={upfront} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+              [lifetimeSavings, <MetricWithNotes key="ls" label={<>Lifetime savings <InfoTip term="degradation" /></>} data={lifetimeSavings} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+              [tco, <MetricWithNotes key="t" label={<>Total cost of ownership <InfoTip term="tco" /></>} data={tco} format={(v) => formatMoney(v, CURRENCY, 0)} />],
+              [netBenefit, <MetricWithNotes key="n" label="Net benefit over the period" data={netBenefit} format={(v) => formatMoney(v, CURRENCY, 0)} className="sm:col-span-2" />],
+            ] as const;
+            const shown = items.filter(([d]) => d.value !== null).map(([, n]) => n);
+            return shown.length ? <div className="grid gap-4 sm:grid-cols-2">{shown}</div> : <ResultsHint>Add the system and installation costs from your quotes, and payback, lifetime savings and cost of ownership appear here.</ResultsHint>;
+          })()}
         </section>
 
         <Card>
@@ -259,7 +264,7 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
             {tco.breakdown ? (
               <BarChart ariaLabel="Total cost of ownership breakdown" data={Object.entries(tco.breakdown).map(([label, value]) => ({ label, value }))} formatY={(v) => formatNumber(v, 0)} color="var(--series-2)" height={220} />
             ) : (
-              <UnavailableState title="Breakdown unavailable">{tco.reason}</UnavailableState>
+              <p className="text-[13px] leading-relaxed text-fg-secondary">The breakdown draws here once each cost and the analysis period have amounts.</p>
             )}
           </CardBody>
         </Card>
@@ -270,16 +275,18 @@ export function SavingsCalculator({ settings, mode, panels = [] }: { settings: P
             {cumulative ? (
               <LineChart series={cumulative} area={false} height={240} formatX={(x) => `Y${x}`} formatY={(v) => formatNumber(v, 0)} yLabel={CURRENCY} ariaLabel="Cumulative savings versus cumulative cost by year" />
             ) : (
-              <UnavailableState title="Chart unavailable">
-                Needs annual production, the tariff, the analysis horizon, the degradation rate, and the system and installation costs.
-                {!isNum(upfront.value) && <div className="mt-2"><Placeholder k="INSTALLATION_PRICE" /></div>}
-              </UnavailableState>
+              <p className="text-[13px] leading-relaxed text-fg-secondary">The payback chart draws here once production, the costs and the analysis period are all set.</p>
             )}
           </CardBody>
         </Card>
 
-        <DataLegend classes={["source", "calculated", "estimated", "user", "unavailable"]} />
+        <DataLegend classes={["source", "calculated", "estimated", "user"]} />
       </div>
     </div>
   );
+}
+
+/** Where results will appear, and which inputs bring them. */
+function ResultsHint({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-[var(--radius-lg)] border border-border bg-inset p-4 text-[13px] leading-relaxed text-fg-secondary">{children}</div>;
 }

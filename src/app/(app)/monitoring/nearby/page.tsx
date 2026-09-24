@@ -1,11 +1,8 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { Metric } from "@/components/ui/Metric";
+import { Metric, hasValue } from "@/components/ui/Metric";
 import { InfoTip } from "@/components/help/InfoTip";
 import { listProduction } from "@/lib/data/repositories";
-import { unavailable } from "@/lib/classification";
 import { NoSystemState } from "../../_operate/components/NoSystemState";
 import { loadOperateContext } from "../../_operate/loadSystem";
 import { productionCls, specificYield } from "../../_operate/production";
@@ -35,26 +32,16 @@ export default async function NearbyPage() {
         />
         <CardBody className="space-y-4">
           {cls === "demo" && <DemoBanner text="SIMULATED PRODUCTION — NOT REAL" detail="Your side of this comparison is built from the demo series." />}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Metric
-              label="Your specific yield"
-              term="specific_yield"
-              data={yieldC}
-              unit="kWh/kWp"
-              format={(v) => Math.round(v).toLocaleString("en-US")}
-            />
-            <Metric
-              label="Area average"
-              term="specific_yield"
-              data={unavailable("No anonymised area data is available. [PLACEHOLDER: ANONYMIZED NEARBY SYSTEM DATA]")}
-              unit="kWh/kWp"
-            />
-          </div>
-          <p className="text-[13px] leading-relaxed text-fg-muted">
-            The comparison column stays empty rather than showing a plausible-looking figure. A number
-            here would change how you read your own performance, so it has to come from real systems.
+          {hasValue(yieldC) && (
+            <div className="grid gap-3 sm:max-w-sm">
+              <Metric label="Your specific yield" term="specific_yield" data={yieldC} unit="kWh/kWp" format={(v) => Math.round(v).toLocaleString("en-US")} />
+            </div>
+          )}
+          <p className="text-[13px] leading-relaxed text-fg-secondary">
+            The area average is published from real, anonymised systems in your governorate. Solink
+            never fills it with a plausible-looking figure, because it changes how you read your own
+            performance.
           </p>
-          <PlaceholderNote k="ANONYMIZED_NEARBY_SYSTEM_DATA" />
         </CardBody>
       </Card>
 
@@ -77,7 +64,7 @@ export default async function NearbyPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Privacy rules this has to meet first" action={<DataBadge cls="unavailable" compact />} />
+        <CardHeader title="The privacy rules behind it" />
         <CardBody>
           <ul className="space-y-2.5 text-[13.5px] leading-relaxed text-fg-secondary">
             <li>
@@ -97,13 +84,13 @@ export default async function NearbyPage() {
               or anything that could be traced back to a specific installation.
             </li>
             <li>
-              <strong className="text-fg">A decision on participation.</strong> Whether contributing is
-              opt-in, and what a household gets for it, has not been decided.
+              <strong className="text-fg">Participation settled first.</strong> How a household
+              takes part is decided before any area figure is published.
             </li>
           </ul>
           <p className="mt-3 text-[13px] leading-relaxed text-fg-muted">
-            The database already reserves an aggregates table that stores only an area code, a period,
-            a system count and an average yield. It holds no per-household rows by design.
+            Solink stores only an area, a period, a system count and an average yield for this. It
+            keeps no household&rsquo;s own readings in the comparison.
           </p>
         </CardBody>
       </Card>

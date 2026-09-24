@@ -55,7 +55,7 @@ export function YearlyTable({ rows, cls }: { rows: YearRow[]; cls: DataClass }) 
                     <DataBadge cls={r.yieldPerKwp.cls} compact />
                   </span>
                 ) : (
-                  <span className="text-fg-muted" title={r.yieldPerKwp.reason}>Unavailable</span>
+                  <span className="text-fg-na" title={r.yieldPerKwp.reason}>{r.complete ? "Needs capacity" : "Partial year"}</span>
                 )}
               </td>
               <td className="tabular py-2.5 pr-3 text-fg-secondary">{r.incidents}</td>

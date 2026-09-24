@@ -1,7 +1,6 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Metric } from "@/components/ui/Metric";
-import { Placeholder } from "@/components/ui/Placeholder";
+import { Metric, hasValue } from "@/components/ui/Metric";
 import type { Classified, DataClass } from "@/lib/classification";
 import { DEMO_PRODUCTION_BANNER } from "@/lib/demo/data";
 import { AiExplainButton } from "../../_ops/AiExplainButton";
@@ -18,11 +17,10 @@ export interface PredictiveSignals {
 
 /**
  * Feature 19/34 — Predictive maintenance. Only deterministic signals from the
- * data Solink actually has. No failure prediction is made: alert thresholds and
- * degradation rates are not defined, so the strongest statement allowed is
- * that an inspection may be recommended.
+ * data Solink actually has. No failure prediction is made; the strongest
+ * statement allowed is that an inspection may be recommended.
  */
-export function PredictiveCard({ signals, systemId }: { signals: PredictiveSignals; systemId?: string }) {
+export function PredictiveCard({ signals, systemId, thresholds = null }: { signals: PredictiveSignals; systemId?: string; thresholds?: string | null }) {
   const trend = signals.trend.value;
   const declining = trend !== null && trend < 0;
   const anySignal = declining || signals.repeatedIncidents.value >= 2;
@@ -32,22 +30,23 @@ export function PredictiveCard({ signals, systemId }: { signals: PredictiveSigna
       <CardBody className="space-y-3">
         {signals.productionCls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} detail="The production trend below is computed from a simulated series." />}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Metric label="Production trend" term="production_trend" data={signals.trend} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}
-            footnote={signals.trend.value === null ? undefined : `Last 7 days (${signals.trendWindow.last7Days} records) vs the 30 days before (${signals.trendWindow.previous30Days} records)`} />
+          {hasValue(signals.trend) && <Metric label="Production trend" term="production_trend" data={signals.trend} format={(v) => `${v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}
+            footnote={signals.trend.value === null ? undefined : `Last 7 days (${signals.trendWindow.last7Days} records) vs the 30 days before (${signals.trendWindow.previous30Days} records)`} />}
           <Metric label="Incidents, last 12 months" term="repeated_incidents" data={{ value: signals.repeatedIncidents.value, cls: signals.repeatedIncidents.cls, source: "Incident records" }} format={(v) => String(v)} />
-          <Metric label="System age" term="system_age" data={signals.systemAgeYears} unit="years" format={(v) => v.toFixed(1)} />
-          <Metric label="Product warranty remaining" term="product_warranty" data={signals.warrantyYearsRemaining} unit="years" format={(v) => v.toFixed(1)} footnote={signals.warrantyYearsRemaining.value !== null && signals.warrantyYearsRemaining.value < 0 ? "Product warranty period has ended (calculated)." : undefined} />
+          {hasValue(signals.systemAgeYears) && <Metric label="System age" term="system_age" data={signals.systemAgeYears} unit="years" format={(v) => v.toFixed(1)} />}
+          {hasValue(signals.warrantyYearsRemaining) && <Metric label="Product warranty remaining" term="product_warranty" data={signals.warrantyYearsRemaining} unit="years" format={(v) => v.toFixed(1)} footnote={signals.warrantyYearsRemaining.value !== null && signals.warrantyYearsRemaining.value < 0 ? "Product warranty period has ended (calculated)." : undefined} />}
         </div>
+        {!hasValue(signals.systemAgeYears) && <p className="text-[12.5px] text-fg-muted">System age and warranty remaining appear once your installation date is in your Solar Passport.</p>}
         <div className="rounded-[10px] border border-border bg-inset p-3 text-[13px] leading-relaxed text-fg-secondary">
           {anySignal ? (
             <>
               <span className="font-semibold text-fg">Inspection may be recommended based on the available performance data.</span>{" "}
               {declining && <>Recent production is below the previous 30-day average. </>}
               {signals.repeatedIncidents.value >= 2 && <>Several incidents were recorded in the last year. </>}
-              Whether this decline is unusual cannot be judged without defined thresholds: <Placeholder k="PRODUCTION_ALERT_THRESHOLDS" />.
+              {thresholds && <>Solink&apos;s alert thresholds: {thresholds}.</>}
             </>
           ) : (
-            <>No signal from the available data. This is not a guarantee of health: without a monitoring integration (<Placeholder k="SOLAR_MONITORING_HARDWARE_API" />) and defined thresholds (<Placeholder k="PRODUCTION_ALERT_THRESHOLDS" />), Solink only reports what it can compute.</>
+            <>No signal from your records. Solink reports only what it can compute from them, so this is not a guarantee of health.{thresholds && <> Alert thresholds: {thresholds}.</>}</>
           )}
         </div>
         <AiExplainButton subject="maintenance" systemId={systemId} payload={{

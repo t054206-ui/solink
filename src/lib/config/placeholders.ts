@@ -81,3 +81,61 @@ export const PLACEHOLDER_NOTES: Record<PlaceholderKey, string> = {
 export function placeholder(key: PlaceholderKey): string {
   return PLACEHOLDERS[key];
 }
+
+/**
+ * What a homeowner reads in place of a placeholder token (owner, 2026-09-24).
+ * Homeowner screens never show "[PLACEHOLDER: …]", "N/A" or configuration
+ * instructions: a missing value is hidden, asked for as an ordinary input, or
+ * described in product words. `null` means "say nothing": configuration and
+ * operator matters are not the homeowner's concern. The raw tokens and the
+ * notes above stay the audit trail, and admin / provider / manufacturer pages
+ * (which run in audit mode, see <AuditMode>) still show them.
+ */
+export const PLACEHOLDER_PRODUCT: Record<PlaceholderKey, string | null> = {
+  ELECTRICITY_TARIFF: "your electricity rate",
+  REAL_SOLAR_PANEL_DATA_SOURCE: null,
+  SOLAR_PANEL_DATA_IMPORT_METHOD: null,
+  PAYMENT_PROVIDER: "Panels are bought from the supplier listed on each product.",
+  EMAIL_NOTIFICATION_PROVIDER: "Updates appear here in Solink.",
+  SOLAR_MONITORING_HARDWARE_API: "Readings appear once your inverter or meter reports to Solink.",
+  PANEL_LEVEL_MONITORING_DATA_SOURCE: "Per-panel readings need optimizers or micro-inverters.",
+  ANONYMIZED_NEARBY_SYSTEM_DATA: null,
+  ADMIN_AUTHENTICATION_PERMISSIONS: null,
+  CLAUDE_API_KEY: null,
+  WEATHER_API_KEY: null,
+  GOOGLE_MAPS_API_KEY: null,
+  GOOGLE_SOLAR_SITE_DATA_SOURCE: null,
+  SOLAR_RESOURCE_DATA_SOURCE: "the regional sun-hours figure",
+  MAINTENANCE_PRICE: "your provider's quote",
+  TCO_PERIOD: "the analysis period",
+  PRODUCTION_ALERT_THRESHOLDS: "the alert thresholds",
+  EXPECTED_PANEL_DEGRADATION_RATE: "the panel's warranty curve",
+  END_OF_LIFE_CRITERIA: "the replacement criteria",
+  GRID_CO2_EMISSION_FACTOR: "the grid emission factor",
+  SYSTEM_LOSS_FACTOR: "the system loss factor",
+  INSTALLATION_PRICE: "your installer's quote",
+  SUPABASE_PROJECT: null,
+  OTHER_REQUIRED_KEYS: null,
+  LEGAL_OPERATOR: null,
+  LEGAL_CONTACT: null,
+  GOVERNING_LAW: null,
+  ROOF_LOAD_CAPACITY: "your roof's load rating",
+};
+
+const TOKEN_TO_KEY = new Map<string, PlaceholderKey>(Object.entries(PLACEHOLDERS).map(([k, v]) => [v, k as PlaceholderKey]));
+const TOKEN = /\s*\[PLACEHOLDER:[^\]]*\]\.?/g;
+
+/**
+ * Removes placeholder tokens from homeowner-facing text: a known token becomes
+ * its product phrase (or disappears when that is null), an unknown one
+ * disappears. The sentence around it is kept; a value is never invented.
+ */
+export function productText(s: string): string {
+  if (!s.includes("[PLACEHOLDER")) return s;
+  return s.replace(TOKEN, (m) => {
+    const key = TOKEN_TO_KEY.get(m.trim().replace(/\.$/, ""));
+    const phrase = key ? PLACEHOLDER_PRODUCT[key] : null;
+    if (!phrase) return "";
+    return phrase.endsWith(".") ? ` ${phrase}` : ` (${phrase})`;
+  }).replace(/\s+\(\s*\)/g, "").replace(/:\s*$/, ".").replace(/\s{2,}/g, " ").trim();
+}

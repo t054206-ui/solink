@@ -5,16 +5,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Metric } from "@/components/ui/Metric";
-import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
-import { EmptyState, UnavailableState } from "@/components/ui/States";
+import { Metric, hasValue } from "@/components/ui/Metric";
+import { EmptyState } from "@/components/ui/States";
 import { InfoTip } from "@/components/help/InfoTip";
 import { BarChart } from "@/components/charts/BarChart";
 import { type Classified, type DataClass, unavailable } from "@/lib/classification";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
+import { PLACEHOLDERS, productText } from "@/lib/config/placeholders";
 import { DEMO_PRODUCTION_BANNER } from "@/lib/demo/data";
 import type { Incident, MaintenanceCase, MonthlyReport } from "@/lib/types";
-import { formatDate, formatMoney, specText } from "@/lib/utils";
+import { formatDate, formatMoney, specNum, specText } from "@/lib/utils";
 import { AiExplainButton } from "../../_ops/AiExplainButton";
 import { MAINT_KIND, MAINT_STATUS } from "../../_ops/meta";
 import { fmtKwh, fmtPct, monthLabel, previousMonth } from "../../_ops/production";
@@ -38,7 +37,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
   const activity = m.incidents + m.cleanings + m.repairs + m.replacements;
 
   const energy: Classified = report.energy.total_kwh === null
-    ? unavailable(`No production records were available for ${monthLabel(report.month)}. ${PLACEHOLDERS.SOLAR_MONITORING_HARDWARE_API}`)
+    ? unavailable(`No production records were available for ${monthLabel(report.month)}.`)
     : { value: report.energy.total_kwh, cls: report.energy.cls, source: report.energy.cls === "demo" ? "Simulated series" : "Daily production records" };
 
   const trend: Classified = report.energy.trend_pct === null
@@ -46,15 +45,15 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
     : { value: report.energy.trend_pct, cls: report.energy.cls === "demo" ? "demo" : "calculated", source: "Solink calculator", notes: [`Versus ${monthLabel(previousMonth(report.month))}`] };
 
   const savings: Classified = report.financial.estimated_savings === null
-    ? unavailable(PLACEHOLDERS.ELECTRICITY_TARIFF)
+    ? unavailable("Savings need an electricity rate and this month's production.")
     : { value: report.financial.estimated_savings, cls: report.financial.cls, source: "Solink calculator", notes: report.financial.notes };
 
   const maintenanceCost: Classified = report.financial.maintenance_costs === null
-    ? unavailable(activity === 0 ? "No maintenance work was recorded in this month." : PLACEHOLDERS.MAINTENANCE_PRICE)
+    ? unavailable(activity === 0 ? "No maintenance work was recorded in this month." : "No cost was entered for this month's work.")
     : { value: report.financial.maintenance_costs, cls: "source", source: "Recorded maintenance costs" };
 
   const co2: Classified = report.environmental.co2_kg === null
-    ? unavailable(PLACEHOLDERS.GRID_CO2_EMISSION_FACTOR)
+    ? unavailable("CO₂ avoided needs this month's production.")
     : { value: report.environmental.co2_kg, cls: report.environmental.cls, source: "Solink calculator", notes: report.environmental.notes };
 
   const hasAi = report.ai.cls === "ai" && (report.ai.observations.length > 0 || report.ai.issues.length > 0 || report.ai.recommendations.length > 0);
@@ -96,16 +95,16 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
         <CardHeader title={<>Energy <InfoTip term="energy_production" /></>} subtitle={`What the system produced in ${monthLabel(report.month)}, from the daily records Solink holds.`} />
         <CardBody className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Metric label="Total produced" term="energy_production" data={energy} format={(v) => fmtKwh(v, 1)} energy />
-            <Metric
+            {hasValue(energy) && <Metric label="Total produced" term="energy_production" data={energy} format={(v) => fmtKwh(v, 1)} energy />}
+            {hasValue(trend) && <Metric
               label={<span className="inline-flex items-center gap-1.5">Change vs previous month {report.energy.trend_pct !== null && (report.energy.trend_pct < 0 ? <TrendingDown className="size-3.5 text-serious-fg" aria-hidden /> : <TrendingUp className="size-3.5 text-good-fg" aria-hidden />)}</span>}
               data={trend}
               format={(v) => fmtPct(v)}
-            />
+            />}
           </div>
 
           {breakdown.length === 0 ? (
-            <UnavailableState title="No daily breakdown available">The daily records behind this month are no longer in the loaded range, so the chart cannot be drawn.</UnavailableState>
+            <p className="text-[12.5px] text-fg-muted">The daily chart is drawn from this month&apos;s daily records when they are loaded.</p>
           ) : (
             <div className="space-y-2">
               {breakdownCls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} />}
@@ -125,17 +124,17 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
         <CardHeader title="Financial" subtitle="What the month's production may have been worth, and what maintenance cost." />
         <CardBody className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Metric label="Estimated savings" term="estimated_savings" data={savings} format={(v) => formatMoney(v, currency, 2)} />
-            <Metric label="Maintenance costs" term="maintenance_costs" data={maintenanceCost} format={(v) => formatMoney(v, currency, 2)} />
+            {hasValue(savings) && <Metric label="Estimated savings" term="estimated_savings" data={savings} format={(v) => formatMoney(v, currency, 2)} />}
+            {hasValue(maintenanceCost) && <Metric label="Maintenance costs" term="maintenance_costs" data={maintenanceCost} format={(v) => formatMoney(v, currency, 2)} />}
           </div>
           {report.financial.notes.length > 0 && (
             <ul className="space-y-0.5 text-[11.5px] leading-snug text-fg-muted">
-              {report.financial.notes.map((n, i) => <li key={i} className="break-words">· {n}</li>)}
+              {report.financial.notes.map((n) => productText(n)).filter(Boolean).map((n, i) => <li key={i} className="break-words">· {n}</li>)}
             </ul>
           )}
           {report.financial.estimated_savings === null && (
             <p className="text-[13px] leading-relaxed text-fg-secondary">
-              Savings cannot be calculated without a price per kWh: <Placeholder k="ELECTRICITY_TARIFF" />. Solink will not multiply your production by a guessed tariff.
+              Savings are worked out from this month&apos;s production at your electricity rate. Solink never multiplies production by a guessed rate.
             </p>
           )}
         </CardBody>
@@ -165,7 +164,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
                     <span className="ml-auto tabular">{formatDate(i.occurred_at)}</span>
                   </div>
                   <p className="mt-0.5 text-[13.5px] text-fg">{i.reported_problem}</p>
-                  <p className="text-[12.5px] text-fg-secondary">Cost: {specText(i.cost)}</p>
+                  {specNum(i.cost) !== null && <p className="text-[12.5px] text-fg-secondary">Cost: {specText(i.cost)}</p>}
                 </li>
               ))}
               {cases.map((c) => (
@@ -176,12 +175,12 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
                     <span className="ml-auto tabular">{formatDate(c.appointment_at ?? c.updated_at)}</span>
                   </div>
                   <p className="mt-0.5 text-[13.5px] text-fg">{c.work_performed ?? c.detected_issue}</p>
-                  <p className="text-[12.5px] text-fg-secondary">Cost: {specText(c.cost)}</p>
+                  {specNum(c.cost) !== null && <p className="text-[12.5px] text-fg-secondary">Cost: {specText(c.cost)}</p>}
                 </li>
               ))}
             </ul>
           )}
-          <p className="text-[11.5px] text-fg-muted">Counts come from the records themselves. A cost appears only where a provider or technician entered one: <Placeholder k="MAINTENANCE_PRICE" /></p>
+          <p className="text-[11.5px] text-fg-muted">Counts come from the records themselves. A cost appears where a provider or technician entered one.</p>
         </CardBody>
       </Card>
 
@@ -189,8 +188,9 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
       <Card className="print-break">
         <CardHeader title={<><Leaf className="size-4 text-good-fg" aria-hidden /> Environmental</>} subtitle="CO₂ avoided by producing this energy instead of drawing it from the grid." />
         <CardBody className="space-y-3">
-          <Metric label="CO₂ avoided" term="co2_reduction" data={co2} format={(v) => `${Math.round(v).toLocaleString("en-US")} kg`} className="sm:max-w-sm" />
-          {report.environmental.co2_kg === null && <PlaceholderNote k="GRID_CO2_EMISSION_FACTOR" />}
+          {hasValue(co2) ? <Metric label="CO₂ avoided" term="co2_reduction" data={co2} format={(v) => `${Math.round(v).toLocaleString("en-US")} kg`} className="sm:max-w-sm" /> : (
+            <p className="text-[13px] leading-relaxed text-fg-secondary">CO₂ avoided is worked out from this month&apos;s production at the grid emission factor.</p>
+          )}
           {report.environmental.notes.length > 0 && report.environmental.co2_kg !== null && (
             <ul className="space-y-0.5 text-[11.5px] text-fg-muted">{report.environmental.notes.map((n, i) => <li key={i}>· {n}</li>)}</ul>
           )}
@@ -202,7 +202,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
         <CardHeader
           title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> AI observations</>}
           subtitle="An interpretation of this month's records. It is generated only when you ask for it, and it is never treated as measurement."
-          action={hasAi ? <DataBadge cls="ai" compact /> : <DataBadge cls="unavailable" compact />}
+          action={hasAi ? <DataBadge cls="ai" compact /> : undefined}
         />
         <CardBody className="space-y-4">
           {hasAi ? (
@@ -213,9 +213,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
               <p className="text-[11.5px] text-fg-muted">Generated by the AI Solar Agent from the records above. It can be wrong and should be checked.</p>
             </div>
           ) : (
-            <UnavailableState title="AI observations unavailable">
-              No AI interpretation is stored for this report. Ask for one below. The AI reads this month&apos;s figures, including the ones that are missing, and says so rather than inventing them.
-            </UnavailableState>
+            <p className="text-[13px] leading-relaxed text-fg-secondary">Ask for an interpretation of this month&apos;s records. The AI reads the figures above and never invents the ones that are not there.</p>
           )}
           <AiExplainButton
             className="print:hidden"
@@ -251,7 +249,7 @@ export function ReportView({ report, systemName, breakdown, breakdownCls, cases,
             <span className="text-[13px] text-fg-secondary">Opens your browser&apos;s print dialog, where you can choose &ldquo;Save as PDF&rdquo;.</span>
           </div>
           <p className="text-[12.5px] leading-relaxed text-fg-muted">
-            Solink does not generate a PDF on the server, and does not store one. A server-side PDF (with a stable file name, archived per month and attachable to an email) is a future step; it needs a rendering service and <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" /> before a report can be delivered anywhere.
+            Your browser saves the PDF. Solink keeps the report itself, so you can print it again at any time.
           </p>
         </CardBody>
       </Card>

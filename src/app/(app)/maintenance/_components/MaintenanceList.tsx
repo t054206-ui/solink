@@ -6,6 +6,8 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/States";
+import { Button } from "@/components/ui/Button";
+import { MaintenanceArt } from "@/components/illustrations/Illustrations";
 import { Select, Label } from "@/components/ui/Form";
 import type { DataMode } from "@/lib/data/mode";
 import type { Appointment, MaintenanceCase, MaintenanceKind, MaintenanceStatus, ProviderCompany, SolarSystem } from "@/lib/types";
@@ -55,11 +57,29 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
       {/* The maintenance path: the same three figures as before, in the order the work happens.
           A step's colour follows its own record: done green, due amber, nothing on file neutral. */}
       <ol aria-label="Maintenance path" className="grid gap-3 sm:grid-cols-3">
-        <PathStep n={1} icon={Droplets} label="Clean · last cleaning" value={lastCleaning ? formatDate(lastCleaning) : "No record"} sub={lastCleaning ? "From a resolved cleaning case" : "No completed cleaning case on file"} tone={lastCleaning ? "good" : "none"} />
+        <PathStep n={1} icon={Droplets} label="Clean · last cleaning" value={lastCleaning ? formatDate(lastCleaning) : "Not yet"} sub={lastCleaning ? "From a resolved cleaning case" : "Book one when dust builds up"} tone={lastCleaning ? "good" : "none"} />
         <PathStep n={2} icon={CalendarClock} label="Next appointment" value={nextAppt ? formatDate(nextAppt.at, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "None scheduled"} sub={nextAppt ? nextAppt.label : "Book one when needed"} tone={nextAppt ? "due" : "none"} />
         <PathStep n={3} icon={ClipboardList} label="Maintain · open cases" value={String(openCount)} sub={`${cases.length} total`} tone={openCount > 0 ? "due" : "good"} last />
       </ol>
 
+      {cases.length === 0 ? (
+        // No cases at all: a small, settled status with the booking actions,
+        // instead of an empty list with filters (owner, 2026-09-24).
+        <Card>
+          <CardBody className="grid items-center gap-5 p-5 sm:grid-cols-[10rem_minmax(0,1fr)]">
+            <MaintenanceArt className="mx-auto max-w-[10rem]" />
+            <div>
+              <p className="micro" style={{ color: "var(--fg-mustard)" }}>Maintenance history</p>
+              <p className="mt-1.5 text-[16px] font-semibold text-fg-heading">No maintenance booked yet</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-fg-secondary">Every cleaning, inspection and repair you book is kept here with its full history.</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button href="/maintenance/book?kind=cleaning" size="sm"><Droplets className="size-4" aria-hidden /> Book cleaning</Button>
+                <Button href="/maintenance/book?kind=inspection" size="sm" variant="outline"><ClipboardList className="size-4" aria-hidden /> Book inspection</Button>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      ) : (
       <Card>
         <div className="flex flex-col gap-3 border-b border-border px-5 py-4 md:flex-row md:items-end md:justify-between">
           <div role="tablist" aria-label="Filter by status" className="flex gap-1 overflow-x-auto -mx-1 px-1">
@@ -80,9 +100,7 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
         </div>
         <CardBody className="pt-4">
           {filtered.length === 0 ? (
-            <EmptyState title={cases.length === 0 ? "No maintenance cases yet" : "No cases match these filters"}>
-              {cases.length === 0 ? <>When Solink detects a signal or you book a service, the case appears here with its full history.</> : <>Try another status or type.</>}
-            </EmptyState>
+            <EmptyState title="No cases match these filters" className="py-6">Try another status or type.</EmptyState>
           ) : (
             <ul className="divide-y divide-border">
               {filtered.map((c) => (
@@ -112,6 +130,7 @@ export function MaintenanceList({ mode, serverCases, serverAppointments, provide
           )}
         </CardBody>
       </Card>
+      )}
     </div>
   );
 }

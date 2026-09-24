@@ -1,5 +1,4 @@
 import { askClaudeJson, isClaudeConfigured } from "@/lib/ai/claude";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { requireUser } from "@/lib/api/auth";
 import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
 import { sniffFileType } from "@/lib/files/sniffFileType";
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
   if ("response" in gate) return gate.response;
   const limited = await checkRateLimit(rateLimitKey(req, gate.user.id === "demo" ? null : gate.user.id, "ai/inspect-image"), LIMITS.ai);
   if (limited) return limited;
-  if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `Image inspection is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });
+  if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: "Photo screening isn't available right now." }, { status: 503 });
   const form = await req.formData().catch(() => null);
   const file = form?.get("image");
   const note = String(form?.get("note") ?? "");

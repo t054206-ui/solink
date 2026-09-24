@@ -1,13 +1,14 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Placeholder } from "@/components/ui/Placeholder";
+import { ReadinessRing } from "@/components/illustrations/Illustrations";
+import { thresholdsFact } from "@/lib/content/platformFacts";
 import { InfoTip } from "@/components/help/InfoTip";
 import type { PlatformSettings } from "@/lib/data/settings";
 import { DEMO_PRODUCTION_BANNER } from "@/lib/demo/data";
 import { formatNumber } from "@/lib/solar/calculations";
 import type { ProductionRecord } from "@/lib/types";
-import { deriveStatus, sevenVsThirty } from "../production";
+import { SIGNAL_WINDOW_DAYS, deriveStatus, sevenVsThirty } from "../production";
 import { StatusPill } from "./StatusPill";
 
 /**
@@ -18,25 +19,37 @@ export function SignalsCard({ records, settings, className }: { records: Product
   const signal = sevenVsThirty(records);
   const derived = deriveStatus(signal, settings, records);
   const dev = signal.deviation;
+  const th = thresholdsFact(settings);
+  const building = dev.value === null;
+  const days = new Set(records.map((r) => r.period_start.slice(0, 10))).size;
   return (
     <Card className={className}>
-      <CardHeader title={<>Signals <InfoTip term="energy_production" /></>} subtitle="Deterministic comparison of recent output with the preceding month. Not an AI interpretation." action={<StatusPill status={derived.status} />} />
+      <CardHeader title={<>Signals <InfoTip term="energy_production" /></>} subtitle="Your last 7 days against the 30 before. Plain arithmetic, not an AI interpretation." action={building ? undefined : <StatusPill status={derived.status} />} />
       <CardBody className="space-y-3">
         {derived.cls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} />}
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <Stat label="7-day mean" value={signal.last7Mean === null ? "—" : `${formatNumber(signal.last7Mean, 1)} kWh`} />
-          <Stat label="Prev. 30-day mean" value={signal.prev30Mean === null ? "—" : `${formatNumber(signal.prev30Mean, 1)} kWh`} />
-          <Stat label="Deviation" value={dev.value === null ? "—" : `${dev.value >= 0 ? "+" : ""}${(dev.value * 100).toFixed(1)}%`} tone={dev.value === null ? undefined : dev.value < 0 ? "down" : "up"} />
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-[12px] text-fg-muted">
-          <DataBadge cls={dev.value === null ? "unavailable" : dev.cls} compact />
-          <span>{dev.notes?.[0] ?? dev.reason}</span>
-        </div>
-        <p className="text-[13.5px] font-medium text-fg">{derived.headline}</p>
-        <ul className="list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">{derived.lines.map((l) => <li key={l}>{l}</li>)}</ul>
-        {!derived.thresholdsDefined && (
-          <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-fg-muted">Thresholds: <Placeholder k="PRODUCTION_ALERT_THRESHOLDS" /></div>
+        {building ? (
+          // Until enough days are on file the card shows how far along it is,
+          // counting only real records; no mean or deviation is drawn.
+          <>
+            <ReadinessRing value={Math.min(days, SIGNAL_WINDOW_DAYS)} total={SIGNAL_WINDOW_DAYS} label="days of records" />
+            <p className="text-[13px] leading-relaxed text-fg-secondary">Signals start once {SIGNAL_WINDOW_DAYS} days of daily records are on file: 7 recent days to compare with the 30 before them.</p>
+          </>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <Stat label="7-day mean" value={`${formatNumber(signal.last7Mean ?? 0, 1)} kWh`} />
+              <Stat label="Prev. 30-day mean" value={`${formatNumber(signal.prev30Mean ?? 0, 1)} kWh`} />
+              <Stat label="Deviation" value={`${dev.value! >= 0 ? "+" : ""}${(dev.value! * 100).toFixed(1)}%`} tone={dev.value! < 0 ? "down" : "up"} />
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[12px] text-fg-muted">
+              <DataBadge cls={dev.cls} compact />
+              <span>{dev.notes?.[0]}</span>
+            </div>
+            <p className="text-[13.5px] font-medium text-fg">{derived.headline}</p>
+            <ul className="list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">{derived.lines.map((l) => <li key={l}>{l}</li>)}</ul>
+          </>
         )}
+        {th && <p className="text-[12.5px] text-fg-muted"><span className="font-medium text-fg-secondary">Thresholds:</span> {th.text}.</p>}
       </CardBody>
     </Card>
   );

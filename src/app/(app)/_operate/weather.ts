@@ -20,7 +20,7 @@ export type WeatherState =
 
 /** US EPA index (1–6) as published by WeatherAPI.com. Descriptive only. */
 export function epaIndexLabel(i: number | null): string {
-  if (i === null) return "Unavailable";
+  if (i === null) return "Not reported";
   return ["", "Good", "Moderate", "Unhealthy for sensitive groups", "Unhealthy", "Very unhealthy", "Hazardous"][i] ?? `Index ${i}`;
 }
 

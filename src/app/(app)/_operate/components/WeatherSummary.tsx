@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { CloudSun, Droplets, Wind, Sun, Thermometer, Cloud } from "lucide-react";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { UnavailableState, ErrorState } from "@/components/ui/States";
+import { UnavailableState } from "@/components/ui/States";
 import { InfoTip } from "@/components/help/InfoTip";
 import { formatDate } from "@/lib/utils";
 import { WEATHER_SOURCE, epaIndexLabel, fmtNum, type WeatherState } from "../weather";
@@ -12,20 +11,17 @@ export function WeatherFallback({ state, compact = false }: { state: WeatherStat
   if (state.status === "ok") return null;
   if (state.status === "no_location") {
     return (
-      <UnavailableState title="Location needed" className={compact ? "py-6" : undefined}>
+      <UnavailableState title="Add your location for local weather" className={compact ? "py-6" : undefined}>
         Run a site analysis in <Link href="/analysis" className="underline underline-offset-2">Solar Potential</Link>, or find your place in the <Link href="/placement" className="underline underline-offset-2">Placement Guide</Link>. The location either one resolves is kept, and weather and air quality for your home appear here.
       </UnavailableState>
     );
   }
   if (state.status === "not_configured") {
     return (
-      <div className="space-y-3">
-        <UnavailableState title="Weather is not connected" className={compact ? "py-6" : undefined}>Weather and air-quality intelligence comes only from {WEATHER_SOURCE}. It is not configured yet.</UnavailableState>
-        <PlaceholderNote k="WEATHER_API_KEY" />
-      </div>
+      <UnavailableState title="Local weather appears here" className={compact ? "py-6" : undefined}>Conditions and air quality at your home, from {WEATHER_SOURCE}.</UnavailableState>
     );
   }
-  return <ErrorState title="Weather could not be loaded" className={compact ? "py-6" : undefined}>{state.message}</ErrorState>;
+  return <UnavailableState title="Weather will be back shortly" className={compact ? "py-6" : undefined}>{state.message}</UnavailableState>;
 }
 
 /** Current conditions from WeatherAPI.com. Values are SOURCE data and labelled as such. */

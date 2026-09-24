@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   if (limited) return limited;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
-  if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `AI monitoring is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });
+  if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: "AI monitoring isn't available right now." }, { status: 503 });
   const { blocks } = await buildUserContext({ systemId: parsed.data.systemId });
   if (parsed.data.weather) blocks.push({ title: "weather", cls: "source", content: JSON.stringify(parsed.data.weather) });
   const r = await askClaudeJson<MonitorAssessment>({

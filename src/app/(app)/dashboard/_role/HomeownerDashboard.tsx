@@ -13,9 +13,7 @@ import { Activity, FileBadge, Wrench, AlertOctagon, FileText, ArrowRight, Sparkl
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Metric } from "@/components/ui/Metric";
-import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
-import { EmptyState } from "@/components/ui/States";
+import { Metric, hasValue } from "@/components/ui/Metric";
 import { InfoTip } from "@/components/help/InfoTip";
 import { classified, unavailable, type Classified } from "@/lib/classification";
 import { getPassport, getProfile, listAlerts, listMaintenance, listProduction, listSystems } from "@/lib/data/repositories";
@@ -25,7 +23,10 @@ import { DEMO_BANNER, DEMO_PRODUCTION_BANNER } from "@/lib/demo/data";
 import { annualSavings, co2AvoidedKg, formatNumber } from "@/lib/solar/calculations";
 import type { MaintenanceCase, SolarPassport, SolarProfile, SolarSystem } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { isClaudeConfigured } from "@/lib/ai/claude";
 import { AskSolink } from "../../_operate/components/AskSolink";
+import { MonitoringFlow } from "../../_operate/components/MonitoringFlow";
+import { RatesInUse } from "../../_operate/components/RatesInUse";
 import { DailyProductionChart } from "../../_operate/components/DailyProductionChart";
 import { MonthlyTotalsChart } from "../../_operate/components/MonthlyTotalsChart";
 import { StatusPill } from "../../_operate/components/StatusPill";
@@ -67,6 +68,7 @@ export default async function HomeownerDashboard() {
   const nextAppointment = nextAppointmentOf(maintenance);
   const unacked = alerts.filter((a) => !a.acknowledged);
 
+  const aiOn = isClaudeConfigured();
   const days30 = lastDays(production, 30);
   const months12 = monthlyTotals(production, 12);
 
@@ -75,7 +77,7 @@ export default async function HomeownerDashboard() {
       <SystemStage eyebrow="Overview" title={`Hello${isDemo ? ", demo homeowner" : ""}`} description={<>Your system <span className="font-medium text-fg">{system.name}</span> at a glance. Every figure says where it comes from.</>}
         actions={[{ href: "/monitoring", label: "Monitoring", icon: <Activity className="size-4" aria-hidden /> }, { href: "/agent", label: "Ask Solink", icon: <Sparkles className="size-4" aria-hidden />, primary: true }]}
         sun={sunNode(weather)} array={arrayNode(capacity, system.panel_count)} home={homeNode(today, system.monitoring_source)}
-        live={today.value !== null} idleLabel={system.monitoring_source === null ? "No monitoring connected" : "No reading today"}
+        live={today.value !== null} idleLabel={system.monitoring_source === null ? "Awaiting monitoring" : "Awaiting today's reading"}
         caption="An illustrative rooftop, not your installation." />
 
       {isDemo && <DemoBanner text={DEMO_BANNER} detail="This dashboard is built from a demo system and a simulated production series so you can see how Solink works." />}
@@ -86,18 +88,22 @@ export default async function HomeownerDashboard() {
 
       {prodCls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} detail="Today, this month, performance and cleaning status below are computed from that series." />}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Key figures">
-        <Metric label="Today's production" term="energy_production" data={today} unit="kWh" format={(v) => formatNumber(v, 1)} footnote={today.value === null ? undefined : `Record for ${formatDate(new Date().toISOString())}`} />
-        <Metric label="This month" term="kwh" data={month} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={month.notes?.[0]} />
-        <Metric label="Estimated savings (annual)" term="payback_period" data={savings} unit={assumptions.currency} format={(v) => formatNumber(v, 0)} footnote={savings.value === null ? (tariff.note ?? <Placeholder k="ELECTRICITY_TARIFF" />) : savings.notes?.[0]} />
-        <Metric label="CO₂ reduction (annual)" term="co2_reduction" data={co2} unit="kg" format={(v) => formatNumber(v, 0)} footnote={co2.value === null ? <Placeholder k="GRID_CO2_EMISSION_FACTOR" /> : co2.notes?.[0]} />
-        <Metric label="System capacity" term="system_capacity" data={capacity} unit="kWp" format={(v) => formatNumber(v, 1)} footnote={system.panel_count ? `${system.panel_count} panels · ${capacity.source}` : capacity.source} />
-        <Metric label="Performance (7d vs prev. 30d)" term="performance_ratio" data={signal.deviation} format={(v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}
-          footnote={<span className="inline-flex items-center gap-1">Thresholds: <Placeholder k="PRODUCTION_ALERT_THRESHOLDS" /></span>} />
-        <StatusCard title="Cleaning status" icon={SprayCan} href="/monitoring/cleaning" status={derived.status} cls={derived.cls}
-          lines={[derived.headline, cleaning ? `Last cleaning: ${formatDate(cleaning.appointment_at ?? cleaning.updated_at)}` : "No completed cleaning on record."]} />
-        <StatusCard title="Maintenance status" icon={Wrench} href="/maintenance" status={openCases.length ? "monitor" : "normal"} cls={isDemo ? "demo" : "source"} statusLabelOverride={openCases.length ? `${openCases.length} open case${openCases.length === 1 ? "" : "s"}` : "No open cases"}
-          lines={[nextAppointment ? `Next appointment: ${formatDate(nextAppointment.appointment_at!, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} (${nextAppointment.kind.replace("_", " ")})` : "No upcoming appointment."]} />
+      <section className="grid gap-4 lg:grid-cols-3" aria-label="Your system">
+        <SystemCard system={system} passport={passport} capacity={capacity} />
+        <div className="grid gap-4 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-2">
+          {/* Figures appear only when they have a value (owner, 2026-09-24): no empty N/A tiles. */}
+          {hasValue(today) && <Metric label="Today's production" term="energy_production" data={today} unit="kWh" format={(v) => formatNumber(v, 1)} footnote={`Record for ${formatDate(new Date().toISOString())}`} />}
+          {hasValue(month) && <Metric label="This month" term="kwh" data={month} unit="kWh" format={(v) => formatNumber(v, 0)} footnote={month.notes?.[0]} />}
+          {hasValue(savings) && <Metric label="Estimated savings (annual)" term="payback_period" data={savings} unit={assumptions.currency} format={(v) => formatNumber(v, 0)} footnote={savings.notes?.[0] ?? tariff.note ?? undefined} />}
+          {hasValue(co2) && <Metric label="CO₂ reduction (annual)" term="co2_reduction" data={co2} unit="kg" format={(v) => formatNumber(v, 0)} footnote={co2.notes?.[0]} />}
+          {hasValue(signal.deviation) && <Metric label="Performance (7d vs prev. 30d)" term="performance_ratio" data={signal.deviation} format={(v) => `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`}
+            footnote={settings.production_alert_thresholds ? `Watch below −${Math.abs(settings.production_alert_thresholds.warn_pct)} %, inspect below −${Math.abs(settings.production_alert_thresholds.alert_pct)} %` : undefined} />}
+          <StatusCard title="Cleaning" icon={SprayCan} href="/monitoring/cleaning" status={derived.status} cls={derived.cls}
+            statusLabelOverride={derived.status === "insufficient_data" ? (cleaning ? `Cleaned ${formatDate(cleaning.appointment_at ?? cleaning.updated_at)}` : "No cleaning booked yet") : undefined}
+            lines={derived.status === "insufficient_data" ? ["Book a cleaning whenever dust builds up."] : [derived.headline, cleaning ? `Last cleaning: ${formatDate(cleaning.appointment_at ?? cleaning.updated_at)}` : "No completed cleaning on record."]} />
+          <StatusCard title="Maintenance" icon={Wrench} href="/maintenance" status={openCases.length ? "monitor" : "normal"} cls={isDemo ? "demo" : "source"} statusLabelOverride={openCases.length ? `${openCases.length} open case${openCases.length === 1 ? "" : "s"}` : "No open cases"}
+            lines={[nextAppointment ? `Next appointment: ${formatDate(nextAppointment.appointment_at!, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} (${nextAppointment.kind.replace("_", " ")})` : "No upcoming appointment."]} />
+        </div>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3" aria-label="Weather and alerts">
@@ -106,10 +112,13 @@ export default async function HomeownerDashboard() {
           <CardBody><CurrentConditions state={weather} compact /></CardBody>
         </Card>
         <Card className="lg:col-span-2">
-          <CardHeader title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> AI alerts</>} subtitle={unacked.length ? `${unacked.length} unacknowledged` : "No unacknowledged alerts."} action={<Link href="/monitoring" className="text-[12.5px] font-medium text-fg-secondary hover:text-fg">Run assessment</Link>} />
+          <CardHeader title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> Alerts</>} subtitle={unacked.length ? `${unacked.length} unacknowledged` : "Nothing needs your attention."} action={aiOn ? <Link href="/monitoring" className="text-[12.5px] font-medium text-fg-secondary hover:text-fg">Run assessment</Link> : undefined} />
           <CardBody>
             {alerts.length === 0 ? (
-              <EmptyState title="No alerts" className="py-6">Alerts appear when the AI Energy Monitoring assessment finds something worth your attention.</EmptyState>
+              <div className="flex items-center gap-3 py-1">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-good-soft text-good-fg"><Sparkles className="size-4" aria-hidden /></span>
+                <p className="text-[13px] leading-relaxed text-fg-secondary">No alerts. {aiOn ? "The AI Energy Monitoring assessment raises one here when your records show something worth a look." : "Alerts appear here when your records show something worth a look."}</p>
+              </div>
             ) : (
               <ul className="divide-y divide-border">
                 {alerts.slice(0, 4).map((a) => (
@@ -125,14 +134,20 @@ export default async function HomeownerDashboard() {
         </Card>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2" aria-label="Production charts">
-        <Card><CardHeader title={<>Daily production <InfoTip term="energy_production" /></>} subtitle="Last 30 days." /><CardBody><DailyProductionChart points={days30} cls={prodCls} source={production[0]?.source} /></CardBody></Card>
-        <Card><CardHeader title="Monthly totals" subtitle="Last 12 months." /><CardBody><MonthlyTotalsChart data={months12} cls={prodCls} source={production[0]?.source} /></CardBody></Card>
-      </section>
-
-      {system.monitoring_source === null && (
-        <section className="grid gap-4 lg:grid-cols-[1fr_auto]" aria-label="Live monitoring">
-          <PlaceholderNote k="SOLAR_MONITORING_HARDWARE_API" />
+      {production.length > 0 ? (
+        <section className="grid gap-4 lg:grid-cols-2" aria-label="Production charts">
+          <Card><CardHeader title={<>Daily production <InfoTip term="energy_production" /></>} subtitle="Last 30 days." /><CardBody><DailyProductionChart points={days30} cls={prodCls} source={production[0]?.source} /></CardBody></Card>
+          <Card><CardHeader title="Monthly totals" subtitle="Last 12 months." /><CardBody><MonthlyTotalsChart data={months12} cls={prodCls} source={production[0]?.source} /></CardBody></Card>
+        </section>
+      ) : (
+        <section aria-label="Monitoring">
+          <Card>
+            <CardHeader title={<>Monitoring <InfoTip term="energy_production" /></>} subtitle="How your system's readings reach Solink, and where they will appear." action={<Link href="/monitoring" className="text-[12.5px] font-medium text-fg-secondary hover:text-fg">Open monitoring</Link>} />
+            <CardBody className="space-y-5">
+              <MonitoringFlow system={system} passport={passport} />
+              <RatesInUse settings={settings} category={profile?.tariff_category} />
+            </CardBody>
+          </Card>
         </section>
       )}
 
@@ -158,7 +173,7 @@ export default async function HomeownerDashboard() {
 
 function sunNode(weather: WeatherState): FlowNode {
   if (weather.status !== "ok") {
-    const text = weather.status === "no_location" ? "No location on record" : weather.status === "not_configured" ? "Weather is not connected" : "Weather could not be loaded";
+    const text = weather.status === "no_location" ? "Add your address to see local weather" : "Local weather appears here shortly";
     return { label: "Sun", cls: "unavailable", text };
   }
   const { current: c, location } = weather.bundle;
@@ -173,15 +188,49 @@ function sunNode(weather: WeatherState): FlowNode {
 
 function arrayNode(capacity: Classified, panelCount: number | null): FlowNode {
   const panels = panelCount ? `${panelCount} panels` : null;
-  if (capacity.value === null) return { label: "Panels", cls: capacity.cls, text: "Capacity not recorded", detail: panels ?? undefined };
+  if (capacity.value === null) return { label: "Panels", cls: capacity.cls, text: panels ?? "Your panels", detail: "Capacity comes from your Solar Passport" };
   return { label: "Panels", cls: capacity.cls, figure: { value: capacity.value, decimals: 1, unit: "kWp" }, detail: [panels, capacity.source].filter(Boolean).join(" · ") };
 }
 
 function homeNode(today: Classified, monitoringSource: string | null): FlowNode {
   if (today.value === null) {
-    return { label: "Home, today", cls: today.cls, text: "No reading today", detail: monitoringSource === null ? "No monitoring hardware is connected." : "Nothing has been recorded for today yet." };
+    return { label: "Home, today", cls: today.cls, text: "Awaiting a reading", detail: monitoringSource === null ? "Appears once your inverter reports to Solink." : "Today's reading appears when it is recorded." };
   }
   return { label: "Home, today", cls: today.cls, figure: { value: today.value, decimals: 1, unit: "kWh" }, energy: true, detail: "Production recorded today" };
+}
+
+/** The system's own facts, from the passport or the system record. A fact that is not on record is left out, not guessed. */
+function SystemCard({ system, passport, capacity }: { system: SolarSystem; passport: SolarPassport | null; capacity: Classified }) {
+  const panelModel = passport?.panel_snapshot ? `${passport.panel_snapshot.manufacturer} ${passport.panel_snapshot.model}` : null;
+  const inverter = passport?.inverter_snapshot ? `${passport.inverter_snapshot.manufacturer} ${passport.inverter_snapshot.model}` : null;
+  const installed = passport?.installation_date ?? system.installation_date;
+  const w = passport?.warranty;
+  const warranty = w ? [w.product_years ? `${w.product_years} y product` : null, w.performance_years ? `${w.performance_years} y performance` : null].filter(Boolean).join(" · ") : "";
+  const rows: [string, string][] = [
+    ["Panels", [system.panel_count ?? passport?.panel_count ? `${system.panel_count ?? passport?.panel_count}×` : null, panelModel].filter(Boolean).join(" ")],
+    ["Inverter", inverter ?? ""],
+    ["Installed", installed ? formatDate(installed) : ""],
+    ["Installer", passport?.installation_company ?? ""],
+    ["Warranty", warranty],
+  ].filter((r): r is [string, string] => Boolean(r[1]));
+  return (
+    <Link href={`/passport/${system.id}`} className="lift flex min-w-0 flex-col gap-3 rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-sm hover:bg-inset">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-fg-secondary"><FileBadge className="size-3.5 text-fg-muted" aria-hidden />Your system</span>
+        <DataBadge cls={capacity.cls} compact />
+      </div>
+      <div>
+        <p className="text-[15px] font-semibold text-fg-heading">{system.name}</p>
+        {hasValue(capacity) && <p className="figure mt-1 text-[26px] font-medium leading-none text-[color:var(--brand-strong)]">{formatNumber(capacity.value as number, 1)}<span className="ms-1 text-[13px] text-fg-muted">kWp</span></p>}
+      </div>
+      {rows.length > 0 && (
+        <dl className="grid gap-1 text-[12.5px]">
+          {rows.map(([k, v]) => <div key={k} className="flex justify-between gap-3"><dt className="text-fg-muted">{k}</dt><dd className="min-w-0 truncate text-end text-fg">{v}</dd></div>)}
+        </dl>
+      )}
+      <span className="mt-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-[var(--brand-strong)]">Open Solar Passport <ArrowRight className="size-3.5 rtl:rotate-180" aria-hidden /></span>
+    </Link>
+  );
 }
 
 function StatusCard({ title, icon: Icon, href, status, cls, lines, statusLabelOverride }: { title: string; icon: typeof Wrench; href: string; status: Parameters<typeof StatusPill>[0]["status"]; cls: Parameters<typeof DataBadge>[0]["cls"]; lines: string[]; statusLabelOverride?: string }) {
@@ -233,7 +282,7 @@ function journeySteps(profile: SolarProfile | null, system: SolarSystem | null, 
     { id: "purchase", label: "Purchase", href: "/purchase", state: s("purchase", purchased) },
     { id: "install", label: "Install", href: "/purchase", state: s("install", installed), hint: system?.installation_date ? formatDate(system.installation_date) : undefined },
     { id: "passport", label: "Passport", href: system ? `/passport/${system.id}` : "/passport", state: s("passport", Boolean(passport)) },
-    { id: "monitoring", label: "Monitoring", href: "/monitoring", state: s("monitoring", Boolean(system?.monitoring_source), !system?.monitoring_source), hint: system?.monitoring_source ? undefined : "Hardware not connected" },
+    { id: "monitoring", label: "Monitoring", href: "/monitoring", state: s("monitoring", Boolean(system?.monitoring_source)), hint: system?.monitoring_source ? undefined : "Add your inverter's data link" },
   ];
 }
 

@@ -9,7 +9,6 @@
 import type { Incident, MaintenanceCase, MonthlyReport, ProductionRecord } from "@/lib/types";
 import type { SolarAssumptions } from "@/lib/solar/calculations";
 import { annualSavings, co2AvoidedKg } from "@/lib/solar/calculations";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { dailyBreakdown, previousMonth, recordsForMonth, seriesClass, sumKwh, toMonth } from "../../_ops/production";
 
 export interface BuildReportInput {
@@ -37,8 +36,8 @@ export function buildMonthlyReport(i: BuildReportInput): MonthlyReport {
   const savings = annualSavings(total, i.assumptions); // production × tariff; the function name says annual, the formula is per kWh
   const co2 = co2AvoidedKg(total, i.assumptions);
   const financialNotes: string[] = [];
-  if (savings.value === null) financialNotes.push(savings.reason ?? PLACEHOLDERS.ELECTRICITY_TARIFF); else financialNotes.push(...(savings.notes ?? []), "Monthly total × tariff.");
-  if (maintenanceCosts === null) financialNotes.push(costs.length === 0 ? "No completed maintenance this month." : PLACEHOLDERS.MAINTENANCE_PRICE);
+  if (savings.value === null) financialNotes.push(savings.reason ?? "Needs an electricity rate."); else financialNotes.push(...(savings.notes ?? []), "Monthly total × tariff.");
+  if (maintenanceCosts === null) financialNotes.push(costs.length === 0 ? "No completed maintenance this month." : "No cost was entered for this month's work.");
 
   return {
     id: i.id, system_id: i.systemId, month: i.month,
@@ -50,7 +49,7 @@ export function buildMonthlyReport(i: BuildReportInput): MonthlyReport {
       repairs: monthCases.filter((c) => c.kind === "repair" || c.kind === "minor_maintenance").length,
       replacements: monthCases.filter((c) => c.kind === "replacement").length,
     },
-    environmental: { co2_kg: co2.value, cls: co2.value === null ? "unavailable" : "estimated", notes: co2.value === null ? [co2.reason ?? PLACEHOLDERS.GRID_CO2_EMISSION_FACTOR] : (co2.notes ?? []) },
+    environmental: { co2_kg: co2.value, cls: co2.value === null ? "unavailable" : "estimated", notes: co2.value === null ? [co2.reason ?? "Needs the grid emission factor."] : (co2.notes ?? []) },
     ai: { observations: [], issues: [], recommendations: [], cls: "unavailable" },
     generated_at: new Date().toISOString(),
     is_demo: cls === "demo",

@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/Badge";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { specText } from "@/lib/utils";
 import type { IncidentStatus, MaintenanceKind, MaintenanceStatus, SpecValue, Urgency } from "@/lib/types";
 import { INCIDENT_STATUS, MAINT_KIND, MAINT_STATUS, URGENCY } from "./meta";
@@ -33,7 +32,7 @@ export function CostCell({ cost, currency = "KWD" }: { cost: SpecValue | undefin
     const st = cost && "status" in cost ? cost.status : "unavailable";
     if (st === "not_applicable") return <span className="text-fg-muted">Not applicable</span>;
     if (st === "pending_verification") return <span className="text-fg-muted">Pending verification</span>;
-    return <span className="inline-flex flex-wrap items-center gap-1.5"><span className="text-fg-na">Unavailable</span><Placeholder k="MAINTENANCE_PRICE" /></span>;
+    return <span className="text-fg-na">Not quoted yet</span>;
   }
   return <span className="tabular text-fg">{specText({ value: cost.value, unit: cost.unit ?? currency })}</span>;
 }

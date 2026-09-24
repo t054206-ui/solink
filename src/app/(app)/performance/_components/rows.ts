@@ -6,7 +6,6 @@
  * one of those is returned as `unavailable` with the placeholder as the reason.
  */
 import { type Classified, type DataClass, unavailable } from "@/lib/classification";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { yearOverYearChange } from "@/lib/solar/calculations";
 import type { Incident, MaintenanceCase, MaintenanceKind, ProductionRecord, SpecValue } from "@/lib/types";
 import { inheritCls, specificYield } from "../../_operate/production";
@@ -97,12 +96,12 @@ export interface PrefilledCost {
 /** A total cost that was recorded against the system (source-derived), or nothing. */
 export function recordedTotal(label: string, c: RecordedCost): PrefilledCost {
   if (c.total === null) {
-    return { value: null, source: null, notes: [c.recorded + c.missing === 0 ? `No ${label} are recorded for this system.` : `${c.missing} recorded ${label} carry no cost: ${PLACEHOLDERS.MAINTENANCE_PRICE}`] };
+    return { value: null, source: null, notes: [c.recorded + c.missing === 0 ? `No ${label} are recorded for this system.` : `${c.missing} recorded ${label} carry no cost yet.`] };
   }
   return {
     value: Math.round(c.total * 1000) / 1000,
     source: `Sum of ${c.recorded} recorded ${label}`,
-    notes: c.missing > 0 ? [`${c.missing} further ${label} have no cost recorded: ${PLACEHOLDERS.MAINTENANCE_PRICE}`] : [],
+    notes: c.missing > 0 ? [`${c.missing} further ${label} have no cost recorded yet.`] : [],
   };
 }
 
@@ -118,7 +117,7 @@ export function perYearFromRecords(label: string, c: RecordedCost, ageYearsValue
   return {
     value: Math.round((c.total / ageYearsValue) * 1000) / 1000,
     source: `Recorded ${label} ÷ system age`,
-    notes: [`${c.total} over ${ageYearsValue.toFixed(1)} years of operation`, ...(c.missing > 0 ? [`${c.missing} record(s) without a cost are excluded: ${PLACEHOLDERS.MAINTENANCE_PRICE}`] : [])],
+    notes: [`${c.total} over ${ageYearsValue.toFixed(1)} years of operation`, ...(c.missing > 0 ? [`${c.missing} record(s) without a cost are left out.`] : [])],
   };
 }
 

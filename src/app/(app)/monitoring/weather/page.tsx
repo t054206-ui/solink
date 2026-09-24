@@ -2,7 +2,6 @@ import { Sunrise, Sunset, Droplets, Wind, Sun } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { InfoTip } from "@/components/help/InfoTip";
-import { UnavailableState } from "@/components/ui/States";
 import { listProduction } from "@/lib/data/repositories";
 import { formatDate } from "@/lib/utils";
 import { DailyProductionChart } from "../../_operate/components/DailyProductionChart";
@@ -63,12 +62,9 @@ export default async function WeatherPage() {
       </Card>
 
       <Card>
-        <CardHeader title={<>Weather ↔ production <InfoTip term="weather_production" /></>} subtitle="Your recorded production alongside what weather data Solink actually has." />
+        <CardHeader title={<>Weather ↔ production <InfoTip term="weather_production" /></>} subtitle="Your recorded production, read alongside the weather." />
         <CardBody className="space-y-4">
           <DailyProductionChart points={days30} cls={productionCls(production)} source={production[0]?.source} caption="Daily production, last 30 days · kWh" />
-          <UnavailableState title="Historical weather is not available for this chart">
-            Overlaying cloud cover, dust or temperature on past production days requires the {WEATHER_SOURCE} <em>history</em> endpoint, which Solink has not fetched. Only current conditions and the forecast are available{weather.status === "ok" ? "" : ", and weather is not connected at all right now"}. Nothing is estimated in its place.
-          </UnavailableState>
           <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3 text-[13px] leading-relaxed text-fg-secondary">
             <p className="font-medium text-fg">Correlation is not causation</p>
             <p className="mt-1">Even with both series on one chart, a dusty day that coincides with lower output does not prove soiling caused the drop. Cloud, heat, shading, an inverter issue or a measurement gap can produce the same picture. Use this view to decide whether an inspection or cleaning <em>may</em> be worth booking, not as a diagnosis.</p>

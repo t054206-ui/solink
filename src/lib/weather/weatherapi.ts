@@ -1,6 +1,5 @@
 import "server-only";
 import { serverEnv } from "@/lib/config/env";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { WeatherSnapshot } from "@/lib/types";
 
 /**
@@ -32,7 +31,7 @@ export interface WeatherBundle {
 
 async function call<T>(path: string, params: Record<string, string>): Promise<WeatherResult<T>> {
   const key = serverEnv().weatherApiKey;
-  if (!key) return { ok: false, reason: "not_configured", message: `Weather data is not connected. ${PLACEHOLDERS.WEATHER_API_KEY}` };
+  if (!key) return { ok: false, reason: "not_configured", message: "Weather isn't available right now." };
   const qs = new URLSearchParams({ key, ...params });
   try {
     const res = await fetch(`${BASE}/${path}?${qs}`, { next: { revalidate: 600 } });

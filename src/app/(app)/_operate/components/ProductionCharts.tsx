@@ -4,8 +4,7 @@ import { BarChart } from "@/components/charts/BarChart";
 import { LineChart } from "@/components/charts/LineChart";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { UnavailableState } from "@/components/ui/States";
+import { ChartFrame } from "@/components/illustrations/Illustrations";
 import type { DataClass } from "@/lib/classification";
 import { DEMO_PRODUCTION_BANNER } from "@/lib/demo/data";
 import { cn } from "@/lib/utils";
@@ -41,10 +40,7 @@ export function ProductionCharts({ data, className }: { data: ProductionChartDat
 
   if (empty) {
     return (
-      <div className={cn("space-y-3", className)}>
-        <UnavailableState title="Live monitoring is not connected yet">No production records exist for this system. Charts appear here once monitoring hardware or an import method provides data.</UnavailableState>
-        <PlaceholderNote k="SOLAR_MONITORING_HARDWARE_API" />
-      </div>
+      <ChartFrame className={className} caption="Daily, weekly and monthly production draw here once your inverter reports to Solink." />
     );
   }
 

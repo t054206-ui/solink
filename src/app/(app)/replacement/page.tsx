@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
+import { endOfLifeFacts } from "@/lib/content/platformFacts";
 import { EmptyState } from "@/components/ui/States";
 import { getProduct, listIncidents, listMaintenance } from "@/lib/data/repositories";
 import { DEMO_BANNER } from "@/lib/demo/data";
@@ -35,6 +35,7 @@ const BROWSE = [
 
 export default async function ReplacementPage() {
   const ctx = await loadOperateContext();
+  const eol = endOfLifeFacts(ctx.settings);
   if (!ctx.system) {
     return (
       <div>
@@ -85,15 +86,28 @@ export default async function ReplacementPage() {
       </Card>
 
       <Card>
-        <CardHeader title={<>When should something be replaced? <InfoTip term="end_of_life" /></>} subtitle="This is a decision Solink refuses to fake." />
+        <CardHeader title={<>When should something be replaced? <InfoTip term="end_of_life" /></>} subtitle={eol ? "The replacement criteria set for this platform." : "This is a decision Solink refuses to fake."} />
         <CardBody className="space-y-3">
-          <p className="text-[13.5px] leading-relaxed text-fg-secondary">
-            Solink will not tell you that a component <em>will fail</em> or that it <em>is at end of life</em>. Deciding that requires criteria: a minimum acceptable output, an age limit, a repair-frequency limit or an economic test. And those have not been defined for this platform. What the table above shows is factual: age, warranty cover and the repairs and replacements actually recorded.
-          </p>
-          <p className="text-[13.5px] leading-relaxed text-fg-secondary">
-            Once criteria are defined, each component will be measured against them here, and <strong className="text-fg">inspection or replacement may be worth considering</strong> for any component that meets them. Until then, a warranty that has expired is simply a fact worth knowing, not a recommendation to replace anything.
-          </p>
-          <PlaceholderNote k="END_OF_LIFE_CRITERIA" />
+          {eol ? (
+            <>
+              <p className="text-[13.5px] leading-relaxed text-fg-secondary">
+                Solink does not predict failures. Inspection or replacement may be worth considering when {eol.rule === "Any one of these is enough." ? "any one" : "one or more"} of these applies, and your installer confirms every case.
+              </p>
+              <ul className="space-y-2">
+                {eol.lines.map((l) => (
+                  <li key={l} className="flex items-start gap-2.5 rounded-[var(--radius)] border border-border bg-inset px-3 py-2 text-[13.5px] leading-snug text-fg">
+                    <Replace className="mt-0.5 size-4 shrink-0 text-[var(--brand)]" aria-hidden />{l}
+                  </li>
+                ))}
+              </ul>
+              {eol.rule && <p className="text-[12.5px] text-fg-muted">{eol.rule}</p>}
+              <p className="text-[12.5px] leading-relaxed text-fg-muted">Until one of these applies, a warranty that has expired is a fact worth knowing, not a recommendation to replace anything.</p>
+            </>
+          ) : (
+            <p className="text-[13.5px] leading-relaxed text-fg-secondary">
+              Solink will not tell you that a component <em>will fail</em> or that it <em>is at end of life</em>. What the table above shows is factual: age, warranty and recorded work. A warranty that has expired is a fact worth knowing, not a recommendation to replace anything.
+            </p>
+          )}
         </CardBody>
       </Card>
 

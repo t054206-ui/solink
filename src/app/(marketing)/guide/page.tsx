@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Bot, Info, Tags, TriangleAlert } from "lucide-react";
+import { ArrowRight, BookOpen, Bot, Info, Tags } from "lucide-react";
 import { QUICK_START } from "@/lib/navigation";
 import { DATA_CLASS_DESCRIPTION, type DataClass } from "@/lib/classification";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
 import { InfoTip } from "@/components/help/InfoTip";
 import { Button } from "@/components/ui/Button";
 import { GuideToc, type TocEntry } from "./_components/GuideToc";
@@ -17,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 /** Order used in the labels explainer — most trustworthy first. */
-const DATA_CLASSES: DataClass[] = ["source", "calculated", "estimated", "user", "ai", "demo", "unavailable"];
+const DATA_CLASSES: DataClass[] = ["source", "calculated", "estimated", "user", "ai", "demo"];
 
 /** Where each QUICK_START step is explained in this guide. Same order as QUICK_START. */
 const QUICK_START_ANCHORS = [
@@ -184,18 +183,17 @@ export default function GuidePage() {
               <div className="mt-6 rounded-[var(--radius-lg)] border border-border bg-inset p-5">
                 <div className="flex items-center gap-2">
                   <Tags className="size-4 text-[var(--brand-strong)]" aria-hidden />
-                  <h3 className="text-[15px] font-semibold">Values in square brackets</h3>
+                  <h3 className="text-[15px] font-semibold">When a figure is not shown</h3>
                 </div>
                 <p className="mt-2 text-[14px] leading-relaxed text-fg-secondary">
-                  Sometimes you will see something like <Placeholder k="ELECTRICITY_TARIFF" /> where a number should be.
-                  That is not an error. It means a decision has not been made yet, and Solink refuses to invent a value
-                  in its place. Hover or tap the marker to read what it is waiting for.
+                  Solink shows a figure only when it can work it out from real data. When something it needs is
+                  missing, such as your monthly use or your installer&apos;s price, the page asks for it instead of
+                  showing a number, and whatever you enter is labelled as yours.
                 </p>
                 <p className="mt-2 text-[14px] leading-relaxed text-fg-secondary">
-                  Anything depending on that decision stays empty until it is made. That is deliberate: an invented
-                  electricity price would produce an invented saving, and you might make a real decision on it.
+                  That is deliberate: an invented electricity price would produce an invented saving, and you might
+                  make a real decision on it.
                 </p>
-                <PlaceholderNote k="ELECTRICITY_TARIFF" className="mt-4" />
               </div>
             </section>
 
@@ -233,19 +231,12 @@ export default function GuidePage() {
                 </div>
 
                 {s.note && (
-                  <div className="mt-5 max-w-2xl rounded-[var(--radius-lg)] border border-dashed border-[var(--cls-estimated)]/60 bg-[var(--cls-estimated-soft)]/60 p-4">
+                  <div className="mt-5 max-w-2xl rounded-[var(--radius-lg)] border border-border bg-inset p-4">
                     <div className="flex items-center gap-2">
-                      <TriangleAlert className="size-4 text-[var(--cls-estimated)]" aria-hidden />
-                      <h3 className="text-[13.5px] font-semibold text-fg">What is not connected yet</h3>
+                      <Info className="size-4 text-[var(--brand)]" aria-hidden />
+                      <h3 className="text-[13.5px] font-semibold text-fg">Good to know</h3>
                     </div>
                     <p className="mt-2 text-[14px] leading-relaxed text-fg-secondary">{s.note.text}</p>
-                    {s.note.keys && s.note.keys.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {s.note.keys.map((k) => (
-                          <Placeholder key={k} k={k} className="max-w-full break-words" />
-                        ))}
-                      </div>
-                    )}
                   </div>
                 )}
               </section>

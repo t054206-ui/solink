@@ -1,19 +1,14 @@
 import { DataBadge } from "@/components/ui/DataBadge";
-import { Placeholder } from "@/components/ui/Placeholder";
-import type { PlaceholderKey } from "@/lib/config/placeholders";
 import type { Product } from "@/lib/types";
-import { formatMoney, specText } from "@/lib/utils";
+import { formatMoney } from "@/lib/utils";
 import { realPrice } from "./product-helpers";
 
 type CostField = "price" | "installation_cost" | "annual_maintenance_cost" | "cleaning_cost";
-const PLACEHOLDER_FOR: Record<CostField, PlaceholderKey | null> = {
-  price: null, installation_cost: "INSTALLATION_PRICE", annual_maintenance_cost: "MAINTENANCE_PRICE", cleaning_cost: "MAINTENANCE_PRICE",
-};
 
 /**
  * Honest price rendering. A real, positive, non-demo amount is shown with a
- * source badge. Anything else is shown as unavailable with the matching
- * placeholder — never a zero or an invented figure.
+ * source badge. Anything else says who prices it — never a zero or an
+ * invented figure.
  */
 export function PriceCell({ product, field = "price", compact = false }: { product: Product; field?: CostField; compact?: boolean }) {
   const real = realPrice(product, field);
@@ -26,8 +21,8 @@ export function PriceCell({ product, field = "price", compact = false }: { produ
     );
   }
   const spec = product[field];
-  const status = spec.value === null ? specText(spec) : null;
-  const ph = PLACEHOLDER_FOR[field];
+  // No real price: say who prices it (owner, 2026-09-24). Never N/A, never a token, never a zero.
+  const ask = field === "price" ? "Price on request from supplier" : field === "installation_cost" ? "Quoted by your installer" : "Quoted by your provider";
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5 text-[13px] text-fg-muted">
       {product.is_demo && spec.value !== null ? (
@@ -36,12 +31,8 @@ export function PriceCell({ product, field = "price", compact = false }: { produ
           <DataBadge cls="demo" compact />
         </>
       ) : (
-        <>
-          <span>{status ?? "Unavailable"}</span>
-          <DataBadge cls="unavailable" compact />
-        </>
+        <span>{ask}</span>
       )}
-      {ph ? <Placeholder k={ph} /> : field === "price" && !compact ? <span className="text-[12px]">Prices come only from providers or verified sources.</span> : null}
     </span>
   );
 }

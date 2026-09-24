@@ -1,6 +1,4 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { UnavailableState } from "@/components/ui/States";
 import { InfoTip } from "@/components/help/InfoTip";
 import { getProduct, listProduction } from "@/lib/data/repositories";
 import { specNum } from "@/lib/utils";
@@ -21,6 +19,9 @@ import { deriveStatus, monthToDateKwh, sevenVsThirty, todayKwh } from "../_opera
 import { StatusPill } from "../_operate/components/StatusPill";
 import { HEALTH_STYLE, HealthMark, healthOf } from "./_components/health";
 import { DemoPanelLayout } from "./_components/DemoPanelLayout";
+import { PanelGrid } from "./_components/PanelGrid";
+import { MonitoringFlow } from "../_operate/components/MonitoringFlow";
+import { isClaudeConfigured } from "@/lib/ai/claude";
 
 export const metadata = { title: "Monitoring" };
 
@@ -39,6 +40,10 @@ export default async function MonitoringOverviewPage() {
   const health = healthOf(derived.status);
   const today = todayKwh(production);
   const month = monthToDateKwh(production);
+  const isDemo = ctx.mode === "demo" || ctx.system.is_demo;
+  const aiOn = isClaudeConfigured();
+  const awaiting = derived.status === "insufficient_data";
+  const capacity = ctx.passport?.capacity_kwp ?? ctx.system.capacity_kwp;
 
   return (
     <div className="space-y-6">
@@ -50,10 +55,10 @@ export default async function MonitoringOverviewPage() {
                 count={ctx.system.panel_count}
                 producing={today.value !== null}
                 health={health}
-                caption={<>Your {ctx.system.panel_count} panels as recorded. Only the inverter lamp shows a state: the system status beside it. Per-panel state is unknown until panel-level monitoring is connected.{today.value !== null ? " The cable pulse shows that today has a production record." : ""}</>}
+                caption={<>Your {ctx.system.panel_count} panels as recorded. The inverter lamp shows the system status beside it.{today.value !== null ? " The cable pulse shows that today has a production record." : ""}</>}
               />
             ) : (
-              <p className="p-6 text-center text-[13px] text-fg-muted">The number of panels is not recorded for this system, so the array is not drawn.</p>
+              <p className="p-6 text-center text-[13px] text-fg-muted">Your array is drawn here once its panel count is in your Solar Passport.</p>
             )}
           </div>
           <div className="order-1 space-y-5 px-5 pb-2 pt-6 sm:px-7 md:order-2 md:py-8 md:pe-8">
@@ -62,69 +67,81 @@ export default async function MonitoringOverviewPage() {
               <p className="mt-1 text-[13px] text-fg-muted">{ctx.system.name}</p>
             </div>
             <div className="rounded-[var(--radius-lg)] border border-border bg-elevated p-4 shadow-[var(--shadow-sm)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <HealthMark health={health} />
-                <StatusPill status={derived.status} />
-                <DataBadge cls={derived.cls} compact />
-              </div>
-              <p className={`mt-2 text-[15px] font-semibold leading-snug ${health === "unknown" ? "text-fg" : HEALTH_STYLE[health].fg}`}>{derived.headline}</p>
+              {awaiting ? (
+                <>
+                  <span className="micro">System status</span>
+                  <p className="mt-1.5 text-[15px] font-semibold leading-snug text-fg-heading">Awaiting the first readings</p>
+                  <p className="mt-1 text-[12.5px] leading-snug text-fg-muted">Status, today and this month appear here once your inverter reports to Solink.</p>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <HealthMark health={health} />
+                    <StatusPill status={derived.status} />
+                    <DataBadge cls={derived.cls} compact />
+                  </div>
+                  <p className={`mt-2 text-[15px] font-semibold leading-snug ${health === "unknown" ? "text-fg" : HEALTH_STYLE[health].fg}`}>{derived.headline}</p>
+                </>
+              )}
             </div>
-            <dl className="grid grid-cols-2 gap-3">
-              <LiveFigure label="Today" data={today} />
-              <LiveFigure label="This month" data={month} />
-            </dl>
-            <p className="flex items-start gap-2 text-[12.5px] leading-snug text-fg-muted">
-              <HealthMark health="unknown" size="sm" className="mt-px" />
-              <span>Per-panel state: unknown. No panel-level data source is connected. <Link href="/monitoring/panels" className="underline underline-offset-2 hover:text-fg">Why</Link></span>
+            {(today.value !== null || month.value !== null) && (
+              <dl className="grid grid-cols-2 gap-3">
+                {today.value !== null && <LiveFigure label="Today" data={today} />}
+                {month.value !== null && <LiveFigure label="This month" data={month} />}
+              </dl>
+            )}
+            <p className="text-[12.5px] leading-snug text-fg-muted">
+              The array is read as a whole. <Link href="/monitoring/panels" className="underline underline-offset-2 hover:text-fg">About per-panel readings</Link>
             </p>
           </div>
         </div>
       </Stage>
 
       <Card>
-        <CardHeader title={<>Production <InfoTip term="energy_production" /></>} subtitle={`${ctx.system.name} · daily records aggregated by Solink.`} />
-        <CardBody><ProductionCharts data={chart} /></CardBody>
+        <CardHeader title={<>Production <InfoTip term="energy_production" /></>} subtitle={production.length ? `${ctx.system.name} · daily records aggregated by Solink.` : "How your readings reach Solink, and where they will draw."} />
+        <CardBody>{production.length ? <ProductionCharts data={chart} /> : <MonitoringFlow system={ctx.system} passport={ctx.passport} />}</CardBody>
       </Card>
 
       {ctx.system.panel_count !== null && (
         <Card>
-          <CardHeader title="Panel layout" subtitle="What per-panel monitoring will look like once hardware reports it." />
+          <CardHeader title="Your array" subtitle={isDemo ? "What per-panel monitoring will look like once hardware reports it." : "The panels on record for this system."} />
           <CardBody>
-            <DemoPanelLayout
-              count={ctx.system.panel_count}
-              panelLabel={panelProduct ? `${panelProduct.manufacturer_name} ${panelProduct.model}` : null}
-              ratedW={panelProduct ? specNum(panelProduct.specs.rated_power_w) : null}
-            />
+            {/* Demo figures only in demo mode; real accounts see their real array (owner, 2026-09-24). */}
+            {isDemo ? (
+              <DemoPanelLayout
+                count={ctx.system.panel_count}
+                panelLabel={panelProduct ? `${panelProduct.manufacturer_name} ${panelProduct.model}` : null}
+                ratedW={panelProduct ? specNum(panelProduct.specs.rated_power_w) : null}
+              />
+            ) : (
+              <PanelGrid
+                count={ctx.system.panel_count}
+                panelLabel={panelProduct ? `${panelProduct.manufacturer_name} ${panelProduct.model}` : ctx.passport?.panel_snapshot ? `${ctx.passport.panel_snapshot.manufacturer} ${ctx.passport.panel_snapshot.model}` : null}
+                ratedW={panelProduct ? specNum(panelProduct.specs.rated_power_w) : null}
+                capacityKwp={capacity}
+              />
+            )}
           </CardBody>
         </Card>
       )}
 
       <section className="grid gap-4 lg:grid-cols-5" aria-label="Assessment">
-        <div className="lg:col-span-3"><AiMonitorPanel systemId={ctx.system.id} location={profileLocation(ctx.profile)} /></div>
+        <div className="lg:col-span-3"><AiMonitorPanel systemId={ctx.system.id} location={profileLocation(ctx.profile)} available={aiOn} /></div>
         <SignalsCard records={production} settings={ctx.settings} className="lg:col-span-2" />
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2" aria-label="Live data">
+      <section className="grid gap-4 lg:grid-cols-2" aria-label="About this page">
         <Card>
-          <CardHeader title={<>Live monitoring <InfoTip term="live_monitoring" /></>} subtitle="Real-time power, inverter status and per-string data." />
-          <CardBody className="space-y-3">
-            <UnavailableState title="Live monitoring is not connected yet">{ctx.system.monitoring_source ? `Source: ${ctx.system.monitoring_source}` : "This system has no monitoring source. Once inverter or meter data is connected, live readings replace this notice."}</UnavailableState>
-            <PlaceholderNote k="SOLAR_MONITORING_HARDWARE_API" />
+          <CardHeader title="How to read this page" />
+          <CardBody>
+            <ul className="list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-fg-secondary">
+              <li><strong className="text-fg">Charts</strong> aggregate the daily records Solink holds for your system.{isDemo ? " A DEMO banner means the series is simulated." : ""}</li>
+              <li><strong className="text-fg">Signals</strong> is plain arithmetic: the last 7 days against the 30 before, compared with the alert thresholds.</li>
+              {aiOn && <li><strong className="text-fg">AI Energy Monitoring</strong> runs only when you ask, reads your real records, and labels its output as interpretation.</li>}
+            </ul>
           </CardBody>
         </Card>
-        <div className="flex flex-col gap-4">
-          <Card className="flex-1">
-            <CardHeader title="How to read this page" />
-            <CardBody>
-              <ul className="list-disc space-y-1.5 pl-5 text-[13px] leading-relaxed text-fg-secondary">
-                <li><strong className="text-fg">Charts</strong> aggregate the daily records Solink holds. A DEMO banner means the series is simulated.</li>
-                <li><strong className="text-fg">Signals</strong> is plain arithmetic. It can describe a decline but cannot judge it until alert thresholds are defined.</li>
-                <li><strong className="text-fg">AI Energy Monitoring</strong> runs only when you ask, reads your real records, and labels its output as interpretation.</li>
-              </ul>
-            </CardBody>
-          </Card>
-          <AskSolink topic="e.g. “Is the drop in the last week unusual?”" />
-        </div>
+        <AskSolink topic="e.g. “Is the drop in the last week unusual?”" />
       </section>
     </div>
   );
@@ -139,7 +156,7 @@ function LiveFigure({ label, data }: { label: string; data: Classified }) {
         {data.value !== null ? (
           <span className="figure text-[24px] font-medium text-[color:var(--sun-ink)]">{formatNumber(data.value, 1)}<span className="ms-1 text-[12px] text-fg-muted">kWh</span></span>
         ) : (
-          <span className="text-[13px] font-medium text-fg-secondary">Unavailable</span>
+          null
         )}
       </dd>
     </div>

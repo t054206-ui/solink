@@ -3,7 +3,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { EmptyState } from "@/components/ui/States";
 import { listNotifications } from "@/lib/data/repositories";
 import { formatDate } from "@/lib/utils";
@@ -68,11 +67,9 @@ export default async function NotificationsPage() {
             <CardHeader title={<>Delivery <InfoTip term="notifications_delivery" /></>} subtitle="In-app only for now." />
             <CardBody className="space-y-3">
               <p className="text-[13.5px] leading-relaxed text-fg-secondary">
-                Notifications are recorded and shown on this page, but nothing is sent by email, SMS or
-                push, because no provider has been chosen. Solink will not claim to have contacted you
-                when it has not.
+                Your notifications are kept here, in Solink. Solink never claims to have emailed or
+                texted you unless it actually has.
               </p>
-              <PlaceholderNote k="EMAIL_NOTIFICATION_PROVIDER" />
             </CardBody>
           </Card>
 

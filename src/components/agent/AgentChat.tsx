@@ -1,5 +1,6 @@
 "use client";
-import { Send, Bot, User, Loader2, PlugZap } from "lucide-react";
+import { AiResting } from "@/components/ui/AiResting";
+import { Send, Bot, User, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,7 @@ export function AgentChat({ compact = false, systemId }: { compact?: boolean; sy
       const json = await res.json();
       if (!json.ok) {
         if (json.reason === "not_configured") setUnavailable(json.message);
-        setMessages((m) => [...m, { role: "assistant", content: json.message ?? "The AI Solar Agent is unavailable right now.", error: true }]);
+        setMessages((m) => [...m, { role: "assistant", content: json.message ?? "The AI assistant isn't available right now.", error: true }]);
       } else {
         setMessages((m) => [...m, { role: "assistant", content: json.answer, contextUsed: json.contextUsed }]);
       }
@@ -72,7 +73,7 @@ export function AgentChat({ compact = false, systemId }: { compact?: boolean; sy
         <div ref={endRef} />
       </div>
       {unavailable && (
-        <div className="mx-4 mb-2 flex items-start gap-2 rounded-[10px] border border-dashed border-warn bg-warn-soft px-3 py-2 text-[12.5px] text-fg-secondary"><PlugZap className="mt-0.5 size-4 shrink-0 text-warn-fg"  aria-hidden />{unavailable}</div>
+        <div className="mx-4 mb-2"><AiResting title="Ask Solink isn't available right now">Your system, maintenance and reports are all on their own pages meanwhile.</AiResting></div>
       )}
       <form className="flex items-end gap-2 border-t border-border p-3" onSubmit={(e) => { e.preventDefault(); send(input); }}>
         <textarea value={input} onChange={(e) => setInput(e.target.value)} rows={1} placeholder="Ask the AI Solar Agent…" aria-label="Your question"

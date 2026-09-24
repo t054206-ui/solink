@@ -30,10 +30,10 @@ export function MatchCard({ match, rank, featured = false }: { match: Match; ran
   const price = p.source.kuwait_price_kwd;
 
   const facts: { label: string; value: string; muted?: boolean }[] = [
-    { label: "Rated power", value: power !== null ? `${power} W` : "Unavailable", muted: power === null },
-    { label: "Efficiency", value: eff !== null ? `${eff} %` : "Unavailable", muted: eff === null },
-    { label: "Power temp. coefficient", value: tc !== null ? `${tc} %/°C` : "Unavailable", muted: tc === null },
-    { label: "Performance warranty", value: warranty !== null ? `${warranty} years` : "Unavailable", muted: warranty === null },
+    { label: "Rated power", value: power !== null ? `${power} W` : "Not stated", muted: power === null },
+    { label: "Efficiency", value: eff !== null ? `${eff} %` : "Not stated", muted: eff === null },
+    { label: "Power temp. coefficient", value: tc !== null ? `${tc} %/°C` : "Not stated", muted: tc === null },
+    { label: "Performance warranty", value: warranty !== null ? `${warranty} years` : "Not stated", muted: warranty === null },
     {
       label: "Kuwait price",
       value: typeof price === "number" ? `${price.toFixed(3)} KWD` : "No local price published",

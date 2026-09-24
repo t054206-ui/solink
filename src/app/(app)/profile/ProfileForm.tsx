@@ -9,12 +9,11 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { InfoTip } from "@/components/help/InfoTip";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
 import type { DataMode } from "@/lib/data/mode";
 import type { HouseType, RoofOrientation, SolarProfile, TariffCategory } from "@/lib/types";
-import { TARIFF_CATEGORIES, TARIFF_CATEGORY_LABELS } from "@/lib/solar/tariff";
+import { TARIFF_CATEGORIES, TARIFF_CATEGORY_LABELS, tariffFor, type TariffSetting } from "@/lib/solar/tariff";
 import { cn } from "@/lib/utils";
 import { saveProfile } from "./actions";
 import { PROFILE_STORE_KEY, mergeProfile, profileCompleteness, resolveRoofArea, type ProfileDraft } from "../_plan/profileStore";
@@ -52,7 +51,7 @@ function toDraft(p: SolarProfile | null): ProfileDraft {
   return rest;
 }
 
-export function ProfileForm({ profile, mode, heading }: { profile: SolarProfile | null; mode: DataMode; heading: { eyebrow: string; title: string; description: string } }) {
+export function ProfileForm({ profile, mode, heading, tariff = null }: { profile: SolarProfile | null; mode: DataMode; tariff?: TariffSetting | null; heading: { eyebrow: string; title: string; description: string } }) {
   const [local, setLocal, localLoaded] = useLocalStore<ProfileDraft | null>(PROFILE_STORE_KEY, null);
   // `draft` is null until the user edits; until then the form shows the stored values (server profile merged with local edits in demo mode).
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
@@ -256,7 +255,7 @@ export function ProfileForm({ profile, mode, heading }: { profile: SolarProfile 
             <Field label={<>Monthly consumption (kWh) <InfoTip term="kwh" /></>} hint={<DataBadge cls="user" compact />} error={errors.consumption} help="From your electricity bill or meter.">
               <Input id="monthly_consumption_kwh" aria-label="Monthly consumption in kWh" type="number" inputMode="decimal" step="1" min={0} value={show(values.monthly_consumption_kwh)} onChange={(e) => update({ monthly_consumption_kwh: toNum(e.target.value) })} />
             </Field>
-            <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={<>Converting a bill to kWh needs the tariff: <Placeholder k="ELECTRICITY_TARIFF" /></>}>
+            <Field label="Monthly bill" hint={<DataBadge cls="user" compact />} help={(() => { const t = tariffFor(tariff, values.tariff_category).platform; return t ? `Converted to kWh at ${t.value} KWD/kWh${values.tariff_category ? ` (${TARIFF_CATEGORY_LABELS[values.tariff_category]})` : ""}.` : "Or enter your monthly use in kWh."; })()}>
               <div className="flex gap-2">
                 <Input id="monthly_bill" aria-label="Monthly bill" type="number" inputMode="decimal" step="0.001" min={0} value={show(values.monthly_bill)} onChange={(e) => update({ monthly_bill: toNum(e.target.value) })} />
                 <Select id="currency" aria-label="Currency" value={values.currency ?? "KWD"} onChange={(e) => update({ currency: e.target.value })} className="w-24! shrink-0"><option value="KWD">KWD</option></Select>

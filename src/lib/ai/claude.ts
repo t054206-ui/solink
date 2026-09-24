@@ -1,7 +1,6 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { serverEnv } from "@/lib/config/env";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 
 /**
  * Central Claude client for Solink. SERVER ONLY.
@@ -57,7 +56,7 @@ export async function askClaude(opts: {
   effort?: "low" | "medium" | "high";
 }): Promise<AiResult<string>> {
   const c = getClient();
-  if (!c) return { ok: false, reason: "not_configured", message: `Claude API is not connected. ${PLACEHOLDERS.CLAUDE_API_KEY}` };
+  if (!c) return { ok: false, reason: "not_configured", message: "The AI assistant isn't available right now." };
   const model = serverEnv().claudeModel;
   try {
     const res = await c.messages.create({
@@ -78,7 +77,7 @@ export async function askClaude(opts: {
     return { ok: true, data: text, model: res.model, usage: { input: res.usage.input_tokens, output: res.usage.output_tokens } };
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) return { ok: false, reason: "rate_limited", message: "The AI service is busy. Please try again shortly." };
-    if (err instanceof Anthropic.AuthenticationError) return { ok: false, reason: "not_configured", message: "The Claude API key is invalid." };
+    if (err instanceof Anthropic.AuthenticationError) return { ok: false, reason: "not_configured", message: "The AI assistant isn't available right now." };
     const message = err instanceof Anthropic.APIError ? `AI service error (${err.status}).` : "AI service is unavailable.";
     return { ok: false, reason: "error", message };
   }

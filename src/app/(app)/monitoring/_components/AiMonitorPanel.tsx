@@ -4,8 +4,8 @@ import { Sparkles, Loader2, CloudSun } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { ErrorState, UnavailableState } from "@/components/ui/States";
+import { ErrorState } from "@/components/ui/States";
+import { AiResting } from "@/components/ui/AiResting";
 import type { MonitorAssessment } from "@/app/api/ai/monitor/route";
 import type { MonitorStatus } from "@/lib/types";
 import { StatusPill } from "@/app/(app)/_operate/components/StatusPill";
@@ -29,7 +29,7 @@ const CLEANING_LABEL: Record<MonitorAssessment["cleaning"]["recommendation"], st
  * (WeatherAPI.com, if the profile has coordinates) then asks /api/ai/monitor
  * to interpret the system's real records. Every output is an AI interpretation.
  */
-export function AiMonitorPanel({ systemId, location }: { systemId: string; location: { lat: number; lng: number } | null }) {
+export function AiMonitorPanel({ systemId, location, available = true }: { systemId: string; location: { lat: number; lng: number } | null; available?: boolean }) {
   const [state, setState] = useState<State>({ kind: "idle" });
 
   async function run() {
@@ -64,21 +64,17 @@ export function AiMonitorPanel({ systemId, location }: { systemId: string; locat
       <CardHeader
         title={<><Sparkles className="size-4 text-[var(--cls-ai)]" aria-hidden /> AI Energy Monitoring</>}
         subtitle="Interprets your production history, maintenance records and the latest weather. It reports what the data shows and what is missing. It does not guess."
-        action={<Button size="sm" onClick={run} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />} {state.kind === "done" ? "Run again" : "Run AI assessment"}</Button>}
+        action={available ? <Button size="sm" onClick={run} disabled={busy}>{busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Sparkles className="size-4" aria-hidden />} {state.kind === "done" ? "Run again" : "Run AI assessment"}</Button> : undefined}
       />
       <CardBody className="space-y-4">
-        {state.kind === "idle" && (
+        {!available && <AiResting>Signals and charts on this page keep working without it.</AiResting>}
+        {available && state.kind === "idle" && (
           <p className="text-[13px] text-fg-muted">
             Nothing runs until you press the button. {location ? `Latest weather from ${WEATHER_SOURCE} will be included if available.` : "Add a location in your Solar Profile to include weather in the assessment."}
           </p>
         )}
         {state.kind === "loading" && <div className="flex items-center gap-2 text-[13px] text-fg-secondary"><Loader2 className="size-4 animate-spin" aria-hidden /> {state.step}</div>}
-        {state.kind === "not_configured" && (
-          <div className="space-y-3">
-            <UnavailableState title="AI monitoring is not connected">{state.message}</UnavailableState>
-            <PlaceholderNote k="CLAUDE_API_KEY" />
-          </div>
-        )}
+        {state.kind === "not_configured" && <AiResting>Signals and charts on this page keep working without it.</AiResting>}
         {state.kind === "error" && <ErrorState title="Assessment failed">{state.message}</ErrorState>}
         {state.kind === "done" && <Assessment a={state.assessment} weatherUsed={state.weatherUsed} />}
       </CardBody>

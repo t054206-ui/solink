@@ -99,7 +99,7 @@ export default async function PassportPage({ params }: { params: Promise<{ syste
               <Row k="Panels" v={passport.panel_count != null ? `${passport.panel_count}` : "—"} />
               <Row k="Capacity" v={passport.capacity_kwp != null ? `${passport.capacity_kwp} kWp` : "—"} />
               <Row k="System status" v={<Badge tone={system.status === "installed" ? "good" : "neutral"}>{system.status.replace("_", " ")}</Badge>} />
-              <Row k="Monitoring source" v={system.monitoring_source ?? "Not connected"} />
+              <Row k="Monitoring source" v={system.monitoring_source ?? "Not yet added"} />
             </dl>
             {passport.installation_notes && <p className="mt-3 text-[13px] text-fg-secondary">{passport.installation_notes}</p>}
           </CardBody>

@@ -2,7 +2,6 @@
 import { useId } from "react";
 import { RotateCcw } from "lucide-react";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { Input, Label } from "@/components/ui/Form";
 import { InfoTip } from "@/components/help/InfoTip";
 import type { PlaceholderKey } from "@/lib/config/placeholders";
@@ -19,8 +18,9 @@ export function resolveAssumption(user: number | null | undefined, platform: Pla
 
 /**
  * One assumption row: pre-filled from a platform setting (badge: source) when an
- * admin has supplied it, otherwise empty with the matching [PLACEHOLDER] and a
- * field for the user to enter their own value (badge: user-provided).
+ * admin has supplied it, otherwise an ordinary optional field for the user's
+ * own value (badge: user-provided). The placeholder key stays on the element
+ * as an audit trail; homeowners are not shown it (owner, 2026-09-24).
  * No default number is ever suggested.
  */
 export function AssumptionField({ label, term, placeholderKey, unit, platform, value, onChange, help, step = "any", min, note, dense = false }: {
@@ -42,7 +42,7 @@ export function AssumptionField({ label, term, placeholderKey, unit, platform, v
   const shown = value ?? platform?.value ?? null;
   if (dense) {
     return (
-      <div className="flex min-w-0 flex-col gap-2 rounded-[10px] border border-border bg-elevated p-3 shadow-[var(--shadow-sm)]">
+      <div data-placeholder={placeholderKey} className="flex min-w-0 flex-col gap-2 rounded-[10px] border border-border bg-elevated p-3 shadow-[var(--shadow-sm)]">
         <div className="flex items-start justify-between gap-2">
           <Label htmlFor={id} className="mb-0 min-w-0">{label}{term && <InfoTip term={term} />}</Label>
           <DataBadge cls={resolved.cls} compact source={resolved.source} className="shrink-0" />
@@ -60,7 +60,7 @@ export function AssumptionField({ label, term, placeholderKey, unit, platform, v
         </div>
         <p className="text-[12px] leading-snug text-fg-muted">{help}</p>
         <div id={`${id}-help`} className="text-[11.5px] leading-snug text-fg-muted">
-          {resolved.cls === "unavailable" && <>Not set by the platform: <Placeholder k={placeholderKey} />. Any value you enter is labeled user-provided.</>}
+          {resolved.cls === "unavailable" && <>Optional · your own value. It is labelled as yours.</>}
           {resolved.cls !== "unavailable" && (
             <details className="group">
               <summary className="cursor-pointer select-none font-medium text-fg-secondary marker:content-none">
@@ -78,7 +78,7 @@ export function AssumptionField({ label, term, placeholderKey, unit, platform, v
     );
   }
   return (
-    <div className="rounded-[10px] border border-border bg-inset p-3">
+    <div data-placeholder={placeholderKey} className="rounded-[10px] border border-border bg-inset p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Label htmlFor={id} className="mb-0">{label}{term && <InfoTip term={term} />}</Label>
         <DataBadge cls={resolved.cls} compact={resolved.cls !== "source"} source={resolved.source} />
@@ -96,7 +96,7 @@ export function AssumptionField({ label, term, placeholderKey, unit, platform, v
         )}
       </div>
       <div id={`${id}-help`} className="mt-1.5 text-[11.5px] text-fg-muted">
-        {resolved.cls === "unavailable" && <>Not set by the platform: <Placeholder k={placeholderKey} />. Any value you enter is labeled user-provided.</>}
+        {resolved.cls === "unavailable" && <>Optional · your own value. It is labelled as yours.</>}
         {resolved.cls === "source" && <>From platform setting: {resolved.source}. Edit to override with your own value.</>}
         {resolved.cls === "user" && (platform ? <>Your override replaces the platform value {platform.value}{unit ? ` ${unit}` : ""}.</> : <>Your value. Solink has not verified it.</>)}
         {note && resolved.cls !== "user" && <p className="mt-1 text-fg-secondary">{note}</p>}

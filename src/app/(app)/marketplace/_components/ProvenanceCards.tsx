@@ -27,7 +27,7 @@ export const AVAILABILITY_LABEL: Record<PriceAvailability, string> = {
   listed_by_retailer: "Listed by retailer",
   in_stock: "In stock",
   on_request: "On request",
-  unavailable: "Unavailable",
+  unavailable: "Not available from this supplier",
 };
 
 function HostLink({ href, label }: { href: string | null; label: string }) {

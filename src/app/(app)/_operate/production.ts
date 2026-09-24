@@ -5,7 +5,6 @@
  * simulated number can ever appear as "calculated from real data".
  */
 import { type Classified, type DataClass, unavailable } from "@/lib/classification";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import type { PlatformSettings } from "@/lib/data/settings";
 import { productionDeviation } from "@/lib/solar/calculations";
 import type { MaintenanceCase, MonitorStatus, ProductionRecord } from "@/lib/types";
@@ -45,7 +44,7 @@ export function todayKwh(records: ProductionRecord[]): Classified {
   const cls = productionCls(records);
   const today = todayIso();
   const rec = toDayPoints(records).find((p) => p.date === today);
-  if (!rec) return unavailable(`No record for today. ${PLACEHOLDERS.SOLAR_MONITORING_HARDWARE_API}`);
+  if (!rec) return unavailable("No record for today yet.");
   return inheritCls({ value: rec.kwh, cls: "source", source: records[0]?.source }, cls);
 }
 
@@ -54,7 +53,7 @@ export function monthToDateKwh(records: ProductionRecord[]): Classified {
   const cls = productionCls(records);
   const ym = todayIso().slice(0, 7);
   const pts = toDayPoints(records).filter((p) => p.date.startsWith(ym));
-  if (pts.length === 0) return unavailable(`No records this month. ${PLACEHOLDERS.SOLAR_MONITORING_HARDWARE_API}`);
+  if (pts.length === 0) return unavailable("No records this month yet.");
   return inheritCls({ value: sum(pts.map((p) => p.kwh)), cls: "calculated", source: "Solink calculator", notes: [`Sum of ${pts.length} daily records`] }, cls);
 }
 
@@ -75,6 +74,9 @@ export interface DeviationSignal {
 }
 
 /** 7-day mean vs the preceding 30-day mean. Thresholds are NOT applied. */
+/** Days of daily records the 7-vs-30 signal needs: the last 7 plus the 30 before them. */
+export const SIGNAL_WINDOW_DAYS = 7 + 30;
+
 export function sevenVsThirty(records: ProductionRecord[]): DeviationSignal {
   const cls = productionCls(records);
   const pts = toDayPoints(records);

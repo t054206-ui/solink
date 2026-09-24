@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (limited) return limited;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
-  if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: `Smart placement is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });
+  if (!isClaudeConfigured()) return Response.json({ ok: false, reason: "not_configured", message: "Smart placement isn't available right now." }, { status: 503 });
   const r = await askClaudeJson<PlacementSuggestion>({
     system: `You propose a planning layout of rectangular solar panels on a rectangular roof. Coordinates in metres, origin top-left, x to the right, y downward. Panels must lie fully inside the roof, must not overlap each other or obstacles, and should keep ≥0.5 m edge clearance and walkway access. Use rotation 0 (length along x) or 90. Site solar resource is not available (${PLACEHOLDERS.SOLAR_RESOURCE_DATA_SOURCE}). Do not invent irradiance or production. This is a planning visualization, not a certified engineering design.`,
     prompt: JSON.stringify(parsed.data),

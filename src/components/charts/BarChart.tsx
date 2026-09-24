@@ -38,7 +38,7 @@ export function BarChart({ data, height = 200, formatY = (v) => v.toLocaleString
       {hover !== null && (
         <div className="pointer-events-none absolute top-1 rounded-md border border-border bg-elevated px-2.5 py-1.5 text-[12px] shadow-card" style={{ left: `${((PAD.l + hover * bw + bw / 2) / W) * 100}%`, transform: `translateX(${hover > n / 2 ? "-110%" : "10%"})` }}>
           <div className="font-medium text-fg">{data[hover].label}</div>
-          <div className="tabular text-fg-secondary">{data[hover].value === null ? "Unavailable" : formatY(data[hover].value as number)}</div>
+          <div className="tabular text-fg-secondary">{data[hover].value === null ? "No record" : formatY(data[hover].value as number)}</div>
         </div>
       )}
     </div>

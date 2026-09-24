@@ -1,4 +1,5 @@
 "use client";
+import { productText } from "@/lib/config/placeholders";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Plus, Sparkles, X } from "lucide-react";
@@ -8,7 +9,6 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { Field, Input, Select } from "@/components/ui/Form";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { EmptyState } from "@/components/ui/States";
 import type { Classified, DataClass } from "@/lib/classification";
 import { useLocalStore } from "@/lib/hooks/useLocalStore";
@@ -64,7 +64,7 @@ function annualDegradationCell(p: Product): Cell {
 }
 
 function classifiedCell(c: Classified, format: (v: number) => string): Cell {
-  if (c.value === null) return { node: <span className="text-fg-na">{c.reason ?? "Unavailable"}</span>, num: null, cls: "unavailable", reason: c.reason };
+  if (c.value === null) return { node: <span className="text-fg-na">{productText(c.reason ?? "") || "Not stated"}</span>, num: null, cls: "unavailable", reason: c.reason };
   return { node: <span title={c.notes?.join(" · ")}>{format(c.value)}</span>, num: c.value, cls: c.cls, source: c.source };
 }
 
@@ -274,15 +274,15 @@ export function CompareTable({ panels, platformAssumptions, heading }: { panels:
           <CardBody className="grid gap-3 sm:grid-cols-3">
             <Field label={<span className="inline-flex items-center gap-1">Peak sun hours / day<InfoTip term="peak_sun_hours" /></span>} help={assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay) === "source" ? `Platform setting: ${platformAssumptions.peakSunHoursPerDay}` : undefined}>
               <Input type="number" inputMode="decimal" min={0} step="0.1" value={ua.peakSunHours} placeholder={platformAssumptions.peakSunHoursPerDay?.toString() ?? "e.g. from a real source"} onChange={(e) => setUa((prev) => ({ ...prev, peakSunHours: e.target.value }))} aria-describedby="a-psh" />
-              <div id="a-psh" className="mt-1.5">{assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay) ? <DataBadge cls={assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay)!} compact /> : <Placeholder k="SOLAR_RESOURCE_DATA_SOURCE" />}</div>
+              <div id="a-psh" className="mt-1.5">{assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay) ? <DataBadge cls={assumptionCls(uPsh, platformAssumptions.peakSunHoursPerDay)!} compact /> : <span className="text-[11.5px] text-fg-muted">Optional · your own value</span>}</div>
             </Field>
             <Field label={<span className="inline-flex items-center gap-1">Performance ratio (0–1)<InfoTip term="performance_ratio" /></span>} help={assumptionCls(uPr, platformAssumptions.performanceRatio) === "source" ? `Platform setting: ${platformAssumptions.performanceRatio}` : undefined}>
               <Input type="number" inputMode="decimal" min={0} max={1} step="0.01" value={ua.performanceRatio} placeholder={platformAssumptions.performanceRatio?.toString() ?? "e.g. 0.75"} onChange={(e) => setUa((prev) => ({ ...prev, performanceRatio: e.target.value }))} aria-describedby="a-pr" />
-              <div id="a-pr" className="mt-1.5">{assumptionCls(uPr, platformAssumptions.performanceRatio) ? <DataBadge cls={assumptionCls(uPr, platformAssumptions.performanceRatio)!} compact /> : <Placeholder k="SYSTEM_LOSS_FACTOR" />}</div>
+              <div id="a-pr" className="mt-1.5">{assumptionCls(uPr, platformAssumptions.performanceRatio) ? <DataBadge cls={assumptionCls(uPr, platformAssumptions.performanceRatio)!} compact /> : <span className="text-[11.5px] text-fg-muted">Optional · your own value</span>}</div>
             </Field>
             <Field label={<span className="inline-flex items-center gap-1">Cost horizon (years)<InfoTip term="tco" /></span>} help={assumptionCls(uHz, platformAssumptions.horizonYears) === "source" ? `Platform setting: ${platformAssumptions.horizonYears}` : undefined}>
               <Input type="number" inputMode="numeric" min={1} step="1" value={ua.horizonYears} placeholder={platformAssumptions.horizonYears?.toString() ?? "e.g. 25"} onChange={(e) => setUa((prev) => ({ ...prev, horizonYears: e.target.value }))} aria-describedby="a-hz" />
-              <div id="a-hz" className="mt-1.5">{assumptionCls(uHz, platformAssumptions.horizonYears) ? <DataBadge cls={assumptionCls(uHz, platformAssumptions.horizonYears)!} compact /> : <Placeholder k="TCO_PERIOD" />}</div>
+              <div id="a-hz" className="mt-1.5">{assumptionCls(uHz, platformAssumptions.horizonYears) ? <DataBadge cls={assumptionCls(uHz, platformAssumptions.horizonYears)!} compact /> : <span className="text-[11.5px] text-fg-muted">Optional · your own value</span>}</div>
             </Field>
             <p className="text-[12px] leading-relaxed text-fg-muted sm:col-span-3">Estimates are labeled <DataBadge cls="estimated" compact /> and are only as good as these inputs. Total cost of ownership also needs real prices for the panel, installation, maintenance, cleaning and repairs: Solink never fills those in.</p>
             {usesUserInput && <div className="sm:col-span-3"><Button variant="ghost" size="sm" onClick={() => setUa(EMPTY_ASSUMPTIONS)}>Clear my assumptions</Button></div>}

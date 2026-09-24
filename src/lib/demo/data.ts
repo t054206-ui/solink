@@ -113,21 +113,21 @@ export const DEMO_PRODUCTS: Product[] = [
   },
   {
     id: "p-demo-install-1", category: "installation_package", manufacturer_id: null, manufacturer_name: "Demo Installer Co.",
-    model: "DEMO-INSTALL-RES", name: "Demo Residential Installation Package (NOT REAL)", description: "Illustrative installation service. Price: [PLACEHOLDER: INSTALLATION PRICE].",
+    model: "DEMO-INSTALL-RES", name: "Demo Residential Installation Package (NOT REAL)", description: "Illustrative installation service. Price: quoted by the installer.",
     price: na, currency: "KWD", installation_cost: na, annual_maintenance_cost: na, cleaning_cost: na, expected_annual_production_kwh: na,
     images: [], is_demo: true, is_archived: false, is_outdated: false, current_version_id: null, provider_id: "c-demo-installer",
     specs: { additional: {} }, source: src(),
   },
   {
     id: "p-demo-maint-1", category: "maintenance_package", manufacturer_id: null, manufacturer_name: "Demo Maintenance Co.",
-    model: "DEMO-MAINT-ANNUAL", name: "Demo Annual Maintenance Plan (NOT REAL)", description: "Illustrative annual inspection plan. Price: [PLACEHOLDER: MAINTENANCE PRICE].",
+    model: "DEMO-MAINT-ANNUAL", name: "Demo Annual Maintenance Plan (NOT REAL)", description: "Illustrative annual inspection plan. Price: quoted by the provider.",
     price: na, currency: "KWD", installation_cost: na, annual_maintenance_cost: na, cleaning_cost: na, expected_annual_production_kwh: na,
     images: [], is_demo: true, is_archived: false, is_outdated: false, current_version_id: null, provider_id: "c-demo-maint",
     specs: { additional: {} }, source: src(),
   },
   {
     id: "p-demo-clean-1", category: "cleaning_service", manufacturer_id: null, manufacturer_name: "Demo Cleaning Co.",
-    model: "DEMO-CLEAN-VISIT", name: "Demo Panel Cleaning Visit (NOT REAL)", description: "Illustrative cleaning service. Price: [PLACEHOLDER: MAINTENANCE PRICE].",
+    model: "DEMO-CLEAN-VISIT", name: "Demo Panel Cleaning Visit (NOT REAL)", description: "Illustrative cleaning service. Price: quoted by the provider.",
     price: na, currency: "KWD", installation_cost: na, annual_maintenance_cost: na, cleaning_cost: na, expected_annual_production_kwh: na,
     images: [], is_demo: true, is_archived: false, is_outdated: false, current_version_id: null, provider_id: "c-demo-clean",
     specs: { additional: {} }, source: src(),
@@ -209,25 +209,25 @@ export const DEMO_INCIDENTS: Incident[] = [
 ];
 
 export const DEMO_ALERTS: AiAlert[] = [
-  { id: "al-demo-1", system_id: "sys-demo-1", status: "monitor", title: "Demo: production below recent average", message: "DEMO. Illustrative alert. Production over the last 7 days is below the previous 30-day average in the demo series. Real thresholds are not defined: [PLACEHOLDER: PRODUCTION ALERT THRESHOLDS].", evidence: ["7-day mean vs 30-day mean (demo series)"], created_at: new Date().toISOString(), cls: "demo", acknowledged: false },
+  { id: "al-demo-1", system_id: "sys-demo-1", status: "monitor", title: "Demo: production below recent average", message: "DEMO. Illustrative alert. Production over the last 7 days is below the previous 30-day average in the demo series.", evidence: ["7-day mean vs 30-day mean (demo series)"], created_at: new Date().toISOString(), cls: "demo", acknowledged: false },
 ];
 
 export const DEMO_REPORTS: MonthlyReport[] = [
   {
     id: "rep-demo-2026-08", system_id: "sys-demo-1", month: "2026-08",
     energy: { total_kwh: 1012.4, breakdown: [], trend_pct: -3.1, cls: "demo" },
-    financial: { estimated_savings: null, maintenance_costs: null, currency: "KWD", cls: "unavailable", notes: ["[PLACEHOLDER: ELECTRICITY TARIFF]", "[PLACEHOLDER: MAINTENANCE PRICE]"] },
+    financial: { estimated_savings: null, maintenance_costs: null, currency: "KWD", cls: "unavailable", notes: ["Needs an electricity rate.", "No cost was entered for this month's work."] },
     maintenance: { incidents: 0, cleanings: 0, repairs: 0, replacements: 0 },
-    environmental: { co2_kg: null, cls: "unavailable", notes: ["[PLACEHOLDER: GRID CO2 EMISSION FACTOR]"] },
+    environmental: { co2_kg: null, cls: "unavailable", notes: ["Needs the grid emission factor."] },
     ai: { observations: [], issues: [], recommendations: [], cls: "unavailable" },
     generated_at: "2026-09-01T00:00:00Z", is_demo: true,
   },
   {
     id: "rep-demo-2026-07", system_id: "sys-demo-1", month: "2026-07",
     energy: { total_kwh: 1044.9, breakdown: [], trend_pct: -8.4, cls: "demo" },
-    financial: { estimated_savings: null, maintenance_costs: null, currency: "KWD", cls: "unavailable", notes: ["[PLACEHOLDER: ELECTRICITY TARIFF]"] },
+    financial: { estimated_savings: null, maintenance_costs: null, currency: "KWD", cls: "unavailable", notes: ["Needs an electricity rate."] },
     maintenance: { incidents: 1, cleanings: 1, repairs: 0, replacements: 0 },
-    environmental: { co2_kg: null, cls: "unavailable", notes: ["[PLACEHOLDER: GRID CO2 EMISSION FACTOR]"] },
+    environmental: { co2_kg: null, cls: "unavailable", notes: ["Needs the grid emission factor."] },
     ai: { observations: [], issues: [], recommendations: [], cls: "unavailable" },
     generated_at: "2026-08-01T00:00:00Z", is_demo: true,
   },

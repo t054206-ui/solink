@@ -1,7 +1,5 @@
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { DataBadge } from "@/components/ui/DataBadge";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
 import { UnavailableState } from "@/components/ui/States";
 import { InfoTip } from "@/components/help/InfoTip";
 import { NoSystemState } from "../../_operate/components/NoSystemState";
@@ -29,38 +27,33 @@ export default async function PanelsPage() {
       <Card>
         <CardHeader
           title={<>Your array <InfoTip term="string" /></>}
-          subtitle={count !== null ? `${count} panels recorded for ${ctx.system.name}.` : "The number of panels is not recorded for this system."}
-          action={<DataBadge cls="unavailable" compact />}
+          subtitle={count !== null ? `${count} panels recorded for ${ctx.system.name}.` : "Your array, from your Solar Passport."}
         />
         <CardBody className="space-y-4">
           {count !== null ? (
             <>
-              <PanelGrid count={count} />
-              <p className="text-[13px] leading-relaxed text-fg-muted">
-                Every panel is drawn in the unknown state. Solink knows how many panels you have from
-                your system record, but nothing reports how each one is performing.
-              </p>
+              <PanelGrid
+                count={count}
+                panelLabel={ctx.passport?.panel_snapshot ? `${ctx.passport.panel_snapshot.manufacturer} ${ctx.passport.panel_snapshot.model}` : null}
+                capacityKwp={ctx.passport?.capacity_kwp ?? ctx.system.capacity_kwp}
+              />
             </>
           ) : (
-            <UnavailableState title="Panel count unknown">
+            <UnavailableState title="Your array is drawn here">
               Add the number of panels to your system record, or complete the Solar Passport, and the
               array layout will be drawn here.
             </UnavailableState>
           )}
-          <PlaceholderNote k="PANEL_LEVEL_MONITORING_DATA_SOURCE" />
         </CardBody>
       </Card>
 
       <Card>
-        <CardHeader title="What appears once panel-level data is connected" subtitle="Nothing below is estimated or simulated. It simply needs a data source." />
+        <CardHeader title="What per-panel readings add" subtitle="With optimizers or micro-inverters on each panel, this page shows:" />
         <CardBody>
           <ul className="grid gap-3 sm:grid-cols-2">
             {WOULD_SHOW.map((f) => (
-              <li key={f.title} className="rounded-[var(--radius-md)] border border-dashed border-border-strong bg-inset p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-[13.5px] font-semibold text-fg-heading">{f.title}</h3>
-                  <DataBadge cls="unavailable" compact />
-                </div>
+              <li key={f.title} className="rounded-[var(--radius-md)] border border-border bg-inset p-3">
+                <h3 className="text-[13.5px] font-semibold text-fg-heading">{f.title}</h3>
                 <p className="mt-1 text-[13px] leading-relaxed text-fg-secondary">{f.text}</p>
               </li>
             ))}
@@ -77,12 +70,12 @@ export default async function PanelsPage() {
             micro-inverters fitted to each panel, or from a monitoring platform that exposes them.
           </p>
           <p>
-            Until such a source is connected, Solink will not display per-panel numbers. Inventing
-            them would make a faulty panel look healthy, or a healthy one look faulty.
+            Solink only shows per-panel numbers that a device has measured. Estimating them would
+            make a faulty panel look healthy, or a healthy one look faulty.
           </p>
           <p>
-            In the meantime, whole-system signals on the Overview page and a photo screening on the
-            Inspection page are the honest alternatives.
+            With a string inverter, whole-system signals on the Overview page and a photo check on
+            the Inspection page cover the array.
           </p>
           <div className="flex flex-wrap gap-2 pt-1">
             <Button href="/monitoring" size="sm" variant="outline">System signals</Button>

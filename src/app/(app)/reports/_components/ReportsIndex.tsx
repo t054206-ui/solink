@@ -1,14 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ChevronRight, FilePlus2, Loader2, TrendingDown, TrendingUp } from "lucide-react";
+import { ChevronRight, FilePlus2, FileText, Loader2, TrendingDown, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Field, Select } from "@/components/ui/Form";
 import { EmptyState } from "@/components/ui/States";
-import { Placeholder } from "@/components/ui/Placeholder";
 import type { DataMode } from "@/lib/data/mode";
 import type { Incident, MaintenanceCase, MonthlyReport, ProductionRecord, SolarSystem } from "@/lib/types";
 import type { SolarAssumptions } from "@/lib/solar/calculations";
@@ -60,10 +59,16 @@ export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems
       />
       {demoNotice}
       <Card>
-        <CardHeader title="Generate a report" subtitle="Energy and maintenance sections are computed from the records available. Financial and environmental figures stay unavailable until a tariff and an emission factor are provided; the AI section needs the Claude API key." />
+        <CardHeader title="Generate a report" subtitle="Each report is built from your own records: energy produced, maintenance activity and, at the rates below, what it saved and the CO₂ it avoided." />
         <CardBody>
           {months.length === 0 ? (
-            <p className="text-[13px] text-fg-muted">No complete month of production records is available. <Placeholder k="SOLAR_MONITORING_HARDWARE_API" /></p>
+            <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-inset p-4">
+              <span className="grid size-10 shrink-0 place-items-center rounded-[var(--radius)] border border-border bg-elevated text-[var(--brand)]"><FileText className="size-5" strokeWidth={1.5} aria-hidden /></span>
+              <div>
+                <p className="text-[13.5px] font-medium text-fg-heading">Your first monthly report</p>
+                <p className="mt-0.5 text-[13px] leading-relaxed text-fg-secondary">It is generated once a full calendar month of production records is on file: energy, savings, CO₂ avoided and maintenance for that month.</p>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
               <Field label="Month" className="sm:w-64">
@@ -73,12 +78,17 @@ export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems
             </div>
           )}
           {error && <p role="alert" className="mt-2 text-[13px] text-critical-fg">{error}</p>}
-          <p className="mt-3 text-[12px] text-fg-muted">Inputs not provided: <Placeholder k="ELECTRICITY_TARIFF" /> <Placeholder k="GRID_CO2_EMISSION_FACTOR" /> <Placeholder k="CLAUDE_API_KEY" /></p>
+          {(assumptions.tariffPerKwh != null || assumptions.gridCo2KgPerKwh != null) && (
+            <p className="mt-3 text-[12px] text-fg-muted">
+              <span className="font-medium text-fg-secondary">Rates used:</span>{" "}
+              {[assumptions.tariffPerKwh != null ? `${assumptions.tariffPerKwh} ${assumptions.currency ?? "KWD"}/kWh` : null, assumptions.gridCo2KgPerKwh != null ? `${assumptions.gridCo2KgPerKwh} kg CO₂/kWh` : null].filter(Boolean).join(" · ")}
+            </p>
+          )}
         </CardBody>
       </Card>
 
       {reports.length === 0 ? (
-        <EmptyState title="No reports yet">Generate the first one above.</EmptyState>
+        months.length > 0 ? <EmptyState title="No reports yet" className="py-6">Generate the first one above.</EmptyState> : null
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {reports.map((r) => {
@@ -97,7 +107,7 @@ export function ReportsIndex({ heading, demoNotice, mode, serverReports, systems
                     <ChevronRight className="mt-5 size-4 shrink-0 text-fg-muted transition-transform group-hover:translate-x-0.5" aria-hidden />
                   </div>
                   <div className="mt-3 flex items-end justify-between gap-2">
-                    <div className="figure text-2xl font-medium text-[color:var(--sun-ink)]">{r.energy.total_kwh === null ? <span className="text-base font-medium text-fg-na">Unavailable</span> : fmtKwh(r.energy.total_kwh)}</div>
+                    <div className="figure text-2xl font-medium text-[color:var(--sun-ink)]">{r.energy.total_kwh === null ? <span className="text-base font-medium text-fg-na">No energy record</span> : fmtKwh(r.energy.total_kwh)}</div>
                     <DataBadge cls={r.energy.cls} compact />
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[12.5px] text-fg-secondary">

@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
+import { AiResting } from "@/components/ui/AiResting";
 import { AgentChat } from "@/components/agent/AgentChat";
 import { InfoTip } from "@/components/help/InfoTip";
 import { isClaudeConfigured } from "@/lib/ai/claude";
@@ -98,16 +98,12 @@ export default async function AgentPage() {
                 <li className="flex items-center justify-between gap-2"><span>Maintenance &amp; incidents</span><DataBadge cls={ctx.mode === "demo" ? "demo" : "source"} compact /></li>
                 <li className="flex items-center justify-between gap-2"><span>Monthly reports</span><DataBadge cls={ctx.mode === "demo" ? "demo" : "source"} compact /></li>
                 <li className="flex items-center justify-between gap-2"><span>Marketplace products</span><DataBadge cls={ctx.mode === "demo" ? "demo" : "source"} compact /></li>
-                <li className="flex items-center justify-between gap-2"><span>Live hardware readings</span><DataBadge cls="unavailable" compact /></li>
               </ul>
             </CardBody>
           </Card>
 
           {!configured && (
-            <Card>
-              <CardHeader title="The agent is not connected yet" />
-              <CardBody><PlaceholderNote k="CLAUDE_API_KEY" /></CardBody>
-            </Card>
+            <AiResting title="Ask Solink isn't available right now">Your profile, system, maintenance and reports are all on their own pages meanwhile.</AiResting>
           )}
         </aside>
       </div>

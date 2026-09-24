@@ -4,9 +4,8 @@ import { LineChart } from "@/components/charts/LineChart";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Metric } from "@/components/ui/Metric";
-import { Placeholder, PlaceholderNote } from "@/components/ui/Placeholder";
-import { EmptyState } from "@/components/ui/States";
+import { Metric, hasValue } from "@/components/ui/Metric";
+import { PerformanceTimeline, WarrantyCurve } from "@/components/illustrations/Illustrations";
 import { InfoTip } from "@/components/help/InfoTip";
 import { type Classified, type DataClass, unavailable } from "@/lib/classification";
 import { PLACEHOLDERS } from "@/lib/config/placeholders";
@@ -39,12 +38,14 @@ export interface CostPrefills { maintenance: PrefilledCost; cleaning: PrefilledC
 
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
-export function PerformanceView({ rows, cls, settings, panelDegradation = null, capacityKwp, systemName, currency = "KWD", prefills, trailingYield, totalRecorded, installationDate }: {
+export function PerformanceView({ rows, cls, settings, panelDegradation = null, warrantyCurve = null, capacityKwp, systemName, currency = "KWD", prefills, trailingYield, totalRecorded, installationDate }: {
   rows: YearRow[];
   cls: DataClass;
   settings: PlatformSettings;
   /** The installed panel's warranty degradation in %/year, from its datasheet snapshot, when the passport carries one. Beats the platform-wide setting. */
   panelDegradation?: { value: number; source: string } | null;
+  /** The installed panel's guaranteed-minimum curve from its datasheet: a warranty, never a measurement. */
+  warrantyCurve?: { points: { year: number; pct: number }[]; source: string } | null;
   capacityKwp: number | null;
   systemName: string;
   currency?: string;
@@ -130,17 +131,27 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
     <div className="space-y-6">
       {cls === "demo" && <DemoBanner text={DEMO_PRODUCTION_BANNER} detail="Every figure below is computed from a simulated production series. None of it describes a real system." />}
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Overall">
-        <Metric label="Total production recorded" term="energy_production" data={totalRecorded} format={(v) => fmtKwh(v)} energy />
-        <Metric label={<span className="inline-flex items-center gap-1">Specific yield, last 365 days <InfoTip term="specific_yield" /></span>} data={trailingYield} format={(v) => `${formatNumber(v)} kWh/kWp`} energy />
-        <Metric label="Years with records" term="years_with_records" data={{ value: rows.length, cls: "calculated", source: `${completeRows.length} complete, ${rows.length - completeRows.length} partial` }} />
-      </section>
+      {rows.length > 0 && (
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Overall">
+          {hasValue(totalRecorded) && <Metric label="Total production recorded" term="energy_production" data={totalRecorded} format={(v) => fmtKwh(v)} energy />}
+          {hasValue(trailingYield) && <Metric label={<span className="inline-flex items-center gap-1">Specific yield, last 365 days <InfoTip term="specific_yield" /></span>} data={trailingYield} format={(v) => `${formatNumber(v)} kWh/kWp`} energy />}
+          <Metric label="Years with records" term="years_with_records" data={{ value: rows.length, cls: "calculated", source: `${completeRows.length} complete, ${rows.length - completeRows.length} partial` }} />
+        </section>
+      )}
 
       <Card>
-        <CardHeader title={<>Production by year <InfoTip term="production_by_year" /></>} subtitle="Calendar-year totals from the daily records Solink holds. A year counts as complete only with at least 360 daily records." action={<DataBadge cls={cls} compact />} />
+        <CardHeader title={<>{rows.length ? "Production by year" : "Performance history"} <InfoTip term="production_by_year" /></>} subtitle={rows.length ? "Calendar-year totals from the daily records Solink holds. A year counts as complete only with at least 360 daily records." : "What this page shows as your system's records build up."} action={rows.length ? <DataBadge cls={cls} compact /> : undefined} />
         <CardBody className="space-y-4">
           {rows.length === 0 ? (
-            <EmptyState title="No production records yet">Yearly performance appears once daily production records exist for this system.</EmptyState>
+            <PerformanceTimeline
+              daysRecorded={0}
+              milestones={[
+                { day: 0, label: "Installation", detail: installationDate ? `Recorded ${new Date(installationDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : "Your system's starting point" },
+                { day: 37, label: "First signals", detail: "Recent output compared with the month before" },
+                { day: 365, label: "Year-1 baseline", detail: "Yearly production, specific yield and savings" },
+                { day: (horizon.value ?? 25) * 365, label: "Long-term performance", detail: "Measured output against the warranty curve" },
+              ]}
+            />
           ) : (
             <>
               <BarChart data={bars} ariaLabel="Production by calendar year in kWh" formatY={(v) => formatNumber(v)} />
@@ -168,14 +179,23 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
           {degPct.value === null ? (
             <>
               <p className="text-[13.5px] leading-relaxed text-fg-secondary">
-                Whether this system&apos;s output is declining faster than it should <strong className="text-fg">cannot be assessed</strong>: the expected degradation rate is not provided, so there is nothing to compare the measured change against.
+                The expected curve appears here once a degradation rate is set: from your panel&apos;s warranty, or your own value above.
               </p>
-              <PlaceholderNote k="EXPECTED_PANEL_DEGRADATION_RATE" />
             </>
           ) : !base || !expected || completeRows.length === 0 ? (
-            <p className="text-[13.5px] leading-relaxed text-fg-secondary">
-              A degradation rate of {degPct.value}% per year is available, but no complete calendar year of records exists yet to anchor the expected curve. The comparison appears once a full year has been recorded.
-            </p>
+            <div className="space-y-3">
+              {warrantyCurve && degPct.cls === "source" && (
+                <figure className="rounded-[var(--radius-lg)] border border-border bg-inset p-3">
+                  <WarrantyCurve points={warrantyCurve.points} />
+                  <figcaption className="mt-2 text-[12px] leading-snug text-fg-secondary">
+                    <span className="font-medium text-fg-heading">Manufacturer&apos;s guaranteed minimum output.</span> From the datasheet, not a measurement of your system. <span className="text-fg-info">{warrantyCurve.source}</span>
+                  </figcaption>
+                </figure>
+              )}
+              <p className="text-[13.5px] leading-relaxed text-fg-secondary">
+                Your measured output is drawn against the expected {degPct.value}% per year once a full calendar year has been recorded.
+              </p>
+            </div>
           ) : (
             <>
               <LineChart
@@ -199,19 +219,19 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
       <Card>
         <CardHeader
           title={<>Total cost of ownership <InfoTip term="tco" /></>}
-          subtitle="Everything the system costs over a chosen period. Costs recorded against your system are filled in for you; the rest must come from you, because Solink has no price data."
+          subtitle="Everything the system costs over the period. Costs recorded against your system are filled in for you; add the rest from your quotes."
         />
         <CardBody className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <AssumptionField
               label="Analysis period" placeholderKey="TCO_PERIOD" unit="years" platform={settings.tco_period_years}
               value={inp.horizon} onChange={(v) => set("horizon", v)} step="1" min={1}
-              help="How many years the cost model covers. The platform has not chosen one."
+              help="How many years the cost model covers."
             />
             <CostField label="Initial system cost" value={inp.systemCost} onChange={(v) => set("systemCost", v)} unit={currency}
-              help="What the equipment cost you. Solink holds no purchase price for this system." />
+              help="What the equipment cost you, from your invoice." />
             <CostField label="Installation" placeholderKey="INSTALLATION_PRICE" value={inp.installCost} onChange={(v) => set("installCost", v)} unit={currency}
-              help="What the installation cost. Installation providers have not published prices." />
+              help="From your installer's quote or invoice." />
             <CostField label="Annual maintenance" placeholderKey="MAINTENANCE_PRICE" recorded={prefills.maintenance} value={inp.maintenance} onChange={(v) => set("maintenance", v)} unit={`${currency}/year`}
               help="Inspections and routine upkeep, per year." />
             <CostField label="Annual cleaning" placeholderKey="MAINTENANCE_PRICE" recorded={prefills.cleaning} value={inp.cleaning} onChange={(v) => set("cleaning", v)} unit={`${currency}/year`}
@@ -221,7 +241,12 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <MetricWithNotes label={`Total cost of ownership${a.horizonYears ? ` over ${a.horizonYears} years` : ""}`} term="tco" data={tco} format={(v) => formatMoney(v, currency)} />
+            {hasValue(tco) ? <MetricWithNotes label={`Total cost of ownership${a.horizonYears ? ` over ${a.horizonYears} years` : ""}`} term="tco" data={tco} format={(v) => formatMoney(v, currency)} /> : (
+              <div className="rounded-[var(--radius-lg)] border border-border bg-inset p-4">
+                <p className="text-[13.5px] font-medium text-fg-heading">Total cost of ownership</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-fg-secondary">Adds up once each cost above has an amount{a.horizonYears ? `, over ${a.horizonYears} years` : ""}.</p>
+              </div>
+            )}
             <div className="min-w-0">
               {tco.breakdown ? (
                 <>
@@ -229,8 +254,8 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
                   <p className="mt-1 text-[11.5px] text-fg-muted">Breakdown in {currency}, undiscounted.</p>
                 </>
               ) : (
-                <div className="rounded-[10px] border border-dashed border-border-strong bg-inset p-4 text-[13px] leading-relaxed text-fg-secondary">
-                  The breakdown chart appears once every cost above has a value. Solink does not fill an unknown cost with zero, because that would quietly make the system look cheaper than it is. Missing prices: <Placeholder k="INSTALLATION_PRICE" /> <Placeholder k="MAINTENANCE_PRICE" />
+                <div className="rounded-[var(--radius-lg)] border border-border bg-inset p-4 text-[13px] leading-relaxed text-fg-secondary">
+                  The breakdown chart draws here once each cost has an amount. Solink never counts an unknown cost as zero, which would make the system look cheaper than it is.
                 </div>
               )}
             </div>
@@ -239,20 +264,26 @@ export function PerformanceView({ rows, cls, settings, panelDegradation = null, 
       </Card>
 
       <Card>
-        <CardHeader title="Over the whole period" subtitle="Lifetime production and savings. Each needs its own assumption; without it the figure stays unavailable." />
+        <CardHeader title="Over the whole period" subtitle="Lifetime production and savings, at the rate below." />
         <CardBody className="space-y-4">
           <AssumptionField
             label="Electricity tariff" placeholderKey="ELECTRICITY_TARIFF" unit={`${currency}/kWh`} platform={settings.electricity_tariff_per_kwh}
             value={inp.tariff} onChange={(v) => set("tariff", v)} step="0.001" min={0}
             help="The price you pay per kWh. Savings cannot be calculated without it."
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricWithNotes label="Year-1 production (baseline)" data={year1} format={(v) => fmtKwh(v)} energy />
-            <MetricWithNotes label={`Production over ${a.horizonYears ?? "the"} ${a.horizonYears ? "years" : "period"}`} data={lifetime} format={(v) => fmtKwh(v)} energy />
-            <MetricWithNotes label="Savings in year 1" data={yearOneSavings} format={(v) => formatMoney(v, currency)} />
-            <MetricWithNotes label="Savings over the period" data={lifetimeSavings} format={(v) => formatMoney(v, currency)} />
-          </div>
-          <MetricWithNotes label="Savings over the period minus total cost of ownership" data={netPosition} format={(v) => formatMoney(v, currency)} className="max-w-md" />
+          {hasValue(year1) ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <MetricWithNotes label="Year-1 production (baseline)" data={year1} format={(v) => fmtKwh(v)} energy />
+                {hasValue(lifetime) && <MetricWithNotes label={`Production over ${a.horizonYears} years`} data={lifetime} format={(v) => fmtKwh(v)} energy />}
+                {hasValue(yearOneSavings) && <MetricWithNotes label="Savings in year 1" data={yearOneSavings} format={(v) => formatMoney(v, currency)} />}
+                {hasValue(lifetimeSavings) && <MetricWithNotes label="Savings over the period" data={lifetimeSavings} format={(v) => formatMoney(v, currency)} />}
+              </div>
+              {hasValue(netPosition) && <MetricWithNotes label="Savings over the period minus total cost of ownership" data={netPosition} format={(v) => formatMoney(v, currency)} className="max-w-md" />}
+            </>
+          ) : (
+            <p className="text-[13px] leading-relaxed text-fg-secondary">Year-1 production, lifetime production and savings are worked out from your first full calendar year of records, at this rate.</p>
+          )}
         </CardBody>
       </Card>
 

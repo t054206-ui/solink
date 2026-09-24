@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { askClaude, buildContextBlock, isClaudeConfigured } from "@/lib/ai/claude";
 import { buildUserContext } from "@/lib/ai/context";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 import { requireUser } from "@/lib/api/auth";
 import { checkRateLimit, rateLimitKey, LIMITS } from "@/lib/api/rateLimit";
 
@@ -19,7 +18,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return Response.json({ ok: false, reason: "invalid_input", message: "Invalid request." }, { status: 400 });
   if (!isClaudeConfigured()) {
-    return Response.json({ ok: false, reason: "not_configured", message: `The AI Solar Agent is not connected yet. ${PLACEHOLDERS.CLAUDE_API_KEY}` }, { status: 503 });
+    return Response.json({ ok: false, reason: "not_configured", message: "Ask Solink isn't available right now." }, { status: 503 });
   }
   const { blocks, used } = await buildUserContext({ systemId: parsed.data.systemId, includeProducts: true });
   const context = buildContextBlock(blocks);

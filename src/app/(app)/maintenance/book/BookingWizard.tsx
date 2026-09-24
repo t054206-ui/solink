@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { Badge } from "@/components/ui/Badge";
 import type { DataMode } from "@/lib/data/mode";
 import type { Appointment, MaintenanceCase, MaintenanceKind, ProviderCompany, SolarSystem, Urgency } from "@/lib/types";
@@ -183,7 +182,7 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
               <Row k="Requested slot" v={appointmentIso ? `${formatDate(appointmentIso)} · ${WINDOWS.find((w) => w.id === draft.window)?.label}` : "—"} />
               <div className="sm:col-span-2"><dt className="text-fg-muted">Problem</dt><dd className="mt-0.5 whitespace-pre-wrap text-fg">{draft.description}</dd></div>
               {files.length > 0 && <Row k="Images" v={`${files.length} attached (preview only)`} />}
-              <p className="text-[12.5px] text-fg-muted sm:col-span-2">Submitting opens a case with status <em>New</em> and requests the appointment. {mode === "demo" ? "In demo mode nothing is sent anywhere." : "The provider is notified in-app only: "}{mode !== "demo" && <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" />}</p>
+              <p className="text-[12.5px] text-fg-muted sm:col-span-2">Submitting opens a case with status <em>New</em> and requests the appointment. {mode === "demo" ? "In demo mode nothing is sent anywhere." : "The provider sees the request in Solink and confirms the time."}</p>
             </dl>
           )}
 

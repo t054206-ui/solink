@@ -8,7 +8,6 @@
  * the reason (a placeholder name), never a guessed number.
  */
 import { type Classified, unavailable } from "@/lib/classification";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 
 export interface SolarAssumptions {
   /** Site solar resource, kWh/m²/day (≈ peak sun hours). Source: [PLACEHOLDER: SOLAR RESOURCE DATA SOURCE] or user-provided. */
@@ -45,8 +44,8 @@ export function panelsThatFit(areaM2: number | null, lengthMm: number | null, wi
 /** Recommended capacity to offset a consumption target. ESTIMATED (depends on solar resource & losses). */
 export function capacityForConsumption(monthlyKwh: number | null, a: SolarAssumptions, offsetFraction = 1): Classified {
   if (!isNum(monthlyKwh)) return unavailable("Monthly electricity consumption is required.");
-  if (!isNum(a.peakSunHoursPerDay)) return unavailable(PLACEHOLDERS.SOLAR_RESOURCE_DATA_SOURCE);
-  if (!isNum(a.performanceRatio)) return unavailable(PLACEHOLDERS.SYSTEM_LOSS_FACTOR);
+  if (!isNum(a.peakSunHoursPerDay)) return unavailable("Needs the peak sun hours for the site.");
+  if (!isNum(a.performanceRatio)) return unavailable("Needs the performance ratio.");
   const dailyKwh = (monthlyKwh * 12) / 365;
   const kwp = (dailyKwh * offsetFraction) / (a.peakSunHoursPerDay * a.performanceRatio);
   return { value: kwp, cls: "estimated", source: "Solink calculator", notes: [
@@ -58,8 +57,8 @@ export function capacityForConsumption(monthlyKwh: number | null, a: SolarAssump
 /** Annual production estimate. ESTIMATED. */
 export function annualProductionKwh(capacityKwp: number | null, a: SolarAssumptions): Classified {
   if (!isNum(capacityKwp)) return unavailable("System capacity is required.");
-  if (!isNum(a.peakSunHoursPerDay)) return unavailable(PLACEHOLDERS.SOLAR_RESOURCE_DATA_SOURCE);
-  if (!isNum(a.performanceRatio)) return unavailable(PLACEHOLDERS.SYSTEM_LOSS_FACTOR);
+  if (!isNum(a.peakSunHoursPerDay)) return unavailable("Needs the peak sun hours for the site.");
+  if (!isNum(a.performanceRatio)) return unavailable("Needs the performance ratio.");
   const v = capacityKwp * a.peakSunHoursPerDay * 365 * a.performanceRatio;
   return { value: v, cls: "estimated", source: "Solink calculator", notes: [`${capacityKwp.toFixed(2)} kWp × ${a.peakSunHoursPerDay} h/day × 365 × ${a.performanceRatio}`] };
 }
@@ -73,7 +72,7 @@ export function energyOffset(annualProduction: number | null, monthlyConsumption
 /** Annual savings. Requires a tariff — never assumed. ESTIMATED. */
 export function annualSavings(annualProduction: number | null, a: SolarAssumptions, selfConsumptionFraction = 1): Classified {
   if (!isNum(annualProduction)) return unavailable("Annual production is required.");
-  if (!isNum(a.tariffPerKwh)) return unavailable(PLACEHOLDERS.ELECTRICITY_TARIFF);
+  if (!isNum(a.tariffPerKwh)) return unavailable("Needs an electricity rate.");
   return { value: annualProduction * selfConsumptionFraction * a.tariffPerKwh, cls: "estimated", source: "Solink calculator", notes: [
     `${Math.round(annualProduction)} kWh × ${selfConsumptionFraction} self-consumed × ${a.tariffPerKwh} ${a.currency ?? ""}/kWh`,
     "Assumes the tariff applies to every kWh offset. Export/net-metering rules are not modelled.",
@@ -92,15 +91,15 @@ export function paybackYears(totalCost: number | null, annualSavingsValue: numbe
 /** CO2 avoided. Requires grid factor. ESTIMATED. */
 export function co2AvoidedKg(annualProduction: number | null, a: SolarAssumptions): Classified {
   if (!isNum(annualProduction)) return unavailable("Annual production is required.");
-  if (!isNum(a.gridCo2KgPerKwh)) return unavailable(PLACEHOLDERS.GRID_CO2_EMISSION_FACTOR);
+  if (!isNum(a.gridCo2KgPerKwh)) return unavailable("Needs the grid emission factor.");
   return { value: annualProduction * a.gridCo2KgPerKwh, cls: "estimated", source: "Solink calculator", notes: [`${Math.round(annualProduction)} kWh × ${a.gridCo2KgPerKwh} kg CO₂/kWh`] };
 }
 
 /** Lifetime production with degradation over a horizon. ESTIMATED. */
 export function lifetimeProductionKwh(year1Kwh: number | null, a: SolarAssumptions): Classified {
   if (!isNum(year1Kwh)) return unavailable("Year-1 production is required.");
-  if (!isNum(a.horizonYears)) return unavailable(PLACEHOLDERS.TCO_PERIOD);
-  if (!isNum(a.annualDegradation)) return unavailable(PLACEHOLDERS.EXPECTED_PANEL_DEGRADATION_RATE);
+  if (!isNum(a.horizonYears)) return unavailable("Needs the analysis period.");
+  if (!isNum(a.annualDegradation)) return unavailable("Needs the annual degradation rate.");
   let total = 0;
   for (let y = 0; y < a.horizonYears; y++) total += year1Kwh * Math.pow(1 - a.annualDegradation, y);
   return { value: total, cls: "estimated", source: "Solink calculator", notes: [`Σ year1 × (1 − ${a.annualDegradation})^y for ${a.horizonYears} years`] };
@@ -112,12 +111,12 @@ export interface TcoInputs {
 }
 /** Total cost of ownership. Every term must be present (no zero-filling of unknown costs). ESTIMATED. */
 export function totalCostOfOwnership(i: TcoInputs): Classified & { breakdown?: Record<string, number> } {
-  if (!isNum(i.horizonYears)) return unavailable(PLACEHOLDERS.TCO_PERIOD);
+  if (!isNum(i.horizonYears)) return unavailable("Needs the analysis period.");
   const missing: string[] = [];
   if (!isNum(i.systemCost)) missing.push("system cost");
-  if (!isNum(i.installation)) missing.push(`installation (${PLACEHOLDERS.INSTALLATION_PRICE})`);
-  if (!isNum(i.annualMaintenance)) missing.push(`maintenance (${PLACEHOLDERS.MAINTENANCE_PRICE})`);
-  if (!isNum(i.annualCleaning)) missing.push(`cleaning (${PLACEHOLDERS.MAINTENANCE_PRICE})`);
+  if (!isNum(i.installation)) missing.push("installation (your installer's quote)");
+  if (!isNum(i.annualMaintenance)) missing.push("maintenance (your provider's quote)");
+  if (!isNum(i.annualCleaning)) missing.push("cleaning (your provider's quote)");
   if (!isNum(i.repairsAndReplacements)) missing.push("repairs / replacements");
   if (missing.length) return unavailable(`Missing: ${missing.join(", ")}.`);
   const breakdown = {

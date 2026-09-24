@@ -6,7 +6,6 @@ import { ImagePlus, Loader2, ScanSearch, Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Field, Input, Select, Textarea } from "@/components/ui/Form";
-import { Placeholder } from "@/components/ui/Placeholder";
 import type { DataMode } from "@/lib/data/mode";
 import type { Incident, SolarSystem } from "@/lib/types";
 import { newLocalId, upsertRecord, useLocalIncidents } from "../../_ops/localRecords";
@@ -93,7 +92,7 @@ export function IncidentForm({ mode, systems, initialSystemId, initialPanel }: {
               <span className="inline-flex items-center gap-1.5"><ScanSearch className="size-4 text-fg-muted" aria-hidden /> Want an AI screening of your photos first?</span>
               <Link href="/monitoring/inspection" className="text-[13px] font-medium text-[var(--brand-strong)] hover:underline">Run AI screening</Link>
             </div>
-            <p className="mt-1 text-[12px] text-fg-muted">The screening is an AI interpretation and requires <Placeholder k="CLAUDE_API_KEY" />. It never replaces a technician.</p>
+            <p className="mt-1 text-[12px] text-fg-muted">The screening is an AI interpretation, when available. It never replaces a technician.</p>
           </div>
           {error && <p role="alert" className="text-[13px] text-critical-fg">{error}</p>}
           <div className="flex items-center justify-between gap-2">

@@ -1,6 +1,5 @@
 import "server-only";
 import { serverEnv } from "@/lib/config/env";
-import { PLACEHOLDERS } from "@/lib/config/placeholders";
 
 /**
  * Google Maps Platform server helpers (Geocoding, Distance Matrix). SERVER ONLY.
@@ -27,7 +26,7 @@ export interface GeocodeHit {
 
 export async function geocode(address: string, region = "kw"): Promise<MapsResult<GeocodeHit[]>> {
   const key = serverEnv().googleMapsApiKey;
-  if (!key) return { ok: false, reason: "not_configured", message: `Maps are not connected. ${PLACEHOLDERS.GOOGLE_MAPS_API_KEY}` };
+  if (!key) return { ok: false, reason: "not_configured", message: "Address lookup isn't available right now." };
   const qs = new URLSearchParams({ address, region, key });
   try {
     const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${qs}`);
@@ -49,7 +48,7 @@ export async function geocode(address: string, region = "kw"): Promise<MapsResul
 
 export async function reverseGeocode(lat: number, lng: number): Promise<MapsResult<GeocodeHit[]>> {
   const key = serverEnv().googleMapsApiKey;
-  if (!key) return { ok: false, reason: "not_configured", message: `Maps are not connected. ${PLACEHOLDERS.GOOGLE_MAPS_API_KEY}` };
+  if (!key) return { ok: false, reason: "not_configured", message: "Address lookup isn't available right now." };
   const qs = new URLSearchParams({ latlng: `${lat},${lng}`, key });
   try {
     const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${qs}`);
@@ -70,7 +69,7 @@ export async function reverseGeocode(lat: number, lng: number): Promise<MapsResu
  */
 export async function getBuildingInsights(lat: number, lng: number): Promise<MapsResult<unknown>> {
   const key = serverEnv().googleSolarApiKey;
-  if (!key) return { ok: false, reason: "not_configured", message: `Site solar data is not connected. ${PLACEHOLDERS.GOOGLE_SOLAR_SITE_DATA_SOURCE}` };
+  if (!key) return { ok: false, reason: "not_configured", message: "Roof site data isn't available for this address." };
   const qs = new URLSearchParams({ "location.latitude": String(lat), "location.longitude": String(lng), requiredQuality: "MEDIUM", key });
   try {
     const res = await fetch(`https://solar.googleapis.com/v1/buildingInsights:findClosest?${qs}`);

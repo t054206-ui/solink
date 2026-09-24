@@ -55,6 +55,15 @@ export default async function PerformancePage() {
   const snap = ctx.passport?.panel_snapshot ?? null;
   const warranty = warrantyDegradation(snap?.specs, snap?.manufacturer);
   const panelDegradation = warranty ? { value: Math.round(warranty.annualFraction * 100000) / 1000, source: warranty.source } : null;
+  // The manufacturer's guaranteed-minimum curve, straight from the datasheet figures (not a measurement).
+  const warrantyCurve = warranty ? (() => {
+    const years = warranty.warrantyYears ?? 25;
+    const first = warranty.firstYearFraction ?? 0;
+    const at = (y: number) => (y === 0 ? 100 : Math.round((1 - first - warranty.annualFraction * (y - 1)) * 1000) / 10);
+    const pts = [0, 1, 5, 10, 15, 20, 25, 30].filter((y) => y <= years).map((y) => ({ year: y, pct: at(y) }));
+    if (warranty.endOfWarrantyFraction !== null && warranty.warrantyYears !== null && pts[pts.length - 1].year === warranty.warrantyYears) pts[pts.length - 1].pct = Math.round(warranty.endOfWarrantyFraction * 1000) / 10;
+    return { points: pts, source: warranty.source };
+  })() : null;
 
   const prefills = {
     maintenance: perYearFromRecords("maintenance visits", sumRecordedCosts(upkeep), age),
@@ -76,6 +85,7 @@ export default async function PerformancePage() {
         cls={cls}
         settings={ctx.settings}
         panelDegradation={panelDegradation}
+        warrantyCurve={warrantyCurve}
         capacityKwp={capacityKwp}
         systemName={system.name}
         currency={ctx.profile?.currency ?? "KWD"}

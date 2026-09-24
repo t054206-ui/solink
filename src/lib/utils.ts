@@ -27,10 +27,11 @@ export function pct(v: number | null | undefined, digits = 0) {
 }
 
 export function specText(s: { value: unknown; unit?: string; status?: string } | undefined | null): string {
-  if (!s) return "Unavailable";
+  // A value the manufacturer does not publish reads "Not stated" (owner, 2026-09-24): never a guess.
+  if (!s) return "Not stated";
   if (s.value === null || s.value === undefined) {
     const st = (s as { status?: string }).status;
-    return st === "not_applicable" ? "Not applicable" : st === "pending_verification" ? "Pending verification" : "Unavailable";
+    return st === "not_applicable" ? "Not applicable" : st === "pending_verification" ? "Pending verification" : "Not stated";
   }
   return `${typeof s.value === "number" ? s.value.toLocaleString("en-US", { maximumFractionDigits: 2 }) : String(s.value)}${s.unit ? ` ${s.unit}` : ""}`;
 }

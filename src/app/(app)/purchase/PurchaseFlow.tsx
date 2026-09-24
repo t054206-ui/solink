@@ -8,7 +8,6 @@ import { Field, Input, Select, Textarea } from "@/components/ui/Form";
 import { Metric } from "@/components/ui/Metric";
 import { DataBadge } from "@/components/ui/DataBadge";
 import { DemoBanner } from "@/components/ui/DemoBanner";
-import { Placeholder } from "@/components/ui/Placeholder";
 import { EmptyState } from "@/components/ui/States";
 import { Badge } from "@/components/ui/Badge";
 import { InfoTip } from "@/components/help/InfoTip";
@@ -162,14 +161,14 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
                     <div className="text-[12px] text-fg-muted">{categoryLabel(i.category)} · qty {i.qty}</div>
                   </div>
                   <div className="tabular text-right text-fg-secondary">
-                    {i.unit_price !== null ? <>{formatMoney(i.unit_price, i.currency)} <span className="text-fg-muted">× {i.qty} =</span> <span className="font-medium text-fg">{formatMoney(i.unit_price * i.qty, i.currency)}</span></> : i.category === "installation_package" ? <Placeholder k="INSTALLATION_PRICE" /> : <span className="text-fg-muted">Price not provided</span>}
+                    {i.unit_price !== null ? <>{formatMoney(i.unit_price, i.currency)} <span className="text-fg-muted">× {i.qty} =</span> <span className="font-medium text-fg">{formatMoney(i.unit_price * i.qty, i.currency)}</span></> : i.category === "installation_package" ? <span className="text-fg-muted">Quoted by your installer</span> : <span className="text-fg-muted">Price on request from supplier</span>}
                   </div>
                 </li>
               ))}
             </ul>
             <div className="grid gap-3 sm:grid-cols-2">
               <Metric label="System capacity" term="kwp" data={capacity} unit="kWp" format={(v) => formatNumber(v, 2)} />
-              <Metric label="Total" term="estimated_cost" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span className="flex flex-wrap items-center gap-1">Total unavailable: <Placeholder k="INSTALLATION_PRICE" /> / prices not provided</span> : undefined} />
+              <Metric label="Total" term="estimated_cost" data={totals} format={(v) => formatMoney(v, currency)} footnote={totals.value === null ? <span>The total completes with your installer&apos;s quote.</span> : undefined} />
             </div>
             {selectedDesign && <p className="text-[12.5px] text-fg-muted flex items-center gap-1.5"><PencilRuler className="size-3.5"  aria-hidden /> From design “{selectedDesign.name}”: {selectedDesign.roof.length_m}×{selectedDesign.roof.width_m} m roof, {selectedDesign.summary.used_area_m2} m² of panels{selectedDesign.is_ai_suggested && <DataBadge cls="ai" compact />}</p>}
           </CardBody>
@@ -273,7 +272,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
               <Row k="Order" v={s.order_id ?? "—"} /><Row k="System" v={s.system_id ?? "—"} />
               <Row k="Installer" v={installer?.name ?? "—"} /><Row k="Appointment" v={`${formatDate(scheduledAtIso())} · ${TIME_WINDOWS[s.schedule.window].label} · requested`} />
               <Row k="Equipment" v={items.map((i) => `${i.qty} × ${i.name}`).join("; ")} />
-              <Row k="Capacity" v={capacity.value !== null ? `${formatNumber(capacity.value, 2)} kWp` : "Unavailable"} />
+              <Row k="Capacity" v={capacity.value !== null ? `${formatNumber(capacity.value, 2)} kWp` : "From your design"} />
             </dl>
             <div>
               <div className="font-semibold text-fg">Next steps</div>
@@ -284,7 +283,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
               </ol>
             </div>
             <div className="rounded-md bg-inset p-3 text-[12.5px] text-fg-secondary">
-              Notifications are <strong>in-app only</strong> for now. No email or SMS is sent. <Placeholder k="EMAIL_NOTIFICATION_PROVIDER" />
+              Updates about your request appear in Solink, under Notifications.
             </div>
             <div className="flex flex-wrap gap-2">
               <Button href="/passport" variant="outline">Go to Passport <ArrowRight className="size-4"  aria-hidden /></Button>

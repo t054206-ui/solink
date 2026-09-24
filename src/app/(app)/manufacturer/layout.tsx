@@ -3,6 +3,7 @@ import { ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
+import { AuditMode } from "@/components/ui/AuditMode";
 import { getManufacturerAccess } from "./_lib/access";
 
 /**
@@ -30,11 +31,13 @@ export default async function ManufacturerLayout({ children }: { children: React
     );
   }
   return (
+    <AuditMode>
     <div className="space-y-4">
       {access.mode === "demo" && (
         <DemoBanner text="DEMO MODE: MANUFACTURER" detail={`Supabase is not connected. You are acting as ${access.manufacturer?.name ?? "the demo manufacturer"}; products are labelled demo records and anything you save is stored in this browser only.`} />
       )}
       {children}
     </div>
+    </AuditMode>
   );
 }

@@ -5,6 +5,7 @@ import { AdminNav } from "./_components/AdminNav";
 import { AdminRoleNotice } from "./_components/AdminBits";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { PlaceholderNote } from "@/components/ui/Placeholder";
+import { AuditMode } from "@/components/ui/AuditMode";
 import { Button } from "@/components/ui/Button";
 
 /**
@@ -31,6 +32,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     );
   }
   return (
+    <AuditMode>
     <div className="space-y-4">
       {access.mode === "demo" && <DemoBanner text="DEMO MODE — ADMIN" detail="Supabase is not connected. Admin pages show labeled demo records; edits are stored in this browser only." />}
       <AdminRoleNotice />
@@ -39,5 +41,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <div className="min-w-0 mt-2 lg:mt-0">{children}</div>
       </div>
     </div>
+    </AuditMode>
   );
 }

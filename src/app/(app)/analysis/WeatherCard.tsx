@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { CloudSun } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { DataBadge } from "@/components/ui/DataBadge";
-import { PlaceholderNote } from "@/components/ui/Placeholder";
-import { EmptyState, ErrorState, Skeleton, UnavailableState } from "@/components/ui/States";
+import { EmptyState, Skeleton, UnavailableState } from "@/components/ui/States";
 import type { WeatherSnapshot } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -36,10 +35,10 @@ export function WeatherCard({ lat, lng }: { lat: number | null | undefined; lng:
     <Card>
       <CardHeader title={<><CloudSun className="size-4 text-fg-muted" aria-hidden /> Weather at your site</>} subtitle="Current conditions from WeatherAPI.com. Context only. It does not change the estimates above." />
       <CardBody>
-        {state.status === "no_coords" && <EmptyState title="No coordinates">Run the site analysis above for your address, or use the Placement Guide, and the location it resolves is kept for conditions like these.</EmptyState>}
+        {state.status === "no_coords" && <EmptyState title="Add your location">Run the site analysis above for your address, or use the Placement Guide, and the location it resolves is kept for conditions like these.</EmptyState>}
         {state.status === "loading" && <div className="grid grid-cols-3 gap-3"><Skeleton className="h-16" /><Skeleton className="h-16" /><Skeleton className="h-16" /></div>}
-        {state.status === "not_configured" && <UnavailableState title="Weather not connected"><PlaceholderNote k="WEATHER_API_KEY" className="text-left" /></UnavailableState>}
-        {state.status === "error" && <ErrorState title="Weather unavailable">{state.message}</ErrorState>}
+        {state.status === "not_configured" && <UnavailableState title="Local weather appears here">Current conditions at your site show here as soon as they are available.</UnavailableState>}
+        {state.status === "error" && <UnavailableState title="Weather will be back shortly">{state.message}</UnavailableState>}
         {state.status === "ok" && (
           <div>
             <div className="grid grid-cols-3 gap-3">
