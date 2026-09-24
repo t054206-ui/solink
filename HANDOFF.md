@@ -2152,3 +2152,58 @@ against Maria's real array (10 panels, LONGi LR8-66HGD-625M) — no NaN,
 all three example states (normal/underperforming/fault) appear. Not
 clicked through signed in as her account, same limitation as the basket's
 checkout path above: this session never handles a real password.
+
+## Addendum, 2026-09-24 — a full security review, and the two findings fixed
+
+The owner asked for a full, read-only security check of the whole project,
+written for a non-technical reader (a bootcamp-style report: plain words,
+a Red/Orange/Yellow verdict, "would a real customer's data be safe here
+today"). Method: read every server action, every RLS policy and storage
+policy live from Supabase (not just the migration files), the helper
+functions those policies call, the auth settings, the CSP, the git history
+for secrets, and `npm audit`.
+
+**Verdict: 0 Red, 4 Orange, 4 Yellow.** No finding lets a stranger with no
+account reach anyone else's data. Full report is in this session's
+transcript, not duplicated here; this is the pointer for Session 11.
+
+**Fixed, same day, on the owner's "close them" follow-up:**
+
+- **Storage buckets had no size or file-type limit at the Supabase level**
+  — only in the app's own code, so a signed-in person calling storage
+  directly could skip it. `supabase/migrations/0012_solink_storage_bucket_limits.sql`
+  (applied): 8 MB / `image/*` on the four photo buckets, 15 MB /
+  PDF-PNG-JPEG-WebP on `product-documents`, 20 MB on the unused `reports`
+  bucket. No policy, table or row touched; matches the app's own existing
+  limits exactly.
+- **Four spots in the intro film built content with `innerHTML`** using
+  fixed strings — not exploitable (nothing user-typed went in), but the
+  pattern that becomes dangerous the moment someone edits it to include a
+  variable. `src/components/intro/film/film.ts:84-101`, replaced with
+  `createElement`/`appendChild` producing the identical DOM (same tag
+  names and `.dot`/`.name` classes the rest of the file already looks up
+  by name). Verified in a live browser: labels render correctly, `tsc`,
+  `eslint`, `npm run build` clean.
+
+**Left open, on purpose — not silently skipped:**
+
+- Password minimum length (6) and character requirements, and "require
+  current password to change it," are Supabase Auth dashboard toggles, not
+  code; listed as manual steps for the owner.
+- Leaked-password protection needs the Pro plan (already known, see the
+  2026-09-22/23 addenda above).
+- The shared rate-limit store (`src/lib/api/rateLimit.ts` is per-server-
+  instance, not global) needs a new package (Upstash or Vercel KV) —
+  stopped and asked rather than installing one unprompted.
+- `product_events` lets any signed-in person insert unlimited fake
+  view/compare counts for a real product. The clean fix is a small
+  database trigger rejecting a repeat from the same person within a short
+  window — stopped and asked rather than changing a table's behaviour
+  unprompted.
+- The CSP's `'unsafe-inline'` on `script-src` (`next.config.ts`) was left
+  alone: tightening it safely needs the same page-by-page report-only test
+  pass the original CSP work did (2026-09-22), not a one-line edit that
+  risks breaking the intro film or the theme toggle silently.
+
+The owner was told, plainly, to re-run the security check in a **new
+chat** once these land, since this session shouldn't grade its own fixes.
