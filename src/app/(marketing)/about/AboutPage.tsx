@@ -18,7 +18,7 @@ import {
 import { DataBadge } from "@/components/ui/DataBadge";
 import { useT } from "@/lib/i18n/provider";
 import type { DictKey } from "@/lib/i18n/dictionary";
-import { TEAM, isPlaceholderMember, isPlaceholderText, type TeamMember } from "@/lib/content/team";
+import { TEAM, isPlaceholderText, type TeamMember } from "@/lib/content/team";
 
 /**
  * About Solink.
@@ -206,11 +206,6 @@ export function AboutPage() {
       <section className="py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
           <SectionHead title={t("about.team.title")} sub={t("about.team.sub")} />
-          {TEAM.some(isPlaceholderMember) && (
-            <p className="mt-4 inline-block rounded-[var(--radius)] border border-dashed border-[var(--cls-estimated)] bg-[var(--cls-estimated-soft)] px-3 py-2 font-mono text-[11.5px] text-[var(--cls-estimated)]">
-              {t("about.team.note")}
-            </p>
-          )}
           <TeamGrid members={TEAM} labels={{ linkedin: t("about.team.linkedin"), github: t("about.team.github") }} />
         </div>
       </section>
@@ -457,8 +452,8 @@ function TeamCard({ m, labels }: { m: TeamMember; labels: { linkedin: string; gi
         <span aria-hidden="true" className="absolute end-3 top-3 size-2 rounded-full bg-[color:var(--sun)]" />
       </div>
       <h3 className={`mt-4 ${isPlaceholderText(m.name) ? ph : "text-[16px] font-semibold text-fg"}`}>{m.name}</h3>
-      <p className={`mt-0.5 ${isPlaceholderText(m.role) ? ph : "micro"}`}>{m.role}</p>
-      <p className={`mt-2 leading-snug ${isPlaceholderText(m.bio) ? ph : "text-[13.5px] text-fg-muted"}`}>{m.bio}</p>
+      {m.role && <p className={`mt-0.5 ${isPlaceholderText(m.role) ? ph : "micro"}`}>{m.role}</p>}
+      {m.bio && <p className={`mt-2 leading-snug ${isPlaceholderText(m.bio) ? ph : "text-[13.5px] text-fg-muted"}`}>{m.bio}</p>}
       {(isUrl(m.linkedin) || isUrl(m.github)) && (
         <div className="mt-3 flex flex-wrap gap-2">
           {isUrl(m.linkedin) && <SocialPill href={m.linkedin} label={labels.linkedin} name={m.name} />}

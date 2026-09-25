@@ -2,9 +2,9 @@
  * The Solink team, as shown on /about.
  *
  * Names were supplied by the owner on 2026-09-20 and are spelled as given.
- * Roles, biographies, photographs and links have NOT been supplied: those
- * fields are placeholders, rendered exactly as written so a missing detail is
- * unmistakable. Do not invent them.
+ * Roles, biographies, photographs and links have NOT been supplied. Do not
+ * invent them. Role and bio are null until supplied and then simply not shown
+ * (owner, 2026-09-26: no role/bio placeholders on the public page).
  *
  * Social links render only when they are real URLs; leave them null otherwise.
  * A photo is a path under /public or a full URL; null keeps the placeholder
@@ -13,8 +13,8 @@
  */
 export interface TeamMember {
   name: string;
-  role: string;
-  bio: string;
+  role: string | null;
+  bio: string | null;
   photo: string | null;
   linkedin: string | null;
   github: string | null;
@@ -22,8 +22,8 @@ export interface TeamMember {
 
 const member = (name: string): TeamMember => ({
   name,
-  role: "[TEAM MEMBER ROLE]",
-  bio: "[TEAM MEMBER SHORT BIO]",
+  role: null,
+  bio: null,
   photo: null, // [TEAM MEMBER PHOTO]
   linkedin: null, // [LINKEDIN URL]
   github: null, // [GITHUB URL]
@@ -36,6 +36,5 @@ export const TEAM: TeamMember[] = [
   member("Lolwah Alansari"),
 ];
 
-/** True when any text field is still a bracketed placeholder. */
+/** True when a text field is still a bracketed placeholder. */
 export const isPlaceholderText = (v: string) => v.startsWith("[");
-export const isPlaceholderMember = (m: TeamMember) => [m.name, m.role, m.bio].some(isPlaceholderText);

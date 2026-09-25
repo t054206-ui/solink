@@ -234,7 +234,6 @@ const en = {
 
   "about.team.title": "Meet the team",
   "about.team.sub": "The people behind Solink.",
-  "about.team.note": "Roles, bios and photos are still placeholders. They go in src/lib/content/team.ts.",
   "about.team.linkedin": "LinkedIn",
   "about.team.github": "GitHub",
 
@@ -597,7 +596,6 @@ const ar: Dict = {
 
   "about.team.title": "تعرّف على الفريق",
   "about.team.sub": "الناس اللي ورا سولينك.",
-  "about.team.note": "الأدوار والنبذات والصور بعدها مؤقتة. تنضاف بملف src/lib/content/team.ts.",
   "about.team.linkedin": "LinkedIn",
   "about.team.github": "GitHub",
 
