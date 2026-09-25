@@ -287,7 +287,7 @@ const en = {
   "about.cta.sub": "Every figure Solink shows tells you what it is and where it came from.",
   "about.cta.primary": "Analyze your home",
   "about.cta.secondary": "Explore panels",
-  "nav.about": "About",
+  "nav.about": "About Solink",
 
   "foot.rights": "Solink: solar-energy platform for Kuwait and the GCC.",
   "foot.demo": "Running in demo mode. No real data is shown.",
