@@ -175,11 +175,11 @@ export function BookingWizard({ mode, providers, systems, initialKind, initialSy
 
           {step === 3 && (
             <dl className="grid gap-3 text-[13.5px] sm:grid-cols-2">
-              <Row k="System" v={system?.name ?? "—"} />
+              {system?.name && <Row k="System" v={system.name} />}
               <Row k="Type" v={MAINT_KIND[draft.kind].label} />
               <Row k="Urgency (your assessment)" v={URGENCY[draft.urgency].label} />
               <Row k="Provider" v={provider ? <span className="inline-flex items-center gap-1.5">{provider.name}{provider.is_demo && <DataBadge cls="demo" compact />}</span> : "No preference"} />
-              <Row k="Requested slot" v={appointmentIso ? `${formatDate(appointmentIso)} · ${WINDOWS.find((w) => w.id === draft.window)?.label}` : "—"} />
+              {appointmentIso && <Row k="Requested slot" v={`${formatDate(appointmentIso)} · ${WINDOWS.find((w) => w.id === draft.window)?.label}`} />}
               <div className="sm:col-span-2"><dt className="text-fg-muted">Problem</dt><dd className="mt-0.5 whitespace-pre-wrap text-fg">{draft.description}</dd></div>
               {files.length > 0 && <Row k="Images" v={`${files.length} attached (preview only)`} />}
               <p className="text-[12.5px] text-fg-muted sm:col-span-2">Submitting opens a case with status <em>New</em> and requests the appointment. {mode === "demo" ? "In demo mode nothing is sent anywhere." : "The provider sees the request in Solink and confirms the time."}</p>

@@ -212,7 +212,7 @@ export function CompareTable({ panels, platformAssumptions, heading }: { panels:
         <p className="text-[12.5px] text-fg-muted">{nonPanelCount} selected {nonPanelCount === 1 ? "item is" : "items are"} not a solar panel (or no longer in the catalog) and {nonPanelCount === 1 ? "is" : "are"} not shown here.</p>
       )}
 
-      {anyDemo && <DemoBanner text="DEMO PRODUCTS — NOT REAL" detail="One or more panels below are demo records. Differences between them do not describe any real product." />}
+      {anyDemo && <DemoBanner text="DEMO PRODUCTS: NOT REAL" detail="One or more panels below are demo records. Differences between them do not describe any real product." />}
 
       {selected.length === 0 ? (
         <EmptyState title="No panels selected">

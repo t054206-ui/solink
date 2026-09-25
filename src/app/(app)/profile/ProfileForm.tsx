@@ -210,7 +210,7 @@ export function ProfileForm({ profile, mode, heading, tariff = null }: { profile
                 <Input id="roof_width_m" aria-label="Roof width in metres" type="number" inputMode="decimal" step="0.1" min={0} value={show(values.roof_width_m)} onChange={(e) => update({ roof_width_m: toNum(e.target.value) })} />
               </Field>
               <Field label="Roof area (m²)" hint={<DataBadge cls="calculated" compact />} help="length × width">
-                <div className="flex h-10 items-center rounded-[10px] border border-dashed border-border-strong bg-inset px-3 text-sm tabular text-fg" aria-live="polite">{dims.value === null ? "—" : dims.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}</div>
+                <div className="flex h-10 items-center rounded-[10px] border border-dashed border-border-strong bg-inset px-3 text-sm tabular text-fg" aria-live="polite">{dims.value === null ? "" : dims.value.toLocaleString("en-US", { maximumFractionDigits: 2 })}</div>
               </Field>
             </div>
           ) : (

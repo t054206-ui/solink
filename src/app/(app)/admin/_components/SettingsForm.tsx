@@ -99,7 +99,7 @@ function SettingEditor({ def, row, mode }: { def: SettingDef; row: SettingRow | 
       <div className="mt-3 rounded-[10px] border border-border bg-inset p-3 text-[13px]">
         <div className="text-[11.5px] font-semibold uppercase tracking-wider text-fg-muted">Current value</div>
         {current ? (
-          <div className="mt-1"><span className="tabular font-medium text-fg">{current}</span><div className="mt-0.5 text-[12px] text-fg-info">Source: {row?.source ?? "—"} · updated {formatDate(row?.updated_at)}</div></div>
+          <div className="mt-1"><span className="tabular font-medium text-fg">{current}</span><div className="mt-0.5 text-[12px] text-fg-info">Source: {row?.source ?? "Not set"} · updated {formatDate(row?.updated_at)}</div></div>
         ) : <div className="mt-1"><Placeholder k={def.placeholder} /><div className="mt-0.5 text-[12px] text-fg-muted">Not provided. Homeowners can enter their own value, labeled user-provided.</div></div>}
       </div>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">

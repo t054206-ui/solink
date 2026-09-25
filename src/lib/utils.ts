@@ -9,20 +9,20 @@ const TIME_KEYS = ["timeStyle", "hour", "minute", "second", "timeZoneName", "day
  * toLocaleDateString rejects time options such as timeStyle.
  */
 export function formatDate(iso: string | null | undefined, opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "short", day: "numeric" }) {
-  if (!iso) return "—";
+  if (!iso) return "Not set";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "Not set";
   const hasTime = TIME_KEYS.some((k) => opts[k] !== undefined);
   return hasTime ? d.toLocaleString("en-GB", opts) : d.toLocaleDateString("en-GB", opts);
 }
 
 export function formatMoney(v: number | null | undefined, currency = "KWD", digits = 0) {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "Not set";
   return `${v.toLocaleString("en-US", { maximumFractionDigits: digits, minimumFractionDigits: digits })} ${currency}`;
 }
 
 export function pct(v: number | null | undefined, digits = 0) {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "Not set";
   return `${(v * 100).toLocaleString("en-US", { maximumFractionDigits: digits })}%`;
 }
 

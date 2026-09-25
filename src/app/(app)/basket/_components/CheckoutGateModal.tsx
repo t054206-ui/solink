@@ -13,7 +13,7 @@ export function CheckoutGateModal({ open, onClose }: { open: boolean; onClose: (
   return (
     <Modal open={open} onClose={onClose} title="Ready to complete your purchase?">
       <div className="flex flex-col gap-3">
-        <p className="text-[13.5px] leading-relaxed text-fg-secondary">Your basket is saved. Sign in or create a Solink account to send this as a request — nothing in it is lost.</p>
+        <p className="text-[13.5px] leading-relaxed text-fg-secondary">Your basket is saved. Sign in or create a Solink account to send this as a request. Nothing in it is lost.</p>
         <div className="grid gap-2 sm:grid-cols-2">
           <Button href="/login?next=/basket" className="w-full"><LogIn className="size-4" aria-hidden /> Log in</Button>
           <Button href="/signup?next=/basket" variant="outline" className="w-full"><UserPlus className="size-4" aria-hidden /> Create account</Button>

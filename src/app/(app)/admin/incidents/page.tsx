@@ -26,10 +26,10 @@ export default async function AdminIncidentsPage() {
               <tr key={i.id}>
                 <Td className="whitespace-nowrap">{formatDate(i.occurred_at)}{i.is_demo && <DataBadge cls="demo" compact className="ml-1" />}</Td>
                 <Td><Badge tone={i.status === "open" ? "critical" : i.status === "investigating" ? "warn" : "neutral"}>{INCIDENT_STATUS_LABEL[i.status]}</Badge></Td>
-                <Td className="tabular">{i.panel_index ?? "—"}</Td>
+                <Td className="tabular">{i.panel_index ?? "Not set"}</Td>
                 <Td className="max-w-xs">{i.reported_problem}</Td>
-                <Td className="max-w-xs">{i.ai_analysis ? <><DataBadge cls={i.is_demo ? "demo" : "ai"} compact /> <span className="text-[12.5px]">{i.ai_analysis}</span></> : "—"}</Td>
-                <Td className="max-w-xs">{i.action_taken ?? "—"}{i.result && <div className="text-[12px] text-fg-muted">{i.result}</div>}</Td>
+                <Td className="max-w-xs">{i.ai_analysis ? <><DataBadge cls={i.is_demo ? "demo" : "ai"} compact /> <span className="text-[12.5px]">{i.ai_analysis}</span></> : "Not set"}</Td>
+                <Td className="max-w-xs">{i.action_taken ?? "Not set"}{i.result && <div className="text-[12px] text-fg-muted">{i.result}</div>}</Td>
                 <Td className="tabular">{i.images.length}</Td>
                 <Td>{i.cost.value === null ? <Placeholder k="MAINTENANCE_PRICE" /> : specText(i.cost)}</Td>
               </tr>

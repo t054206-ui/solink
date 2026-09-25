@@ -125,7 +125,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
       <SkipLink />
       {demoMode && (
         <div className="demo-stripe border-b border-[var(--cls-demo)]/40 bg-[var(--cls-demo-soft)] px-3 py-1 text-center text-[11.5px] text-[var(--critical-fg)]">
-          <strong>DEMO MODE — NOT REAL.</strong> Supabase, monitoring hardware, and real product data are not connected. Everything shown is labeled demo or placeholder. <Link href="/admin/integrations" className="underline underline-offset-2">Integration status</Link>
+          <strong>DEMO MODE: NOT REAL.</strong> Supabase, monitoring hardware, and real product data are not connected. Everything shown is labeled demo or placeholder. <Link href="/admin/integrations" className="underline underline-offset-2">Integration status</Link>
         </div>
       )}
       <div className="flex">

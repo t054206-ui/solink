@@ -141,7 +141,7 @@ export default async function CompanyDashboard() {
                         {c.urgency}
                       </Badge>
                     </td>
-                    <td className="figure">{c.appointment_at ? formatDate(c.appointment_at) : "—"}</td>
+                    <td className="figure">{c.appointment_at ? formatDate(c.appointment_at) : "Not set"}</td>
                     <td className="capitalize text-fg-secondary">{c.status.replace(/_/g, " ")}</td>
                   </tr>
                 ))}

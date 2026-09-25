@@ -89,7 +89,7 @@ export function BasketView({ catalog, isAuthenticated, mode }: { catalog: Produc
         <CardBody className="flex flex-col items-center gap-3 py-10 text-center">
           <span className="grid size-12 place-items-center rounded-full bg-brand-soft text-[var(--brand-strong)]"><ShoppingCart className="size-6" aria-hidden /></span>
           <h2 className="text-[17px] font-semibold text-fg-heading">Request sent</h2>
-          <p className="max-w-sm text-[13.5px] leading-relaxed text-fg-secondary">Solink does not process payment online. This created a request, reference <code className="rounded bg-inset px-1.5 py-0.5 font-mono text-[12px]">{orderId}</code> — a provider or Solink follows up from here.</p>
+          <p className="max-w-sm text-[13.5px] leading-relaxed text-fg-secondary">Solink does not process payment online. This created a request, reference <code className="rounded bg-inset px-1.5 py-0.5 font-mono text-[12px]">{orderId}</code>. A provider or Solink follows up from here.</p>
           <div className="flex gap-2"><Button href="/marketplace" variant="outline">Back to marketplace</Button><Button href="/dashboard">Go to dashboard</Button></div>
         </CardBody>
       </Card>
@@ -99,7 +99,7 @@ export function BasketView({ catalog, isAuthenticated, mode }: { catalog: Produc
   if (basket.lines.length === 0) {
     return (
       <EmptyState title="Your basket is empty">
-        Browse the <Link href="/marketplace" className="underline underline-offset-2">marketplace</Link> and add products — nothing here needs an account until you check out.
+        Browse the <Link href="/marketplace" className="underline underline-offset-2">marketplace</Link> and add products. Nothing here needs an account until you check out.
       </EmptyState>
     );
   }

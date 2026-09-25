@@ -94,7 +94,7 @@ export default function GuidePage() {
             <section id="quick-start" className="scroll-mt-24">
               <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Quick start: the roadmap</h2>
               <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-fg-secondary">
-                This is the whole journey, in order. Most people spend days or weeks between steps, and that is fine —
+                This is the whole journey, in order. Most people spend days or weeks between steps, and that is fine.
                 Solink keeps your place. Select a step to read about it.
               </p>
               <ol className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

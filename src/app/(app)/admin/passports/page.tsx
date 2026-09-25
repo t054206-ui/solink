@@ -24,12 +24,12 @@ export default async function AdminPassportsPage() {
               <tr key={p!.id}>
                 <Td className="font-mono text-[12px] text-fg">{p!.passport_number}{p!.is_demo && <DataBadge cls="demo" compact className="ml-1" />}</Td>
                 <Td>{s.name}</Td>
-                <Td>{p!.panel_snapshot ? `${p!.panel_snapshot.manufacturer} ${p!.panel_snapshot.model}` : "—"}{p!.panel_snapshot?.version_id && <div className="font-mono text-[11px] text-fg-muted">spec {p!.panel_snapshot.version_id}</div>}{p!.panel_snapshot?.manufacturer_version_id && <div className="font-mono text-[11px] text-fg-muted">mfr {p!.panel_snapshot.manufacturer_version_id}</div>}</Td>
-                <Td>{p!.inverter_snapshot ? `${p!.inverter_snapshot.manufacturer} ${p!.inverter_snapshot.model}` : "—"}</Td>
-                <Td className="tabular">{p!.panel_count ?? "—"} / {p!.capacity_kwp !== null ? `${p!.capacity_kwp} kWp` : "—"}</Td>
-                <Td>{p!.installation_company ?? "—"}</Td>
+                <Td>{p!.panel_snapshot ? `${p!.panel_snapshot.manufacturer} ${p!.panel_snapshot.model}` : "Not set"}{p!.panel_snapshot?.version_id && <div className="font-mono text-[11px] text-fg-muted">spec {p!.panel_snapshot.version_id}</div>}{p!.panel_snapshot?.manufacturer_version_id && <div className="font-mono text-[11px] text-fg-muted">mfr {p!.panel_snapshot.manufacturer_version_id}</div>}</Td>
+                <Td>{p!.inverter_snapshot ? `${p!.inverter_snapshot.manufacturer} ${p!.inverter_snapshot.model}` : "Not set"}</Td>
+                <Td className="tabular">{p!.panel_count ?? "Not set"} / {p!.capacity_kwp !== null ? `${p!.capacity_kwp} kWp` : "Not set"}</Td>
+                <Td>{p!.installation_company ?? "Not set"}</Td>
                 <Td className="whitespace-nowrap">{formatDate(p!.installation_date)}</Td>
-                <Td className="text-[12px]">product {p!.warranty.product_years ?? "—"} y · performance {p!.warranty.performance_years ?? "—"} y · installer {p!.warranty.installer_years ?? "—"} y</Td>
+                <Td className="text-[12px]">product {p!.warranty.product_years ?? "Not set"} y · performance {p!.warranty.performance_years ?? "Not set"} y · installer {p!.warranty.installer_years ?? "Not set"} y</Td>
               </tr>
             ))}</tbody>
           </Table>

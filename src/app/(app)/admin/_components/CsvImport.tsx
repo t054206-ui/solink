@@ -98,16 +98,16 @@ export function CsvImport({ mode }: { mode: DataMode }) {
       {headers.length > 0 && (
         <>
           <section aria-labelledby="map-h">
-            <h3 id="map-h" className="text-[15px] font-semibold">1. Map columns <span className="text-fg-muted font-normal">— {fileName}, {rows.length} data row{rows.length === 1 ? "" : "s"}</span></h3>
+            <h3 id="map-h" className="text-[15px] font-semibold">1. Map columns <span className="text-fg-muted font-normal">· {fileName}, {rows.length} data row{rows.length === 1 ? "" : "s"}</span></h3>
             <p className="mt-1 text-[12.5px] text-fg-muted">Required: {IMPORT_REQUIRED_KEYS.join(", ")}. Unmapped columns are kept in the raw row for audit but not imported.</p>
             {missingRequired.length > 0 && <p role="alert" className="mt-2 text-[13px] text-critical-fg">Map these required fields to continue: {missingRequired.join(", ")}.</p>}
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {headers.map((h, i) => (
                 <div key={`${h}-${i}`} className="rounded-[10px] border border-border bg-inset p-2.5">
                   <div className="truncate font-mono text-[12px] text-fg" title={h}>{h || <em>(empty header)</em>}</div>
-                  <div className="truncate text-[11.5px] text-fg-muted" title={rows[0]?.[i]}>first value: {rows[0]?.[i] || "—"}</div>
+                  <div className="truncate text-[11.5px] text-fg-muted" title={rows[0]?.[i]}>first value: {rows[0]?.[i] || "(empty)"}</div>
                   <Select aria-label={`Map column ${h}`} className="mt-1.5 h-9 text-[13px]" value={mapping[h] ?? ""} onChange={(e) => setMapping((m) => ({ ...m, [h]: e.target.value }))}>
-                    <option value="">— not imported —</option>
+                    <option value="">Not imported</option>
                     {IMPORT_FIELDS.map((f) => <option key={f.key} value={f.key} disabled={mappedKeys.has(f.key) && mapping[h] !== f.key}>{f.label}{f.required ? " *" : ""}{f.unit ? ` (${f.unit})` : ""}</option>)}
                   </Select>
                 </div>
@@ -131,9 +131,9 @@ export function CsvImport({ mode }: { mode: DataMode }) {
                       <Td><Badge tone={STATUS_TONE[r.status]}>{r.status}</Badge></Td>
                       <Td className="text-fg">{r.manufacturer || <em className="text-critical-fg">missing</em>}</Td>
                       <Td className="font-mono text-[12px]">{r.model || <em className="text-critical-fg">missing</em>}</Td>
-                      <Td className="tabular">{typeof r.specs.rated_power_w?.value === "number" ? `${r.specs.rated_power_w.value} W` : "—"}</Td>
-                      <Td className="tabular">{typeof r.specs.module_efficiency_pct?.value === "number" ? `${r.specs.module_efficiency_pct.value} %` : "—"}</Td>
-                      <Td className="tabular">{typeof r.specs.length_mm?.value === "number" && typeof r.specs.width_mm?.value === "number" ? `${r.specs.length_mm.value} × ${r.specs.width_mm.value} mm` : "—"}</Td>
+                      <Td className="tabular">{typeof r.specs.rated_power_w?.value === "number" ? `${r.specs.rated_power_w.value} W` : "Not set"}</Td>
+                      <Td className="tabular">{typeof r.specs.module_efficiency_pct?.value === "number" ? `${r.specs.module_efficiency_pct.value} %` : "Not set"}</Td>
+                      <Td className="tabular">{typeof r.specs.length_mm?.value === "number" && typeof r.specs.width_mm?.value === "number" ? `${r.specs.length_mm.value} × ${r.specs.width_mm.value} mm` : "Not set"}</Td>
                       <Td><FlagList flags={r.flags} /></Td>
                     </tr>
                   ))}

@@ -31,10 +31,10 @@ export default async function UsersPage() {
               {users.data.map((u) => (
                 <tr key={u.user_id}>
                   <Td className="font-mono text-[11.5px]">{u.user_id}</Td>
-                  <Td className="text-fg">{u.full_name ?? <span className="text-fg-na">—</span>}{u.user_id === access.userId && <Badge tone="brand" className="ml-2">You</Badge>}</Td>
+                  <Td className="text-fg">{u.full_name ?? <span className="text-fg-na">Not set</span>}{u.user_id === access.userId && <Badge tone="brand" className="ml-2">You</Badge>}</Td>
                   <Td><RoleSelect userId={u.user_id} role={u.role} isSelf={u.user_id === access.userId} /></Td>
                   <Td><ManufacturerLinkSelect userId={u.user_id} manufacturerId={u.manufacturer_id} manufacturers={manufacturers.data} /></Td>
-                  <Td className="font-mono text-[11.5px]">{u.provider_company_id ?? "—"}</Td>
+                  <Td className="font-mono text-[11.5px]">{u.provider_company_id ?? "Not set"}</Td>
                   <Td className="whitespace-nowrap">{formatDate(u.created_at)}</Td>
                 </tr>
               ))}

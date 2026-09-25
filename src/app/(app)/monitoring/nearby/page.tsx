@@ -31,7 +31,7 @@ export default async function NearbyPage() {
           subtitle="Specific yield (kWh per kWp per year) is the fair way to compare systems of different sizes."
         />
         <CardBody className="space-y-4">
-          {cls === "demo" && <DemoBanner text="SIMULATED PRODUCTION — NOT REAL" detail="Your side of this comparison is built from the demo series." />}
+          {cls === "demo" && <DemoBanner text="SIMULATED PRODUCTION: NOT REAL" detail="Your side of this comparison is built from the demo series." />}
           {hasValue(yieldC) && (
             <div className="grid gap-3 sm:max-w-sm">
               <Metric label="Your specific yield" term="specific_yield" data={yieldC} unit="kWh/kWp" format={(v) => Math.round(v).toLocaleString("en-US")} />

@@ -140,6 +140,6 @@ export function yearOverYearChange(annual: { year: number; kwh: number }[]): { y
 }
 
 export function formatNumber(v: number | null | undefined, digits = 0): string {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "Not set";
   return v.toLocaleString("en-US", { maximumFractionDigits: digits, minimumFractionDigits: digits });
 }

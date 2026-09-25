@@ -50,8 +50,8 @@ export default async function ImportPage() {
               <Table caption="Product imports">
                 <thead><tr><Th>Date</Th><Th>Method</Th><Th>File</Th><Th>Status</Th><Th>Summary</Th></tr></thead>
                 <tbody>{imports.data.map((i) => (
-                  <tr key={i.id}><Td className="whitespace-nowrap">{formatDate(i.created_at)}</Td><Td>{i.method}</Td><Td className="font-mono text-[12px]">{i.file_path ?? "—"}</Td><Td>{i.status}</Td>
-                    <Td className="font-mono text-[11.5px]">{["inserted", "flagged", "duplicates", "rejected"].map((k) => `${k}: ${String((i.summary as Record<string, unknown>)[k] ?? "—")}`).join(" · ")}</Td></tr>
+                  <tr key={i.id}><Td className="whitespace-nowrap">{formatDate(i.created_at)}</Td><Td>{i.method}</Td><Td className="font-mono text-[12px]">{i.file_path ?? "Not set"}</Td><Td>{i.status}</Td>
+                    <Td className="font-mono text-[11.5px]">{["inserted", "flagged", "duplicates", "rejected"].map((k) => `${k}: ${String((i.summary as Record<string, unknown>)[k] ?? "Not set")}`).join(" · ")}</Td></tr>
                 ))}</tbody>
               </Table>
             )}

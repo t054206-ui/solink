@@ -67,7 +67,7 @@ export function buildReferences(p: Product): ReferenceRow[] {
     label: "Price source",
     detail:
       typeof price === "number"
-        ? `${s.kuwait_supplier ?? "Supplier"} — ${price.toFixed(3)} KWD${s.kuwait_price_observed_at ? `, observed ${formatDate(s.kuwait_price_observed_at)}` : ""}`
+        ? `${s.kuwait_supplier ?? "Supplier"}: ${price.toFixed(3)} KWD${s.kuwait_price_observed_at ? `, observed ${formatDate(s.kuwait_price_observed_at)}` : ""}`
         : UNAVAILABLE,
     href: typeof price === "number" ? s.kuwait_supplier_url ?? null : null,
     linkLabel: "View price source",

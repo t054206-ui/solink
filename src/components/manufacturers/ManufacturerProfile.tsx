@@ -36,7 +36,7 @@ export function ManufacturerProfile({ m, products, docs, sources, mode, aside }:
 
   return (
     <div className="space-y-6">
-      {m.is_demo && <DemoBanner text="DEMO MANUFACTURER — NOT REAL" detail="This company record exists only to exercise the interface." />}
+      {m.is_demo && <DemoBanner text="DEMO MANUFACTURER: NOT REAL" detail="This company record exists only to exercise the interface." />}
       {m.is_archived && <div role="note" className="rounded-[var(--radius)] border border-border bg-inset px-3 py-2 text-[13px] text-fg-secondary"><span className="font-medium text-fg">Archived on {formatDate(m.archived_at)}.</span> This company no longer appears as an active manufacturer in the marketplace. Its products and every Solar Passport that names it are kept unchanged.</div>}
 
       {m.cover_image_url && (

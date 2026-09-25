@@ -134,7 +134,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
             <dl className="grid grid-cols-2 gap-3 text-[13.5px]">
               <Row k="Provider" v={provider ? <span className="inline-flex items-center gap-1.5">{provider.name}{provider.is_demo && <DataBadge cls="demo" compact />}</span> : "Not assigned"} />
               <Row k="Appointment" v={c.appointment_at ? formatDate(c.appointment_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "None"} />
-              <Row k="Appointment status" v={appointment ? <Badge tone={appointment.status === "confirmed" ? "good" : appointment.status === "cancelled" ? "neutral" : "warn"}>{appointment.status}</Badge> : c.appointment_at ? "Requested" : "—"} />
+              {(appointment || c.appointment_at) && <Row k="Appointment status" v={appointment ? <Badge tone={appointment.status === "confirmed" ? "good" : appointment.status === "cancelled" ? "neutral" : "warn"}>{appointment.status}</Badge> : "Requested"} />}
               <Row k="Technician" v={c.technician_name ?? "Not assigned yet"} />
             </dl>
           </CardBody>
@@ -153,7 +153,7 @@ export function CaseDetail({ id, mode, serverCase, providers, systems, appointme
       <Card>
         <CardHeader title="Before / after" subtitle="Photos and production around the maintenance. The change is calculated; the cause is not." />
         <CardBody className="space-y-4">
-          {c.is_demo && (c.production_before_kwh !== null || c.production_after_kwh !== null) && <DemoBanner text="DEMO FIGURES — NOT REAL" detail="The before/after values on this demo case are illustrative." />}
+          {c.is_demo && (c.production_before_kwh !== null || c.production_after_kwh !== null) && <DemoBanner text="DEMO FIGURES: NOT REAL" detail="The before/after values on this demo case are illustrative." />}
           <div className="grid gap-3 sm:grid-cols-2">
             <ImageSlot label="Before" path={c.before_image_path} />
             <ImageSlot label="After" path={c.after_image_path} />

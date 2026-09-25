@@ -19,7 +19,7 @@ export default async function ComparePage() {
 
   return (
     <div>
-      {mode === "demo" && <DemoBanner className="mb-5" text="DEMO CATALOG — NOT REAL" detail="Only demo panel records are available until a real product dataset is connected." />}
+      {mode === "demo" && <DemoBanner className="mb-5" text="DEMO CATALOG: NOT REAL" detail="Only demo panel records are available until a real product dataset is connected." />}
       <CompareTable
         panels={panels}
         platformAssumptions={assumptions}

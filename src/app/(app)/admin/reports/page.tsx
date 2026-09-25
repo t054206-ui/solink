@@ -23,7 +23,7 @@ export default async function AdminReportsPage() {
               <tr key={x.id}>
                 <Td className="font-mono text-fg">{x.month}</Td>
                 <Td className="font-mono text-[11.5px]">{x.system_id}</Td>
-                <Td><DataBadge cls={x.energy.cls} compact /> <span className="tabular">{x.energy.total_kwh !== null ? `${x.energy.total_kwh} kWh` : "—"}</span></Td>
+                <Td><DataBadge cls={x.energy.cls} compact /> <span className="tabular">{x.energy.total_kwh !== null ? `${x.energy.total_kwh} kWh` : "Not set"}</span></Td>
                 <Td><DataBadge cls={x.financial.cls} compact /> {x.financial.notes.length > 0 && <div className="text-[11.5px] text-fg-muted">{x.financial.notes.join(" · ")}</div>}</Td>
                 <Td><DataBadge cls={x.environmental.cls} compact /> {x.environmental.notes.length > 0 && <div className="text-[11.5px] text-fg-muted">{x.environmental.notes.join(" · ")}</div>}</Td>
                 <Td className="text-[12px]">{x.maintenance.incidents} inc · {x.maintenance.cleanings} clean · {x.maintenance.repairs} rep · {x.maintenance.replacements} repl</Td>

@@ -23,7 +23,7 @@ export default async function DatasheetsPage() {
           <Table caption="Product documents">
             <thead><tr><Th>Product</Th><Th>Kind</Th><Th>Title</Th><Th>Location</Th><Th>Added</Th></tr></thead>
             <tbody>{docs.data.map((d) => { const p = byId.get(d.product_id); return (
-              <tr key={d.id}><Td className="text-fg">{p ? `${p.manufacturer_name} ${p.model}` : d.product_id}</Td><Td>{d.kind}</Td><Td>{d.title ?? "—"}</Td><Td className="font-mono text-[11.5px]">{d.storage_path ?? d.url ?? "—"}</Td><Td className="whitespace-nowrap">{formatDate(d.created_at)}</Td></tr>
+              <tr key={d.id}><Td className="text-fg">{p ? `${p.manufacturer_name} ${p.model}` : d.product_id}</Td><Td>{d.kind}</Td><Td>{d.title ?? "Not set"}</Td><Td className="font-mono text-[11.5px]">{d.storage_path ?? d.url ?? "Not set"}</Td><Td className="whitespace-nowrap">{formatDate(d.created_at)}</Td></tr>
             ); })}</tbody>
           </Table>
         )}

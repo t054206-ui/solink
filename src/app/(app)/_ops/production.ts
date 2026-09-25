@@ -103,12 +103,12 @@ export function yearOf(iso: string | null | undefined): number | null {
 }
 
 export function fmtKwh(v: number | null | undefined, digits = 0): string {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "Not recorded";
   return `${v.toLocaleString("en-US", { maximumFractionDigits: digits })} kWh`;
 }
 
 export function fmtPct(v: number | null | undefined, digits = 1, signed = true): string {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "Not recorded";
   const s = v.toLocaleString("en-US", { maximumFractionDigits: digits, minimumFractionDigits: 0 });
   return `${signed && v > 0 ? "+" : ""}${s}%`;
 }

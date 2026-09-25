@@ -73,7 +73,7 @@ export function ProductsTable({ products, mode }: { products: Product[]; mode: D
                 <Td><div className="flex flex-wrap gap-1">{p.is_outdated && <Badge tone="warn">Outdated</Badge>}{p.is_archived && <Badge tone="neutral">Archived</Badge>}{!p.is_outdated && !p.is_archived && <span className="text-fg-muted">Current</span>}</div></Td>
                 <Td>{flags.length ? <Badge tone="warn" title={flags.join("\n")}>{flags.length}</Badge> : <span className="text-fg-muted">0</span>}</Td>
                 <Td className="whitespace-nowrap">{formatDate(p.source.date_last_updated)}</Td>
-                <Td className="font-mono text-[11.5px]">{p.current_version_id ?? "—"}</Td>
+                <Td className="font-mono text-[11.5px]">{p.current_version_id ?? "Not set"}</Td>
                 <Td><Link href={`/admin/products/${p.id}`} className="font-medium text-fg underline-offset-2 hover:underline">Edit</Link></Td>
               </tr>
             ))}

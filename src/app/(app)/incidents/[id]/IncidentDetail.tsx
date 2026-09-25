@@ -47,8 +47,8 @@ export function IncidentDetail({ id, mode, serverIncident, systems, cases }: { i
           <h2 className="mt-3 text-lg font-semibold leading-snug text-fg-heading">{inc.reported_problem.split("\n")[0]}</h2>
           <dl className="mt-4 grid grid-cols-2 gap-3 text-[13.5px] sm:grid-cols-4">
             <Row k="Date" v={formatDate(inc.occurred_at)} />
-            <Row k="Time" v={Number.isNaN(occurred.getTime()) ? "—" : occurred.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} />
-            <Row k="System" v={system?.name ?? "—"} />
+            {!Number.isNaN(occurred.getTime()) && <Row k="Time" v={occurred.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} />}
+            {system?.name && <Row k="System" v={system.name} />}
             <Row k="Panel" v={typeof inc.panel_index === "number" ? `#${inc.panel_index}` : "Whole system / not specified"} />
           </dl>
           <div className="mt-4 flex flex-wrap gap-2">

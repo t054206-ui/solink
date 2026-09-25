@@ -21,7 +21,7 @@ export default async function DataSourcesPage() {
           : ds.error ? <ErrorState>{ds.error}</ErrorState> : ds.data.length === 0 ? <EmptyState title="No data sources registered yet" /> : (
           <Table caption="Data sources">
             <thead><tr><Th>Name</Th><Th>Kind</Th><Th>URL</Th><Th>Notes</Th><Th>Created</Th></tr></thead>
-            <tbody>{ds.data.map((d) => <tr key={d.id}><Td className="font-medium text-fg">{d.name}</Td><Td>{d.kind}</Td><Td>{d.url ? <a href={d.url} className="underline underline-offset-2" target="_blank" rel="noreferrer">{d.url}</a> : "—"}</Td><Td>{d.notes ?? "—"}</Td><Td className="whitespace-nowrap">{formatDate(d.created_at)}</Td></tr>)}</tbody>
+            <tbody>{ds.data.map((d) => <tr key={d.id}><Td className="font-medium text-fg">{d.name}</Td><Td>{d.kind}</Td><Td>{d.url ? <a href={d.url} className="underline underline-offset-2" target="_blank" rel="noreferrer">{d.url}</a> : "Not set"}</Td><Td>{d.notes ?? "Not set"}</Td><Td className="whitespace-nowrap">{formatDate(d.created_at)}</Td></tr>)}</tbody>
           </Table>
         )}
         <section className="space-y-2">

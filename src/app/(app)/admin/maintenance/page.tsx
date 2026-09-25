@@ -31,7 +31,7 @@ export default async function AdminMaintenancePage() {
                 <Td>{MAINTENANCE_STATUS_LABEL[c.status]}</Td>
                 <Td>{c.provider_id ? provName.get(c.provider_id) ?? c.provider_id : "Unassigned"}</Td>
                 <Td className="max-w-xs">{c.detected_issue}</Td>
-                <Td className="whitespace-nowrap">{c.appointment_at ? formatDate(c.appointment_at, { dateStyle: "medium", timeStyle: "short" }) : "—"}</Td>
+                <Td className="whitespace-nowrap">{c.appointment_at ? formatDate(c.appointment_at, { dateStyle: "medium", timeStyle: "short" }) : "Not set"}</Td>
                 <Td>{c.cost.value === null ? <Placeholder k="MAINTENANCE_PRICE" /> : specText(c.cost)}</Td>
               </tr>
             ))}</tbody>

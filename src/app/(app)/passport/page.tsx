@@ -37,11 +37,21 @@ export default async function PassportListPage() {
                 </div>
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[13px]">
                   <dt className="text-fg-muted">Status</dt><dd><Badge tone={system.status === "installed" ? "good" : "neutral"}>{system.status.replace("_", " ")}</Badge></dd>
-                  <dt className="text-fg-muted">Capacity</dt><dd className="tabular text-fg">{system.capacity_kwp != null ? `${system.capacity_kwp} kWp` : "—"}{system.panel_count ? ` · ${system.panel_count} panels` : ""}</dd>
-                  <dt className="text-fg-muted">Installed</dt><dd className="text-fg">{formatDate(passport?.installation_date ?? system.installation_date)}</dd>
-                  <dt className="text-fg-muted">Installer</dt><dd className="truncate text-fg">{passport?.installation_company ?? "—"}</dd>
-                  <dt className="text-fg-muted">Panel</dt><dd className="truncate text-fg">{passport?.panel_snapshot ? `${passport.panel_snapshot.manufacturer} ${passport.panel_snapshot.model}` : "—"}</dd>
-                  <dt className="text-fg-muted">Warranty</dt><dd className="text-fg">{passport ? `${passport.warranty.product_years ?? "—"} y product · ${passport.warranty.performance_years ?? "—"} y performance` : "—"}</dd>
+                  {(system.capacity_kwp != null || system.panel_count) && (
+                    <><dt className="text-fg-muted">Capacity</dt><dd className="tabular text-fg">{[system.capacity_kwp != null ? `${system.capacity_kwp} kWp` : null, system.panel_count ? `${system.panel_count} panels` : null].filter(Boolean).join(" · ")}</dd></>
+                  )}
+                  {(passport?.installation_date ?? system.installation_date) && (
+                    <><dt className="text-fg-muted">Installed</dt><dd className="text-fg">{formatDate(passport?.installation_date ?? system.installation_date)}</dd></>
+                  )}
+                  {passport?.installation_company && (
+                    <><dt className="text-fg-muted">Installer</dt><dd className="truncate text-fg">{passport.installation_company}</dd></>
+                  )}
+                  {passport?.panel_snapshot && (
+                    <><dt className="text-fg-muted">Panel</dt><dd className="truncate text-fg">{`${passport.panel_snapshot.manufacturer} ${passport.panel_snapshot.model}`}</dd></>
+                  )}
+                  {passport && (passport.warranty.product_years != null || passport.warranty.performance_years != null) && (
+                    <><dt className="text-fg-muted">Warranty</dt><dd className="text-fg">{[passport.warranty.product_years != null ? `${passport.warranty.product_years} y product` : null, passport.warranty.performance_years != null ? `${passport.warranty.performance_years} y performance` : null].filter(Boolean).join(" · ")}</dd></>
+                  )}
                 </dl>
                 <div className="mt-auto flex items-center justify-between text-[13px] font-medium text-fg-secondary">
                   <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-4 text-fg-muted" aria-hidden /> {passport ? "Open passport" : "View system"}</span>

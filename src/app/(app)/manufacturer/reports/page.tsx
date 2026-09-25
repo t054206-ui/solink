@@ -39,7 +39,7 @@ export default async function ManufacturerReportsPage() {
                 {products.map((p) => <li key={p.id} className="flex items-center justify-between gap-3 py-1.5"><span className="font-medium text-fg">{p.model}{p.is_archived && <Badge tone="neutral" className="ml-2">Archived</Badge>}</span><span className="flex items-center gap-2"><span className="text-fg-muted">{formatDate(p.source.date_last_updated)}</span><VerificationBadge status={p.source.verification_status} /></span></li>)}
               </ul>
             )}
-            <p className="mt-3 text-[12.5px] text-fg-muted">{Array.from(byStatus.entries()).map(([s, n]) => `${n} ${s.replace(/_/g, " ")}`).join(" · ") || "—"}</p>
+            <p className="mt-3 text-[12.5px] text-fg-muted">{Array.from(byStatus.entries()).map(([s, n]) => `${n} ${s.replace(/_/g, " ")}`).join(" · ") || "Not set"}</p>
           </CardBody>
         </Card>
         <Card>

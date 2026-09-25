@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
                     {p.model}
                     {p.is_demo && <DataBadge cls="demo" compact className="ms-2 align-middle" />}
                   </th>
-                  <td className="text-fg-secondary">{p.manufacturer_name ?? "—"}</td>
+                  <td className="text-fg-secondary">{p.manufacturer_name ?? "Not set"}</td>
                   <td className="text-fg-muted">{p.source.data_source}</td>
                   <td>
                     <Badge tone={p.source.verification_status === "pending_verification" ? "warn" : "neutral"}>

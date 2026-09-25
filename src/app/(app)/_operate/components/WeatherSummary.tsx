@@ -38,7 +38,7 @@ export function CurrentConditions({ state, compact = false }: { state: WeatherSt
         <CloudSun className="size-9 text-[var(--brand-strong)]" aria-hidden />
         <div>
           <div className="tabular text-3xl font-semibold leading-none text-fg">{fmtNum(c.temp_c, 0)}<span className="ml-0.5 text-base font-medium text-fg-muted">°C</span></div>
-          <div className="mt-1 text-[13px] text-fg-secondary">{c.condition ?? "—"}</div>
+          {c.condition && <div className="mt-1 text-[13px] text-fg-secondary">{c.condition}</div>}
         </div>
       </div>
       <dl className={`mt-4 grid gap-x-4 gap-y-2 text-[13px] ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
@@ -79,11 +79,13 @@ export function AirQuality({ state }: { state: WeatherState }) {
             <div className="tabular mt-1 text-lg font-semibold text-fg">{it.value}</div>
           </div>
         ))}
-        <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3 col-span-2 sm:col-span-1">
-          <div className="text-[12.5px] font-medium text-fg-secondary">US EPA index</div>
-          <div className="mt-1 text-lg font-semibold text-fg">{c.us_epa_index ?? "—"}</div>
-          <div className="text-[12px] text-fg-muted">{epaIndexLabel(c.us_epa_index)}</div>
-        </div>
+        {c.us_epa_index != null && (
+          <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3 col-span-2 sm:col-span-1">
+            <div className="text-[12.5px] font-medium text-fg-secondary">US EPA index</div>
+            <div className="mt-1 text-lg font-semibold text-fg">{c.us_epa_index}</div>
+            <div className="text-[12px] text-fg-muted">{epaIndexLabel(c.us_epa_index)}</div>
+          </div>
+        )}
       </div>
       <div className="mt-2 flex items-center gap-2"><DataBadge cls="source" source={WEATHER_SOURCE} /></div>
       <p className="mt-2 text-[12.5px] leading-relaxed text-fg-muted">

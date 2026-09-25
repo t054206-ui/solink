@@ -28,7 +28,7 @@ export default async function BasketPage() {
       <PageHeader
         eyebrow="Basket"
         title="Basket"
-        description="Everything here is saved in your browser until you check out. No account is needed to browse, compare or add products — only to send the request."
+        description="Everything here is saved in your browser until you check out. No account is needed to browse, compare or add products, only to send the request."
       />
       <BasketView catalog={catalog} isAuthenticated={isAuthenticated} mode={mode} />
     </div>

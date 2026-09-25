@@ -31,10 +31,10 @@ export default async function AdminSystemsPage() {
               <tr key={s.id}>
                 <Td><div className="font-medium text-fg">{s.name}</div>{s.is_demo && <DataBadge cls="demo" compact />}</Td>
                 <Td>{SYSTEM_STATUS_LABEL[s.status]}</Td>
-                <Td className="tabular">{s.capacity_kwp !== null ? `${s.capacity_kwp} kWp` : "—"}</Td>
-                <Td className="tabular">{s.panel_count ?? "—"}</Td>
-                <Td>{p ? `${p.manufacturer_name} ${p.model}` : "—"}{s.panel_version_id && <div className="font-mono text-[11px] text-fg-muted">v: {s.panel_version_id}</div>}</Td>
-                <Td>{s.installer_id ? prov.get(s.installer_id) ?? s.installer_id : "—"}</Td>
+                <Td className="tabular">{s.capacity_kwp !== null ? `${s.capacity_kwp} kWp` : "Not set"}</Td>
+                <Td className="tabular">{s.panel_count ?? "Not set"}</Td>
+                <Td>{p ? `${p.manufacturer_name} ${p.model}` : "Not set"}{s.panel_version_id && <div className="font-mono text-[11px] text-fg-muted">v: {s.panel_version_id}</div>}</Td>
+                <Td>{s.installer_id ? prov.get(s.installer_id) ?? s.installer_id : "Not set"}</Td>
                 <Td className="whitespace-nowrap">{formatDate(s.installation_date)}</Td>
                 <Td>{s.monitoring_source ?? <Placeholder k="SOLAR_MONITORING_HARDWARE_API" />}</Td>
               </tr>

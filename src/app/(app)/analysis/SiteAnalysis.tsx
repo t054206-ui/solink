@@ -374,7 +374,7 @@ function RunProgress({ failedAt, complete }: { failedAt: number | null; complete
               )}
               <span className={done ? "text-fg-secondary" : stopped ? "font-medium text-fg" : "text-fg-muted"}>
                 {step.label}
-                {stopped ? " — stopped here" : ""}
+                {stopped ? " (stopped here)" : ""}
               </span>
             </li>
           );
@@ -657,7 +657,7 @@ function Result({ result, isSaved }: { result: Success; isSaved: boolean }) {
               label="Match precision"
               value={
                 location.approximate
-                  ? `Approximate${location.matchPrecision ? ` (${location.matchPrecision})` : ""} — a nearby street or area, not the exact building`
+                  ? `Approximate${location.matchPrecision ? ` (${location.matchPrecision})` : ""}: a nearby street or area, not the exact building`
                   : `Exact building${location.matchPrecision ? ` (${location.matchPrecision})` : ""}`
               }
             />

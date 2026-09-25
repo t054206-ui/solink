@@ -84,8 +84,8 @@ export default async function CleaningPage() {
             {!last ? <p className="text-[13px] text-fg-muted">After your first cleaning through Solink, the before-and-after output appears here.</p> : (
               <>
                 <dl className="grid grid-cols-2 gap-3 text-[13px]">
-                  <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3"><dt className="text-fg-muted">Before</dt><dd className="tabular mt-1 text-lg font-semibold text-fg">{last.production_before_kwh ?? "—"} <span className="text-[12px] font-medium text-fg-muted">kWh/day</span></dd></div>
-                  <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3"><dt className="text-fg-muted">After</dt><dd className="tabular mt-1 text-lg font-semibold text-fg">{last.production_after_kwh ?? "—"} <span className="text-[12px] font-medium text-fg-muted">kWh/day</span></dd></div>
+                  {last.production_before_kwh != null && <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3"><dt className="text-fg-muted">Before</dt><dd className="tabular mt-1 text-lg font-semibold text-fg">{last.production_before_kwh} <span className="text-[12px] font-medium text-fg-muted">kWh/day</span></dd></div>}
+                  {last.production_after_kwh != null && <div className="rounded-[var(--radius-md)] border border-border bg-inset p-3"><dt className="text-fg-muted">After</dt><dd className="tabular mt-1 text-lg font-semibold text-fg">{last.production_after_kwh} <span className="text-[12px] font-medium text-fg-muted">kWh/day</span></dd></div>}
                 </dl>
                 <p className="text-[13px] text-fg-secondary">{last.work_performed ?? last.detected_issue} · {formatDate(lastDate)}{last.technician_name ? ` · ${last.technician_name}` : ""}</p>
                 {effect.value !== null ? (

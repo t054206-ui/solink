@@ -12,7 +12,7 @@ import type { MaintenanceCase, MonitorStatus, ProductionRecord } from "@/lib/typ
 export interface DayPoint { date: string; kwh: number }
 export interface BucketPoint { label: string; value: number | null }
 
-const DEMO_NOTE = "Computed from SIMULATED PRODUCTION — NOT REAL.";
+const DEMO_NOTE = "Computed from SIMULATED PRODUCTION: NOT REAL.";
 
 /** Data class of a production series: demo if any record is demo, else source. */
 export function productionCls(records: ProductionRecord[]): DataClass {
@@ -103,7 +103,7 @@ export function weeklyTotals(records: ProductionRecord[], weeks: number): Bucket
     const end = pts.length - w * 7;
     const start = end - 7;
     const slice = pts.slice(Math.max(0, start), Math.max(0, end));
-    if (slice.length === 0) { out.push({ label: "—", value: null }); continue; }
+    if (slice.length === 0) { out.push({ label: "", value: null }); continue; }
     out.push({ label: shortDate(slice[0].date), value: slice.length === 7 ? round1(sum(slice.map((p) => p.kwh))) : null });
   }
   return out;

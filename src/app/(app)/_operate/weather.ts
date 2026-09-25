@@ -25,6 +25,6 @@ export function epaIndexLabel(i: number | null): string {
 }
 
 export function fmtNum(v: number | null | undefined, digits = 0, unit = ""): string {
-  if (v === null || v === undefined || !Number.isFinite(v)) return "—";
+  if (v === null || v === undefined || !Number.isFinite(v)) return "No reading";
   return `${v.toLocaleString("en-US", { maximumFractionDigits: digits })}${unit}`;
 }

@@ -37,9 +37,9 @@ export function EquipmentTable({ rows, cls, repairCount }: { rows: EquipmentRow[
                   {r.identity && <span className="ml-1.5 inline-flex align-middle"><DataBadge cls={cls} compact /></span>}
                 </span>
               </th>
-              <td className="tabular py-3 pr-3 text-fg-secondary">{r.installedIso ? formatDate(r.installedIso) : "—"}</td>
+              <td className="tabular py-3 pr-3 text-fg-secondary">{r.installedIso ? formatDate(r.installedIso) : ""}</td>
               <td className="py-3 pr-3">
-                {r.ageYears === null ? <span className="text-fg-na">—</span> : (
+                {r.ageYears === null ? null : (
                   <span className="inline-flex items-center gap-1.5"><span className="tabular text-fg">{r.ageYears.toFixed(1)} years</span><DataBadge cls="calculated" compact /></span>
                 )}
               </td>

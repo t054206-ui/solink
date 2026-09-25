@@ -49,7 +49,7 @@ export default async function ProviderSystemsPage() {
                 <tr key={s.id}>
                   <td className="font-medium text-fg">{s.name}{s.is_demo && <DataBadge cls="demo" compact className="ml-2" />}</td>
                   <td><Badge tone={s.status === "installed" ? "good" : "neutral"}>{SYSTEM_STATUS_LABEL[s.status]}</Badge></td>
-                  <td className="tabular text-fg-secondary">{s.capacity_kwp != null ? `${s.capacity_kwp} kWp` : "—"}{s.panel_count ? ` · ${s.panel_count} panels` : ""}</td>
+                  <td className="tabular text-fg-secondary">{s.capacity_kwp != null ? `${s.capacity_kwp} kWp` : "Not set"}{s.panel_count ? ` · ${s.panel_count} panels` : ""}</td>
                   <td className="whitespace-nowrap text-fg-muted">{formatDate(s.installation_date)}</td>
                   <td className="text-fg-secondary">{s.installer_id === access.providerId ? "Installer" : "Maintenance"}</td>
                   <td>{openCases(s.id) > 0 ? <Link href="/provider" className="font-medium text-fg underline-offset-2 hover:underline">{openCases(s.id)} open</Link> : <span className="text-fg-muted">0</span>}</td>

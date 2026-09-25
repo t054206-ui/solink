@@ -101,14 +101,14 @@ export default async function ManufacturerDashboard() {
                 const dims =
                   l && "value" in l && l.value && wd && "value" in wd && wd.value
                     ? `${l.value} × ${wd.value} mm`
-                    : "—";
+                    : "Not set";
                 return (
                   <tr key={p.id}>
                     <th scope="row" className="font-medium text-fg">
                       {p.model}
                       {p.is_demo && <DataBadge cls="demo" compact className="ms-2 align-middle" />}
                     </th>
-                    <td className="figure">{w && "value" in w && w.value ? `${w.value} W` : "—"}</td>
+                    <td className="figure">{w && "value" in w && w.value ? `${w.value} W` : "Not set"}</td>
                     <td className="figure text-fg-secondary">{dims}</td>
                     <td>
                       <span className="figure text-fg-secondary">
@@ -179,7 +179,7 @@ export default async function ManufacturerDashboard() {
               <Badge tone={p.source.datasheet_url ? "good" : "warn"} icon={p.source.datasheet_url ? undefined : <FileWarning className="size-3" aria-hidden="true" />}>
                 {p.source.datasheet_url ? "Datasheet attached" : "No datasheet"}
               </Badge>
-              <span className="micro">Updated {p.source.date_last_updated ?? "—"}</span>
+              <span className="micro">Updated {p.source.date_last_updated ?? "Not set"}</span>
             </div>
           ))}
         </CardBody>

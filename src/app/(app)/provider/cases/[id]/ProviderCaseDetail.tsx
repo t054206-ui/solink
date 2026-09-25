@@ -123,7 +123,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
               <Row k="Location" v={coarseLocation(governorate)} />
               <Row k="Assigned company" v={assigned ? <span className="inline-flex items-center gap-1.5">{assigned.name}{assigned.is_demo && <DataBadge cls="demo" compact />}</span> : "Not assigned"} />
               <Row k="Appointment" v={c.appointment_at ? formatDate(c.appointment_at, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Not booked"} />
-              <Row k="Appointment status" v={appointment ? <Badge tone={appointment.status === "confirmed" ? "good" : appointment.status === "cancelled" ? "neutral" : "warn"}>{appointment.status}</Badge> : "—"} />
+              <Row k="Appointment status" v={appointment ? <Badge tone={appointment.status === "confirmed" ? "good" : appointment.status === "cancelled" ? "neutral" : "warn"}>{appointment.status}</Badge> : "Not set"} />
               <Row k="Recorded cost" v={<CostCell cost={c.cost} />} />
             </dl>
             <PrivacyNote />
@@ -135,7 +135,7 @@ export function ProviderCaseDetail({ id, mode, providerId, providerName, serverC
         <CardHeader title="Before / after" subtitle="Photos and daily production recorded around the work." />
         <CardBody className="space-y-4">
           {c.is_demo && (c.production_before_kwh !== null || c.production_after_kwh !== null) && (
-            <DemoBanner text="DEMO FIGURES — NOT REAL" detail="The before/after values on this demo case are illustrative." />
+            <DemoBanner text="DEMO FIGURES: NOT REAL" detail="The before/after values on this demo case are illustrative." />
           )}
           <div className="grid gap-3 sm:grid-cols-2">
             <ImageSlot label="Before" path={c.before_image_path} />

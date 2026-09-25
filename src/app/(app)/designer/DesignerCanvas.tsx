@@ -562,7 +562,7 @@ export function DesignerCanvas({ mode, panels, preselectPanelId, serverProfile, 
         <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span><strong>This is a planning visualization and is not a certified engineering design.</strong> Structural loads, wiring, wind uplift, setbacks and local code must be assessed by a licensed installer and, where the roof carries anything new, a structural engineer.</span>
       </div>
-      {product?.is_demo && <DemoBanner text="DEMO PRODUCT — NOT REAL" detail="The selected panel is an illustrative demo record. Its dimensions, weight and power are not from a real manufacturer." />}
+      {product?.is_demo && <DemoBanner text="DEMO PRODUCT: NOT REAL" detail="The selected panel is an illustrative demo record. Its dimensions, weight and power are not from a real manufacturer." />}
 
       <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius)] border border-border bg-elevated px-3 py-2.5 text-[13px] has-[:checked]:border-[var(--brand)]">
         <input type="checkbox" checked={advanced} onChange={(e) => setAdvanced(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />

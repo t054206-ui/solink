@@ -142,7 +142,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
   return (
     <div className="space-y-4">
       <Stepper step={s.step} onJump={(i) => { if (i < s.step && s.step < 5) goto(i as PurchaseStep); }} />
-      {mode === "demo" && <DemoBanner text="DEMO MODE — NOT REAL" detail="Requests are stored in this browser only. No installer, payment provider or email service is connected." />}
+      {mode === "demo" && <DemoBanner text="DEMO MODE: NOT REAL" detail="Requests are stored in this browser only. No installer, payment provider or email service is connected." />}
 
       {s.step === 0 && (
         <ChooseSystem designs={designs} choice={choice} panels={panels} inverters={inverters} batteries={batteries} packages={packages} onChange={(system) => patch({ system, request_kind: null, order_id: null })} />
@@ -152,7 +152,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
         <Card>
           <CardHeader title="Review your system" subtitle="Quantities and prices exactly as they appear in the catalog. Missing prices are shown as missing, not as zero." />
           <CardBody className="space-y-4">
-            {anyDemo && <DemoBanner text="DEMO PRODUCT — NOT REAL" detail="One or more items are illustrative demo records." />}
+            {anyDemo && <DemoBanner text="DEMO PRODUCT: NOT REAL" detail="One or more items are illustrative demo records." />}
             <ul className="divide-y divide-border rounded-[var(--radius)] border border-border">
               {items.map((i) => (
                 <li key={i.product_id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-[13.5px]">
@@ -232,7 +232,7 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
                           <Badge tone={p.verification_status === "verified" ? "good" : "neutral"}>{p.verification_status.replace("_", " ")}</Badge>
                           {p.service_area && <span>{p.service_area}</span>}
                         </div>
-                        {p.is_demo && <DemoBanner className="mt-2 py-1 text-[12px]" text="DEMO COMPANY — NOT REAL" />}
+                        {p.is_demo && <DemoBanner className="mt-2 py-1 text-[12px]" text="DEMO COMPANY: NOT REAL" />}
                       </button>
                     </li>
                   );
@@ -269,8 +269,8 @@ export function PurchaseFlow({ mode, catalog, providers, serverDesigns, preselec
           <CardHeader title={<><Check className="size-4 text-good" aria-hidden /> Installation request submitted</>} subtitle="Here is what was recorded and what happens next." />
           <CardBody className="space-y-4 text-[13.5px]">
             <dl className="grid gap-3 sm:grid-cols-2">
-              <Row k="Order" v={s.order_id ?? "—"} /><Row k="System" v={s.system_id ?? "—"} />
-              <Row k="Installer" v={installer?.name ?? "—"} /><Row k="Appointment" v={`${formatDate(scheduledAtIso())} · ${TIME_WINDOWS[s.schedule.window].label} · requested`} />
+              {s.order_id && <Row k="Order" v={s.order_id} />}{s.system_id && <Row k="System" v={s.system_id} />}
+              {installer?.name && <Row k="Installer" v={installer.name} />}<Row k="Appointment" v={`${formatDate(scheduledAtIso())} · ${TIME_WINDOWS[s.schedule.window].label} · requested`} />
               <Row k="Equipment" v={items.map((i) => `${i.qty} × ${i.name}`).join("; ")} />
               <Row k="Capacity" v={capacity.value !== null ? `${formatNumber(capacity.value, 2)} kWp` : "From your design"} />
             </dl>
@@ -361,7 +361,7 @@ function ChooseSystem({ designs, choice, panels, inverters, batteries, packages,
           <Field label="Installation package"><Select value={base.install_package_id ?? ""} onChange={(e) => set({ install_package_id: e.target.value || null })}><option value="">None</option>{packages.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</Select></Field>
         </div>
 
-        {(panel?.is_demo || [base.inverter_id, base.battery_id, base.install_package_id].some((id) => id && [...inverters, ...batteries, ...packages].find((c) => c.id === id)?.is_demo)) && <DemoBanner text="DEMO PRODUCT — NOT REAL" />}
+        {(panel?.is_demo || [base.inverter_id, base.battery_id, base.install_package_id].some((id) => id && [...inverters, ...batteries, ...packages].find((c) => c.id === id)?.is_demo)) && <DemoBanner text="DEMO PRODUCT: NOT REAL" />}
         <Metric label="System capacity" term="kwp" data={cap} unit="kWp" format={(v) => formatNumber(v, 2)} className="sm:max-w-xs" />
       </CardBody>
     </Card>

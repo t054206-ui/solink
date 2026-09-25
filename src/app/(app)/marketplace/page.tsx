@@ -74,7 +74,7 @@ export default async function MarketplacePage({ searchParams }: PageProps<"/mark
         }
       />
 
-      {mode === "demo" && <DemoBanner className="mb-4" text="DEMO CATALOG — NOT REAL" detail="No real product dataset is connected. All products below are labeled demo records." />}
+      {mode === "demo" && <DemoBanner className="mb-4" text="DEMO CATALOG: NOT REAL" detail="No real product dataset is connected. All products below are labeled demo records." />}
 
       <Card className="mb-6">
         <CardHeader

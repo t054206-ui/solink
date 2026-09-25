@@ -1,5 +1,5 @@
 /**
- * DEMO DATA — NOT REAL.
+ * DEMO DATA: NOT REAL.
  *
  * Everything in this file is a labeled placeholder so the Solink UI can be
  * exercised before real integrations exist. No manufacturer, model, price,
@@ -15,9 +15,9 @@ import type {
 } from "@/lib/types";
 
 export const DEMO_USER_ID = "00000000-0000-0000-0000-00000000d3a0";
-export const DEMO_BANNER = "DEMO DATA — NOT REAL";
-export const DEMO_PRODUCT_BANNER = "DEMO PRODUCT — NOT REAL";
-export const DEMO_PRODUCTION_BANNER = "SIMULATED PRODUCTION — NOT REAL";
+export const DEMO_BANNER = "DEMO DATA: NOT REAL";
+export const DEMO_PRODUCT_BANNER = "DEMO PRODUCT: NOT REAL";
+export const DEMO_PRODUCTION_BANNER = "SIMULATED PRODUCTION: NOT REAL";
 
 const src = (overrides: Partial<Product["source"]> = {}): Product["source"] => ({
   data_source: "Demo dataset (not a real source)",
@@ -166,7 +166,7 @@ export const DEMO_PASSPORT: SolarPassport = {
 };
 
 /**
- * SIMULATED PRODUCTION — NOT REAL. A deterministic, obviously synthetic daily
+ * SIMULATED PRODUCTION: NOT REAL. A deterministic, obviously synthetic daily
  * series (smooth seasonal curve + small deterministic wobble) for the last 400
  * days. Used only to render charts in demo mode.
  */

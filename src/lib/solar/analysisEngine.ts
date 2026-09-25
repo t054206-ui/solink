@@ -159,7 +159,7 @@ function heatRule(w: NormalisedWeather): Rule {
   return {
     level,
     note: `WeatherAPI reports ${value} °C at this location. Solink treats ${explanation[level]} as ${level} heat exposure. ${meaning[level]}`,
-    trace: `Heat exposure: ${level} — Solink heat threshold, current temperature ${value} °C is ${explanation[level]}`,
+    trace: `Heat exposure: ${level}. Solink heat threshold, current temperature ${value} °C is ${explanation[level]}`,
   };
 }
 
@@ -201,8 +201,8 @@ function dustRule(w: NormalisedWeather): Rule & { dustEventNow: boolean; dustEve
       level === "unavailable"
         ? null
         : dustEventNow
-          ? `Soiling risk: ${level} — Solink dust rule, WeatherAPI condition "${w.condition}" is a dust event${pm10 ? ` (PM10 ${pm10} µg/m³)` : ""}`
-          : `Soiling risk: ${level} — Solink PM10 threshold, PM10 ${pm10} µg/m³`,
+          ? `Soiling risk: ${level}. Solink dust rule, WeatherAPI condition "${w.condition}" is a dust event${pm10 ? ` (PM10 ${pm10} µg/m³)` : ""}`
+          : `Soiling risk: ${level}. Solink PM10 threshold, PM10 ${pm10} µg/m³`,
     dustEventNow,
     dustEventForecast,
   };
@@ -222,7 +222,7 @@ function airQualityRule(w: NormalisedWeather): Rule {
       note: `WeatherAPI reports a US EPA air-quality index of ${epa} (${EPA_INDEX_LABEL[epa]})${
         readings.length ? `, with ${readings.join(" and ")}` : ""
       }. This describes the air at the location, not the state of any equipment.`,
-      trace: `Air quality: ${level} — WeatherAPI US EPA index ${epa} (${EPA_INDEX_LABEL[epa]}), mapped by Solink to ${level}`,
+      trace: `Air quality: ${level}. WeatherAPI US EPA index ${epa} (${EPA_INDEX_LABEL[epa]}), mapped by Solink to ${level}`,
     };
   }
 
@@ -238,7 +238,7 @@ function airQualityRule(w: NormalisedWeather): Rule {
   return {
     level,
     note: `WeatherAPI did not return an EPA index, so air quality was read from PM2.5, which is ${fmt(w.pm2_5)} µg/m³. Solink treats that as ${level}.`,
-    trace: `Air quality: ${level} — Solink PM2.5 threshold (no EPA index returned), PM2.5 ${fmt(w.pm2_5)} µg/m³`,
+    trace: `Air quality: ${level}. Solink PM2.5 threshold (no EPA index returned), PM2.5 ${fmt(w.pm2_5)} µg/m³`,
   };
 }
 
@@ -261,7 +261,7 @@ function windRule(w: NormalisedWeather): Rule {
     note: `Wind at the location is ${value} km/h. Solink treats ${explanation[level]} as ${level} wind exposure.${
       level === "high" || level === "extreme" ? " Wind at this strength lifts dust and is a reason to postpone work on a roof." : ""
     }`,
-    trace: `Wind exposure: ${level} — Solink wind threshold, wind ${value} km/h is ${explanation[level]}`,
+    trace: `Wind exposure: ${level}. Solink wind threshold, wind ${value} km/h is ${explanation[level]}`,
   };
 }
 
@@ -279,7 +279,7 @@ function forecastRule(w: NormalisedWeather): { alerts: EnvironmentAssessment["fo
         kind: severe ? "severe_dust" : "dust",
         detail: clamp(`WeatherAPI forecasts ${day.condition} on ${day.date}.`, 240),
       });
-      traces.push(`Forecast alert (${severe ? "severe dust" : "dust"}): ${day.date} — WeatherAPI forecast condition "${day.condition}"`);
+      traces.push(`Forecast alert (${severe ? "severe dust" : "dust"}): ${day.date}. WeatherAPI forecast condition "${day.condition}"`);
     }
     if (day.maxTempC !== null && day.maxTempC >= f.heatC) {
       alerts.push({
@@ -287,7 +287,7 @@ function forecastRule(w: NormalisedWeather): { alerts: EnvironmentAssessment["fo
         kind: "heat",
         detail: clamp(`A daytime high of ${fmt(day.maxTempC)} °C is forecast on ${day.date}.`, 240),
       });
-      traces.push(`Forecast alert (heat): ${day.date} — Solink forecast heat threshold ${f.heatC} °C, forecast high ${fmt(day.maxTempC)} °C`);
+      traces.push(`Forecast alert (heat): ${day.date}. Solink forecast heat threshold ${f.heatC} °C, forecast high ${fmt(day.maxTempC)} °C`);
     }
     if (day.maxWindKph !== null && day.maxWindKph >= f.windKph) {
       alerts.push({
@@ -295,7 +295,7 @@ function forecastRule(w: NormalisedWeather): { alerts: EnvironmentAssessment["fo
         kind: "wind",
         detail: clamp(`Wind is forecast to reach ${fmt(day.maxWindKph)} km/h on ${day.date}.`, 240),
       });
-      traces.push(`Forecast alert (wind): ${day.date} — Solink forecast wind threshold ${f.windKph} km/h, forecast maximum ${fmt(day.maxWindKph)} km/h`);
+      traces.push(`Forecast alert (wind): ${day.date}. Solink forecast wind threshold ${f.windKph} km/h, forecast maximum ${fmt(day.maxWindKph)} km/h`);
     }
   }
 
@@ -502,7 +502,7 @@ export function analyseSiteConditions(site: NormalisedSite): RuleEngineAnalysis 
       apiProvidedValues.push(`Modelled annual energy (DC): ${fmt(solar.bestConfigYearlyEnergyDcKwh, 0)} kWh (Google Solar API)`);
   }
 
-  const calculatedValues = [heat.trace, dust.trace, air.trace, wind.trace, ...forecast.traces, `Overall environmental status: ${overallStatus.replace("_", " ")} — ${statusReason}`]
+  const calculatedValues = [heat.trace, dust.trace, air.trace, wind.trace, ...forecast.traces, `Overall environmental status: ${overallStatus.replace("_", " ")}. ${statusReason}`]
     .filter((t): t is string => Boolean(t))
     .map((t) => clamp(t, 300));
 
@@ -618,8 +618,8 @@ export function analyseSiteConditions(site: NormalisedSite): RuleEngineAnalysis 
     reasoning,
     dataCompleteness: { level: completeness, missing: missing.slice(0, 16) },
     sourceReferences: [
-      "Google Maps Platform, Geocoding API — https://developers.google.com/maps/documentation/geocoding",
-      "WeatherAPI.com, current conditions, air quality and forecast — https://www.weatherapi.com/docs/",
+      "Google Maps Platform, Geocoding API: https://developers.google.com/maps/documentation/geocoding",
+      "WeatherAPI.com, current conditions, air quality and forecast: https://www.weatherapi.com/docs/",
       `${ANALYSIS_ENGINE.label} ${ANALYSIS_ENGINE.version} (src/lib/solar/analysisEngine.ts): application-defined environmental thresholds, applied to the values above`,
     ],
     environment,

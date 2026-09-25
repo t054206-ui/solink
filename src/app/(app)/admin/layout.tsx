@@ -34,7 +34,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <AuditMode>
     <div className="space-y-4">
-      {access.mode === "demo" && <DemoBanner text="DEMO MODE — ADMIN" detail="Supabase is not connected. Admin pages show labeled demo records; edits are stored in this browser only." />}
+      {access.mode === "demo" && <DemoBanner text="DEMO MODE: ADMIN" detail="Supabase is not connected. Admin pages show labeled demo records; edits are stored in this browser only." />}
       <AdminRoleNotice />
       <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-8">
         <AdminNav />

@@ -60,10 +60,11 @@ export function WeatherCard({ lat, lng }: { lat: number | null | undefined; lng:
 }
 
 function Reading({ label, value, unit }: { label: string; value: number | null; unit?: string }) {
+  if (value === null) return null;
   return (
     <div className="rounded-[10px] border border-border bg-inset p-3 min-w-0">
       <div className="text-[12px] text-fg-secondary truncate">{label}</div>
-      <div className="mt-1 tabular text-xl font-semibold text-fg">{value === null ? "—" : value.toLocaleString("en-US", { maximumFractionDigits: 1 })}{unit && value !== null && <span className="ml-0.5 text-sm font-medium text-fg-muted">{unit}</span>}</div>
+      <div className="mt-1 tabular text-xl font-semibold text-fg">{value.toLocaleString("en-US", { maximumFractionDigits: 1 })}{unit && <span className="ml-0.5 text-sm font-medium text-fg-muted">{unit}</span>}</div>
     </div>
   );
 }

@@ -59,7 +59,7 @@ export function DemoPanelLayout({ count, panelLabel, ratedW }: { count: number; 
   return (
     <div>
       <DemoBanner
-        text="DEMO LAYOUT — NOT YOUR PANELS"
+        text="DEMO LAYOUT: NOT YOUR PANELS"
         detail="An illustration of what per-panel monitoring will show once hardware is connected. These production and performance figures are made up to show the shape of the feature, not read from your system."
       />
       <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1fr)_200px]">
@@ -72,7 +72,7 @@ export function DemoPanelLayout({ count, panelLabel, ratedW }: { count: number; 
               return (
                 <div
                   key={c.index}
-                  title={`Panel ${c.index}: ${c.productionKwh} kWh today, ${c.performancePct}% of expected (${STATUS_LABEL[c.status]}) — demo figure, not real`}
+                  title={`Panel ${c.index}: ${c.productionKwh} kWh today, ${c.performancePct}% of expected (${STATUS_LABEL[c.status]}). Demo figure, not real`}
                   className={cn(
                     "group relative aspect-[3/5] overflow-hidden rounded-[4px] border-2 transition-transform duration-200 hover:-translate-y-0.5",
                     HEALTH_STYLE[h].ring,

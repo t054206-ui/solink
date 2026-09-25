@@ -94,10 +94,10 @@ export default async function PassportPage({ params }: { params: Promise<{ syste
             <dl className="grid gap-x-6 gap-y-2 text-[13.5px] sm:grid-cols-2">
               <Row k="Installation date" v={formatDate(passport.installation_date)} />
               <Row k="Commissioning date" v={formatDate(system.commissioning_date)} />
-              <Row k="Installation company" v={passport.installation_company ?? "—"} />
-              <Row k="Installer reference" v={passport.installer_id ?? "—"} mono />
-              <Row k="Panels" v={passport.panel_count != null ? `${passport.panel_count}` : "—"} />
-              <Row k="Capacity" v={passport.capacity_kwp != null ? `${passport.capacity_kwp} kWp` : "—"} />
+              {passport.installation_company && <Row k="Installation company" v={passport.installation_company} />}
+              {passport.installer_id && <Row k="Installer reference" v={passport.installer_id} mono />}
+              {passport.panel_count != null && <Row k="Panels" v={`${passport.panel_count}`} />}
+              {passport.capacity_kwp != null && <Row k="Capacity" v={`${passport.capacity_kwp} kWp`} />}
               <Row k="System status" v={<Badge tone={system.status === "installed" ? "good" : "neutral"}>{system.status.replace("_", " ")}</Badge>} />
               <Row k="Monitoring source" v={system.monitoring_source ?? "Not yet added"} />
             </dl>

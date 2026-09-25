@@ -78,7 +78,7 @@ export function MyProductsTable({ products, me, mode }: { products: Product[]; m
                 <td>{num(p.specs.rated_power_w, "W")}</td>
                 <td>{num(p.specs.efficiency_pct, "%", 1)}</td>
                 <td><Badge tone={status === "verified" ? "good" : status === "pending_verification" ? "warn" : "neutral"}>{VERIFICATION_LABEL[status] ?? status}</Badge></td>
-                <td className="text-fg-muted">{p.source.date_last_updated ? formatDate(p.source.date_last_updated) : "—"}</td>
+                <td className="text-fg-muted">{p.source.date_last_updated ? formatDate(p.source.date_last_updated) : "Not set"}</td>
                 <td>
                   {p.is_archived ? <Badge tone="neutral">Archived</Badge> : p.is_outdated ? <Badge tone="warn">Outdated</Badge> : <Badge tone="good">Listed</Badge>}
                 </td>

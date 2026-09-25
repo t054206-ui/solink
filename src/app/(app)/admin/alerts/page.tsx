@@ -28,7 +28,7 @@ export default async function AdminAlertsPage() {
                 <Td><Badge tone={x.status === "maintenance_recommended" ? "critical" : x.status === "inspection_recommended" ? "warn" : "neutral"}>{x.status.replace(/_/g, " ")}</Badge></Td>
                 <Td className="text-fg">{x.title}</Td>
                 <Td className="max-w-md text-[12.5px]">{x.message}</Td>
-                <Td className="text-[12px]">{x.evidence.join("; ") || "—"}</Td>
+                <Td className="text-[12px]">{x.evidence.join("; ") || "Not set"}</Td>
                 <Td><DataBadge cls={x.cls} compact /></Td>
                 <Td>{x.acknowledged ? "Yes" : "No"}</Td>
               </tr>

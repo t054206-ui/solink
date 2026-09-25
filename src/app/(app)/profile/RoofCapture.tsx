@@ -231,7 +231,7 @@ export function RoofCapture({
             </div>
 
             <div className="space-y-2">
-              <h4 className="micro">Suggestions — confirm each one</h4>
+              <h4 className="micro">Suggestions: confirm each one</h4>
               <SuggestionRow
                 label="Building type"
                 s={r.suggestions.house_type}
@@ -277,10 +277,10 @@ export function RoofCapture({
             </div>
 
             {r.obstructions.length > 0 && (
-              <Detail title="On the roof" items={r.obstructions.map((o) => `${o.item} — ${o.note}`)} />
+              <Detail title="On the roof" items={r.obstructions.map((o) => `${o.item}: ${o.note}`)} />
             )}
             {r.shading.length > 0 && (
-              <Detail title="Possible shading" items={r.shading.map((o) => `${o.source} — ${o.note}`)} />
+              <Detail title="Possible shading" items={r.shading.map((o) => `${o.source}: ${o.note}`)} />
             )}
 
             <div className="rounded-[var(--radius)] border border-dashed border-border-strong p-3">

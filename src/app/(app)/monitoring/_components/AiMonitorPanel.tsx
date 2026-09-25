@@ -113,7 +113,7 @@ function Section({ title, items, empty }: { title: string; items: string[] | und
       <div className="text-[12px] font-semibold uppercase tracking-wide text-fg-muted">{title}</div>
       {items && items.length > 0 ? (
         <ul className="mt-1 list-disc space-y-1 pl-5 text-[13px] text-fg-secondary">{items.map((s, i) => <li key={i}>{s}</li>)}</ul>
-      ) : <p className="mt-1 text-[13px] text-fg-muted">{empty ?? "—"}</p>}
+      ) : empty ? <p className="mt-1 text-[13px] text-fg-muted">{empty}</p> : null}
     </div>
   );
 }

@@ -26,8 +26,8 @@ export default async function ProvidersPage() {
               <tr key={c.id}>
                 <Td className="font-medium text-fg">{c.name}</Td>
                 <Td><div className="flex flex-wrap gap-1">{c.kind.map((k) => <Badge key={k}>{KIND_LABEL[k] ?? k}</Badge>)}</div></Td>
-                <Td>{c.service_area ?? "—"}</Td>
-                <Td>{c.contact_email ?? c.phone ?? "—"}</Td>
+                <Td>{c.service_area ?? "Not set"}</Td>
+                <Td>{c.contact_email ?? c.phone ?? "Not set"}</Td>
                 <Td><VerificationPill status={c.verification_status} /></Td>
                 <Td>{c.is_demo ? <Placeholder k="MAINTENANCE_PRICE" /> : <span className="text-fg-muted">See provider_prices</span>}</Td>
                 <Td>{c.is_demo ? <DataBadge cls="demo" compact /> : "Real"}</Td>

@@ -71,7 +71,7 @@ export function LineChart({ series, height = 220, yLabel, formatY = (v) => v.toL
         {hover !== null && (
           <div className="pointer-events-none absolute top-2 rounded-md border border-border bg-elevated px-2.5 py-1.5 text-[12px] shadow-card" style={{ left: `${(x(hover) / W) * 100}%`, transform: `translateX(${hover > n / 2 ? "-105%" : "8px"})` }}>
             <div className="font-medium text-fg">{formatX(series[0].points[hover]?.x ?? "")}</div>
-            {series.map((s, i) => <div key={i} className="flex items-center gap-1.5 text-fg-secondary"><span className="inline-block size-2 rounded-full" style={{ background: colors[i] }} />{s.name}: <span className="tabular text-fg">{s.points[hover]?.y === null ? "—" : formatY(s.points[hover]?.y as number)}</span></div>)}
+            {series.map((s, i) => s.points[hover]?.y == null ? null : <div key={i} className="flex items-center gap-1.5 text-fg-secondary"><span className="inline-block size-2 rounded-full" style={{ background: colors[i] }} />{s.name}: <span className="tabular text-fg">{formatY(s.points[hover]?.y as number)}</span></div>)}
           </div>
         )}
       </div>

@@ -104,7 +104,7 @@ export function ProductForm({ initial, manufacturers, providers, mode, lockedMan
       const id = initial?.id ?? newLocalId();
       const now = new Date().toISOString();
       const product: Product = {
-        id, category: input.category, manufacturer_id: lockedManufacturer?.id ?? initial?.manufacturer_id ?? null, manufacturer_name: input.manufacturer_name || "—",
+        id, category: input.category, manufacturer_id: lockedManufacturer?.id ?? initial?.manufacturer_id ?? null, manufacturer_name: input.manufacturer_name || "Manufacturer not stated",
         model: input.model, name: input.name, description: input.description, price: toNumericSpec(input.price), currency: "KWD",
         installation_cost: toNumericSpec(input.installation_cost), annual_maintenance_cost: toNumericSpec(input.annual_maintenance_cost), cleaning_cost: toNumericSpec(input.cleaning_cost),
         expected_annual_production_kwh: toNumericSpec(input.expected_annual_production_kwh), images: input.images, specs: { ...input.specs, additional: {} },
@@ -130,7 +130,7 @@ export function ProductForm({ initial, manufacturers, providers, mode, lockedMan
     <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); save(); }} noValidate>
       {mode === "demo" && <DemoBanner text="LOCAL ONLY" detail="Supabase is not connected. This form saves to this browser’s storage; nothing reaches a database." />}
       {localCopy && <p className="text-[12px] text-fg-muted">A locally edited copy of this record exists in this browser and is shown here.</p>}
-      {initial?.is_demo && <DemoBanner text="DEMO PRODUCT — NOT REAL" detail="This record is part of the labeled demo dataset." />}
+      {initial?.is_demo && <DemoBanner text="DEMO PRODUCT: NOT REAL" detail="This record is part of the labeled demo dataset." />}
 
       <Card>
         <CardHeader title="Identity" subtitle="What the product is. Manufacturer + model must be unique." />
@@ -153,7 +153,7 @@ export function ProductForm({ initial, manufacturers, providers, mode, lockedMan
           <Field label="Description" className="sm:col-span-2"><Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
           {isService && (
             <Field label="Provider company" help="Services are offered by a provider (maps to solar_products.provider_id).">
-              <Select value={providerId} onChange={(e) => setProviderId(e.target.value)}><option value="">— none —</option>{providers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</Select>
+              <Select value={providerId} onChange={(e) => setProviderId(e.target.value)}><option value="">None</option>{providers.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</Select>
             </Field>
           )}
         </CardBody>
