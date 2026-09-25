@@ -227,7 +227,7 @@ export function AboutPage() {
               <p className="micro mb-3">{t("about.built.count")}</p>
               <p className="text-[17px] font-semibold leading-snug text-fg">{t("about.built.why")}</p>
             </div>
-            <Draft label="[PLACEHOLDER: TEAM DESCRIPTION]" />
+            <p className="max-w-2xl text-[15.5px] leading-relaxed text-fg-secondary">{t("about.built.description")}</p>
           </div>
         </div>
       </section>
@@ -340,15 +340,6 @@ function SectionHead({ title, sub }: { title: string; sub: string }) {
       <h2 className="display max-w-2xl text-[clamp(1.9rem,4vw,2.9rem)] text-fg">{title}</h2>
       <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-fg-secondary">{sub}</p>
     </>
-  );
-}
-
-/** An undecided piece of copy, in the same dashed style the product uses for undecided values. */
-function Draft({ label }: { label: string }) {
-  return (
-    <p className="rounded-[var(--radius)] border border-dashed border-[var(--cls-estimated)] bg-[var(--cls-estimated-soft)] px-3 py-2.5 font-mono text-[12px] leading-relaxed text-[var(--cls-estimated)]">
-      {label}
-    </p>
   );
 }
 

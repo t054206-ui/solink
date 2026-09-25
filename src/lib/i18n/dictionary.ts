@@ -242,6 +242,7 @@ const en = {
   "about.built.concept": "Solink brings together different perspectives to build a practical solar-energy platform.",
   "about.built.count": "A team of four",
   "about.built.why": "We came together because we shared the same belief: solar energy should be easier to understand, easier to manage, and built on information people can trust.",
+  "about.built.description": "Before we built anything, we asked 19 people in Kuwait about going solar. More than half weren't confident they could choose the right system, and 12 of 19 said they'd rather manage every stage in one place. Solink is our answer: four CODED trainees building the platform we wished existed.",
 
   "about.vision.title": "Our vision",
   "about.vision.heading": "Building a smarter solar future",
@@ -604,6 +605,7 @@ const ar: Dict = {
   "about.built.concept": "سولينك يجمع وجهات نظر مختلفة عشان يبني منصة طاقة شمسية عملية.",
   "about.built.count": "فريق من أربعة",
   "about.built.why": "اجتمعنا لأننا نشارك نفس القناعة: الطاقة الشمسية لازم تكون أسهل تفهمها، وأسهل تديرها، ومبنية على معلومات الناس يوثقون فيها.",
+  "about.built.description": "قبل ما نبني أي شي، سألنا 19 شخص بالكويت عن الطاقة الشمسية. أكثر من نصهم ما كانوا واثقين إنهم يقدرون يختارون النظام الصح، و12 من 19 قالوا يفضلون يديرون كل مرحلة بمكان واحد. سولينك هو جوابنا: أربعة متدربين من CODED يبنون المنصة اللي تمنينا تكون موجودة.",
 
   "about.vision.title": "رؤيتنا",
   "about.vision.heading": "نبني مستقبل شمسي أذكى",
