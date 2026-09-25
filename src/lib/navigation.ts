@@ -71,7 +71,7 @@ const HOMEOWNER_NAV: NavEntry[] = [
   link("/reports", "Reports", FileText),
   link("/agent", "Ask Solink", Bot),
   link("/help", "Guide", BookOpen),
-  link("/about", "About Solink", Info),
+  link("/about-solink", "About Solink", Info),
 ];
 
 /* ---------------- Provider (role `company`): a workload ---------------- */

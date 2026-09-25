@@ -36,7 +36,7 @@ import { TEAM, isPlaceholderText, type TeamMember } from "@/lib/content/team";
  * owner's banned list, so it is not used here even though generic About-page
  * briefs tend to ask for it.
  */
-export function AboutPage() {
+export function AboutPage({ inApp = false }: { inApp?: boolean }) {
   const t = useT();
 
   return (
@@ -72,7 +72,7 @@ export function AboutPage() {
       </section>
 
       {/* ── 2. The problem. Sticky, so the solution slides over it. ──────── */}
-      <section className="sticky top-0 -z-0 bg-bg py-20">
+      <section className={`sticky ${inApp ? "top-[var(--header-height)]" : "top-0"} -z-0 bg-bg py-20`}>
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
           <SectionHead title={t("about.problem.title")} sub={t("about.problem.sub")} />
 
@@ -128,7 +128,7 @@ export function AboutPage() {
       {/* ── 3. Our solution. Slides over the problem. ────────────────────── */}
       <section className="rounded-t-[28px] bg-brand py-20 text-white sm:rounded-t-[40px]">
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
-          <h2 className="display max-w-2xl text-[clamp(1.9rem,4vw,2.9rem)]">{t("about.solution.title")}</h2>
+          <h2 className="display max-w-2xl text-[clamp(1.9rem,4vw,2.9rem)] text-white">{t("about.solution.title")}</h2>
           <p className="mt-4 max-w-2xl text-[15.5px] leading-relaxed text-white/80">{t("about.solution.sub")}</p>
           <ol className="mt-12 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-5">
             {/* Purchase (stage 5) removed on the owner's word, 2026-09-23; the
@@ -137,7 +137,7 @@ export function AboutPage() {
             {([1, 2, 3, 4, 6, 7, 8, 9, 10] as const).map((n, i) => (
               <li key={n} className="border-t border-white/15 pt-3">
                 <span className="micro text-[color:var(--sun)]">{String(i + 1).padStart(2, "0")}</span>
-                <h3 className="mt-1.5 text-[15.5px] font-semibold">{t(`about.stage.${n}` as DictKey)}</h3>
+                <h3 className="mt-1.5 text-[15.5px] font-semibold text-white">{t(`about.stage.${n}` as DictKey)}</h3>
                 <p className="mt-1 text-[13.5px] leading-snug text-white/70">{t(`about.stage.${n}d` as DictKey)}</p>
               </li>
             ))}
