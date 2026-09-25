@@ -160,9 +160,9 @@ export function AboutPage() {
             <p className="mt-1.5 max-w-2xl text-[14px] text-fg-muted">{t("about.flow.note")}</p>
             <ol className="relative mt-8 space-y-3 border-s border-border ps-6">
               <FlowRow service={t("about.eco.maps")} produces={t("about.flow.location")} />
-              <FlowRow service={t("about.eco.solar")} produces={t("about.flow.roof")} />
+              <FlowRow service={t("about.eco.solar")} produces={t("about.flow.roof")} planned={t("about.eco.planned")} />
               <FlowRow service={t("about.eco.weather")} produces={t("about.flow.env")} />
-              <FlowRow service={t("about.eco.claude")} produces={t("about.flow.analysis")} />
+              <FlowRow service={t("about.eco.claude")} produces={t("about.flow.analysis")} planned={t("about.eco.planned")} />
               <FlowRow service="Solink" produces={t("about.flow.dashboard")} last />
             </ol>
           </div>
@@ -362,13 +362,27 @@ function EcoCard({ icon, name, role, desc, planned }: { icon: React.ReactNode; n
   );
 }
 
-function FlowRow({ service, produces, last = false }: { service: string; produces: string; last?: boolean }) {
+function FlowRow({ service, produces, last = false, planned }: { service: string; produces: string; last?: boolean; planned?: string }) {
+  const box = last
+    ? "bg-brand text-brand-fg"
+    : planned
+      ? "border border-dashed border-border-strong bg-elevated text-fg"
+      : "border border-border bg-elevated text-fg";
   return (
     <li className="relative">
-      <span aria-hidden="true" className="absolute -start-[calc(1.5rem+4.5px)] top-3 size-2 rounded-full bg-[color:var(--sun)]" />
+      <span
+        aria-hidden="true"
+        className={`absolute -start-[calc(1.5rem+4.5px)] top-3 size-2 rounded-full ${planned ? "border border-[color:var(--sun)] bg-bg" : "bg-[color:var(--sun)]"}`}
+      />
       <div className="grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.4fr)]">
-        <span className={`rounded-[var(--radius)] px-3 py-2 text-[14px] font-medium ${last ? "bg-brand text-brand-fg" : "border border-border bg-elevated text-fg"}`}>
+        <span className={`flex items-center justify-between gap-3 rounded-[var(--radius)] px-3 py-2 text-[14px] font-medium ${box}`}>
           {service}
+          {planned && (
+            <span className="inline-flex items-center gap-1 text-[12.5px] font-medium text-fg-secondary">
+              <Clock className="size-3.5" aria-hidden="true" />
+              {planned}
+            </span>
+          )}
         </span>
         <ArrowDown className="size-4 text-fg-muted sm:hidden" aria-hidden="true" />
         <ArrowRight className="hidden size-4 text-fg-muted sm:block rtl:rotate-180" aria-hidden="true" />
