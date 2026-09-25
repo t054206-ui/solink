@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard, Home, Sun, Calculator, Store, GitCompare, Sparkles, PencilRuler, FileBadge,
-  Activity, Wrench, AlertOctagon, FileText, TrendingUp, Recycle, Bot, ShieldCheck, HelpCircle,
+  Activity, Wrench, AlertOctagon, FileText, TrendingUp, Recycle, Bot, ShieldCheck, BookOpen,
   Inbox, CalendarDays, Hammer, Settings, BarChart3, Users, Package, Building2, Plug, Database, SprayCan, Search,
   ClipboardList, CalendarClock, Upload, FileSpreadsheet, Factory, Bell, Import, PackagePlus, Compass,
 } from "lucide-react";
@@ -70,7 +70,7 @@ const HOMEOWNER_NAV: NavEntry[] = [
   ]),
   link("/reports", "Reports", FileText),
   link("/agent", "Ask Solink", Bot),
-  link("/guide", "Help", HelpCircle),
+  link("/guide", "Guide", BookOpen),
 ];
 
 /* ---------------- Provider (role `company`): a workload ---------------- */
