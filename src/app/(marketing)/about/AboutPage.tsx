@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ArrowDown,
   Bot,
+  Clock,
   CloudSun,
   Database,
   Languages,
@@ -12,7 +13,6 @@ import {
   Network,
   Sun,
   Tags,
-  Workflow,
   ExternalLink,
 } from "lucide-react";
 import { DataBadge } from "@/components/ui/DataBadge";
@@ -149,13 +149,11 @@ export function AboutPage() {
       <section className="bg-bg py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-6">
           <SectionHead title={t("about.eco.title")} sub={t("about.eco.sub")} />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <EcoCard icon={<MapPin className="size-5" aria-hidden="true" />} name={t("about.eco.maps")} role={t("about.eco.mapsRole")} desc={t("about.eco.mapsD")} />
-            <EcoCard icon={<Sun className="size-5" aria-hidden="true" />} name={t("about.eco.solar")} role={t("about.eco.solarRole")} desc={t("about.eco.solarD")} />
+            <EcoCard icon={<Sun className="size-5" aria-hidden="true" />} name={t("about.eco.solar")} role={t("about.eco.solarRole")} desc={t("about.eco.solarD")} planned={t("about.eco.planned")} />
             <EcoCard icon={<CloudSun className="size-5" aria-hidden="true" />} name={t("about.eco.weather")} role={t("about.eco.weatherRole")} desc={t("about.eco.weatherD")} />
-            <EcoCard icon={<Bot className="size-5" aria-hidden="true" />} name={t("about.eco.claude")} role={t("about.eco.claudeRole")} desc={t("about.eco.claudeD")} />
-            <EcoCard icon={<Workflow className="size-5" aria-hidden="true" />} name={t("about.eco.n8n")} role={t("about.eco.n8nRole")} desc={t("about.eco.n8nD")} />
-          </div>
+            <EcoCard icon={<Bot className="size-5" aria-hidden="true" />} name={t("about.eco.claude")} role={t("about.eco.claudeRole")} desc={t("about.eco.claudeD")} planned={t("about.eco.planned")} />          </div>
 
           <div className="mt-16">
             <h3 className="text-[20px] font-semibold text-fg">{t("about.flow.title")}</h3>
@@ -164,7 +162,6 @@ export function AboutPage() {
               <FlowRow service={t("about.eco.maps")} produces={t("about.flow.location")} />
               <FlowRow service={t("about.eco.solar")} produces={t("about.flow.roof")} />
               <FlowRow service={t("about.eco.weather")} produces={t("about.flow.env")} />
-              <FlowRow service={t("about.eco.n8n")} produces={t("about.flow.workflow")} />
               <FlowRow service={t("about.eco.claude")} produces={t("about.flow.analysis")} />
               <FlowRow service="Solink" produces={t("about.flow.dashboard")} last />
             </ol>
@@ -355,13 +352,21 @@ function Draft({ label }: { label: string }) {
   );
 }
 
-function EcoCard({ icon, name, role, desc }: { icon: React.ReactNode; name: string; role: string; desc: string }) {
+function EcoCard({ icon, name, role, desc, planned }: { icon: React.ReactNode; name: string; role: string; desc: string; planned?: string }) {
   return (
-    <div className="press rounded-[var(--radius-lg)] border border-border bg-elevated p-5 hover:border-border-strong">
+    <div className={`press flex flex-col rounded-[var(--radius-lg)] border bg-elevated p-5 hover:border-border-strong ${planned ? "border-dashed border-border-strong" : "border-border"}`}>
       <span className="grid size-10 place-items-center rounded-full bg-brand-soft text-[color:var(--brand-strong)]">{icon}</span>
       <p className="micro mt-4">{role}</p>
       <h3 className="mt-1 text-[15.5px] font-semibold text-fg">{name}</h3>
       <p className="mt-2 text-[13.5px] leading-snug text-fg-muted">{desc}</p>
+      {planned && (
+        <div className="mt-auto pt-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-bg px-3 py-1 text-[12.5px] font-medium text-fg-secondary">
+            <Clock className="size-3.5" aria-hidden="true" />
+            {planned}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
