@@ -23,18 +23,33 @@ export async function GET(request: NextRequest) {
   const raw = url.searchParams.get("next");
   const next = raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
   const consented = url.searchParams.get("consent") === "1";
+  // A password-reset email lands here too (type=recovery): a dead link goes
+  // back to /forgot-password, and a good one goes straight to /reset-password.
+  const recovery = url.searchParams.get("type") === "recovery";
 
   const fail = url.clone();
-  fail.pathname = "/login";
   fail.search = "";
-  fail.searchParams.set("error", "google");
-  fail.searchParams.set("next", next);
+  if (recovery) {
+    fail.pathname = "/forgot-password";
+    fail.searchParams.set("error", "expired");
+  } else {
+    fail.pathname = "/login";
+    fail.searchParams.set("error", "google");
+    fail.searchParams.set("next", next);
+  }
 
   if (!code) return NextResponse.redirect(fail);
   const supabase = await createClient();
   if (!supabase) return NextResponse.redirect(fail);
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) return NextResponse.redirect(fail);
+
+  if (recovery) {
+    const reset = url.clone();
+    reset.search = "";
+    reset.pathname = "/reset-password";
+    return NextResponse.redirect(reset);
+  }
 
   let hasConsent = hasCurrentConsent(data.user?.user_metadata);
   if (!hasConsent && consented) {

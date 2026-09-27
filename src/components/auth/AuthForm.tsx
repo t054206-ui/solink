@@ -132,6 +132,11 @@ export function AuthForm({
         <Field label={t("auth.password")} help={login ? undefined : t("auth.min")}>
           <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={login ? "current-password" : "new-password"} minLength={8} required className="h-11" />
         </Field>
+        {login && (
+          <p className="-mt-2 text-end text-[13px]">
+            <Link href="/forgot-password" className="text-fg-secondary underline underline-offset-2 hover:text-fg">{t("auth.forgot")}</Link>
+          </p>
+        )}
         {!login && (
           <Field label={t("auth.confirm")} error={fieldError ?? (mismatch ? t("auth.mismatch") : undefined)}>
             <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" minLength={8} required className="h-11" />
