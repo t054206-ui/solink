@@ -69,6 +69,7 @@ export function AuthForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null); setFieldError(null); setInfo(null); setExisting(false);
+    if (mode === "signup" && password.length < 8) { setError(t("auth.tooShort")); return; }
     if (mode === "signup" && password !== confirm) { setFieldError(t("auth.mismatch")); return; }
     if (mode === "signup" && !agreed) { setError(t("auth.consentRequired")); return; }
     setBusy(true);
