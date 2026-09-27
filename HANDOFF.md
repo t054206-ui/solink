@@ -2522,3 +2522,125 @@ How it works:
 - Not in scope and unchanged: the About page team placeholders (owner's open
   item), admin pages, the database, RLS, calculations.
 
+## Addendum, 2026-09-24 to 27 — security fixes, About and navigation, password reset
+
+Everything below is on `main` and live, and migrations 0013–0015 are applied
+to the live database. It supersedes two lines in the addendum above: n8n is
+no longer named anywhere, and the About page team placeholders are gone.
+
+**Working rule (owner, 2026-09-26): make changes locally and commit them, but
+push only when the owner says "push".** Database migrations follow the same
+rule: write the file, test it in a rolled-back transaction, apply it on
+"push". Fetch before pushing; collaborators push to `main`.
+
+### Security, round 1 (2026-09-24)
+
+- **Rate limit** (`src/lib/api/rateLimit.ts`): `checkRateLimit()` is now async
+  and uses a shared Redis counter (`@upstash/redis`) when `KV_REST_API_URL` +
+  `KV_REST_API_TOKEN` (or the `UPSTASH_REDIS_REST_*` names) are set, falling
+  back to the old per-instance counter otherwise. **No Redis store is attached
+  in Vercel yet**, so production still uses the fallback. `@vercel/kv` was
+  tried and removed: it is deprecated.
+- **Uploads** (`src/lib/files/sniffFileType.ts`): the four upload actions and
+  the two AI photo routes check a file's real first bytes
+  (JPEG/PNG/GIF/WEBP/PDF), not the browser's claimed type, and store the
+  detected type.
+- **Deleted** `src/lib/supabase/admin.ts`, the unused service-role client.
+- **Migration 0013**: a trigger skips a repeat `product_events` row from the
+  same person, product and kind within 5 minutes (`RETURN NULL`, so batches
+  still record the rest).
+
+### Security, round 2 (2026-09-27)
+
+A second full read-only review found 0 Red, 5 Orange and 4 Yellow; no finding
+lets a stranger reach another person's data. Fixed:
+- **Migration 0014**: triggers on insert. `manufacturer_requests`: message
+  10–2000 characters; sender name and governorate filled from the database;
+  status forced to `new` with no answer; 10 per account per hour. `orders`:
+  must start as `draft`/`requested`, with no installer or payment fields, a
+  size cap, and 10 per account per hour. Admins and jobs without `auth.uid()`
+  pass. The Purchase flow can still set `installer_id` on update, as it needs to.
+- **Migration 0015**: `weather_records` and `environmental_records` (empty,
+  unused, but built to hold coordinates) are readable by signed-in users only.
+- **`/reset-password`** shows its form only when the session's latest `amr`
+  entry is not `password`/`oauth` and is within an hour of the token's `iat`.
+  **Not yet tested with a real reset email**: if a genuine reset link shows
+  "This link isn't valid anymore", the recovery session's `amr` method is
+  being misread.
+- **Sign-up** refuses passwords under 8 characters before sending (the form
+  is `noValidate`, so the HTML `minLength` never applied).
+
+Left open, on purpose or waiting on the owner:
+- Sign-up says "An account with this email already exists" with Sign in and
+  Reset buttons (detected by `identities.length === 0`). **Owner's choice**,
+  knowing it reveals which emails are registered.
+- CSP still has `'unsafe-inline'` on `script-src`. Nonces would make every
+  page dynamic and need a page-by-page test.
+- **Owner's dashboard to-dos**:
+  1. Supabase Email settings: minimum password length 8, letters and digits,
+     **Secure password change** on.
+  2. Attach a Redis store in Vercel, then redeploy.
+  3. Rotate the keys pasted into a chat on 2026-09-22/23 (Google Maps,
+     WeatherAPI, and a third not recorded) and delete the old ones.
+  4. Leaked-password protection when on Supabase Pro.
+  5. Own email sender (SMTP): Supabase's built-in sender allows only a few
+     emails an hour.
+
+### Password reset (2026-09-27)
+
+"Forgot password?" on `/login` → `/forgot-password` (`resetPasswordForEmail`,
+same confirmation whether or not the email exists) → email link →
+`/auth/callback?type=recovery` (a failed exchange goes to
+`/forgot-password?error=expired`; the Google path is unchanged) →
+`/reset-password` (new password twice, at least 8). The link must be opened
+in the browser that asked for it (PKCE). Copy in English and Arabic under
+`forgot.*` and `reset.*`.
+
+### Sign-up page
+
+While the terms box is unticked, it has a red outline and a red line under
+the Google button says to tick it first (`ConsentCheckbox attention`,
+`auth.consentHint`). Both buttons stay disabled until it is ticked, as
+before.
+
+### About page and navigation
+
+- Google Solar API and Claude API are marked **Coming soon** (dashed outline
+  and label) on their ecosystem cards and in "How they work together". The
+  n8n card and step are removed; it was never used.
+- "Built together" now uses survey-backed copy in place of the team
+  placeholder. **It says "Before we built anything", but the responses are
+  dated 25 September, after work began; the owner has not yet decided whether
+  to reword it.** Survey: 19 responses in the Google Sheet "Untitled form
+  (Responses)"; 12 Yes, 6 Maybe, 1 No to one platform.
+- Team cards show names only. Roles and bios are `null` in
+  `src/lib/content/team.ts` until supplied, and the developer note is gone.
+  Photos keep the placeholder frame.
+- Top menu "About" now reads **About Solink**.
+- Sidebar: "Help" became **Guide** (book icon) and opens **`/help`**, the
+  same guide inside the app shell (`GuideContent`, shared with public
+  `/guide`). **About Solink** opens **`/about-solink`** (`AboutPage inApp`,
+  sticky section below the app header). The blue section's headings carry
+  `text-white` because `[data-app-main] :is(h1…h4)` colours headings navy.
+- The app logo links to the public home page `/`, not `/dashboard`.
+
+### Em dashes
+
+Every em dash the site can show is gone:
+- Sentences are rewritten with full stops, commas or colons.
+- Demo banners read "DEMO DATA: NOT REAL".
+- Homeowner screens hide a missing field instead of showing "—", and
+  admin/provider/manufacturer screens say "Not set".
+- Shared formatters fall back to "Not set", "No reading" or "Not recorded".
+- 21 database labels (data sources, manufacturer sources, two settings) use a
+  colon.
+
+Code comments, docs and migration files keep theirs. Two older saved Solar
+Potential results still contain the old wording.
+
+### Also true now
+
+- Local `.claude/launch.json` runs the dev server on port 3311.
+- Production has no `CLAUDE_API_KEY`, so every AI feature rests. The
+  `/api/integrations` endpoint reports what is connected: Supabase, WeatherAPI
+  and Google Maps yes; everything else no.
