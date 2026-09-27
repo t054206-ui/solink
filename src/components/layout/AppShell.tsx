@@ -115,7 +115,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
 
   const brand = (
     <div className="flex items-center gap-2">
-      <Logo href="/dashboard" />
+      <Logo href="/" />
       {tag && <span className="micro rounded-[3px] border border-border px-1.5 py-0.5 text-[9.5px]">{tag}</span>}
     </div>
   );
@@ -141,7 +141,7 @@ export function AppShell({ children, user, demoMode, unreadCount = 0 }: { childr
           <header className="sticky top-0 z-30 flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-border bg-bg px-3 sm:px-4">
             <div className="flex items-center gap-2 lg:hidden">
               <button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="grid size-9 place-items-center rounded-[var(--radius)] text-fg hover:bg-inset"><Menu className="size-5" aria-hidden /></button>
-              <Logo href="/dashboard" compact />
+              <Logo href="/" compact />
             </div>
             <div className="hidden lg:block font-mono text-[11.5px] uppercase tracking-[0.08em] text-fg-muted">{breadcrumb(active)}</div>
             <div className="flex items-center gap-1.5">
