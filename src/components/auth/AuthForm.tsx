@@ -62,12 +62,13 @@ export function AuthForm({
   const [info, setInfo] = useState<string | null>(confirmed && mode === "login" ? t("auth.confirmed") : null);
   const [busy, setBusy] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [existing, setExisting] = useState(false);
 
   const mismatch = mode === "signup" && confirm.length > 0 && confirm !== password;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null); setFieldError(null); setInfo(null);
+    setError(null); setFieldError(null); setInfo(null); setExisting(false);
     if (mode === "signup" && password !== confirm) { setFieldError(t("auth.mismatch")); return; }
     if (mode === "signup" && !agreed) { setError(t("auth.consentRequired")); return; }
     setBusy(true);
@@ -77,11 +78,16 @@ export function AuthForm({
       // The confirmation link should bring people back to this site, not to the
       // Supabase project's default Site URL. The origin is read at click time so
       // the same code serves localhost, previews and production.
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email, password,
         options: { data: { full_name: name.trim(), consent: newConsent() }, emailRedirectTo: `${window.location.origin}/login?confirmed=1&next=${encodeURIComponent(nextPath)}` },
       });
-      if (error) setError(error.message); else setInfo(t("auth.checkEmail"));
+      // For an address that is already registered, Supabase sends no email and
+      // returns a user with no identities. The owner chose (2026-09-27) to say
+      // so plainly, even though it tells a visitor the address has an account.
+      if (error) setError(error.message);
+      else if (data.user && data.user.identities?.length === 0) setExisting(true);
+      else setInfo(t("auth.checkEmail"));
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setError(error.message); else { router.push(nextPath); router.refresh(); }
@@ -148,6 +154,20 @@ export function AuthForm({
 
       {error && <p role="alert" className="rounded-[var(--radius)] bg-critical-soft px-3 py-2 text-[13px] text-critical-fg">{error}</p>}
       {info && <p role="status" className="rounded-[var(--radius)] bg-good-soft px-3 py-2 text-[13px] text-good-fg">{info}</p>}
+      {existing && (
+        <div role="alert" className="rounded-[var(--radius)] bg-warn-soft px-3 py-3 text-[13px] text-warn-fg">
+          <p className="font-medium">{t("auth.existing")}</p>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            <Link href={loginHref} className="press inline-flex h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-[13px] font-medium text-brand-fg hover:bg-brand-hover">
+              {t("auth.signinInstead")}
+              <ArrowRight className="size-3.5 rtl:rotate-180" aria-hidden="true" />
+            </Link>
+            <Link href="/forgot-password" className="press inline-flex h-9 items-center rounded-full border border-border-strong bg-elevated px-4 text-[13px] font-medium text-fg hover:bg-inset">
+              {t("auth.resetInstead")}
+            </Link>
+          </div>
+        </div>
+      )}
 
       <button
         type="submit"
