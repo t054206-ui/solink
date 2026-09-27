@@ -139,7 +139,7 @@ export function AuthForm({
         )}
       </div>
 
-      {!login && <div className="rise" style={{ animationDelay: "200ms" }}><ConsentCheckbox id="consent-signup" checked={agreed} onChange={setAgreed} /></div>}
+      {!login && <div className="rise" style={{ animationDelay: "200ms" }}><ConsentCheckbox id="consent-signup" checked={agreed} onChange={setAgreed} attention /></div>}
 
       {error && <p role="alert" className="rounded-[var(--radius)] bg-critical-soft px-3 py-2 text-[13px] text-critical-fg">{error}</p>}
       {info && <p role="status" className="rounded-[var(--radius)] bg-good-soft px-3 py-2 text-[13px] text-good-fg">{info}</p>}
@@ -171,6 +171,9 @@ export function AuthForm({
           <GoogleMark muted={!googleEnabled} />
           {t("auth.google")}
         </button>
+        {!login && !agreed && (
+          <p id="consent-hint" className="text-center text-[12.5px] font-medium leading-relaxed text-critical-fg">{t("auth.consentHint")}</p>
+        )}
         {!googleEnabled && (
           <p id="google-unavailable" className="text-center text-[12px] leading-relaxed text-fg-muted">{t("auth.googleUnavailable")}</p>
         )}

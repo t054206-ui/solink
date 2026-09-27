@@ -56,10 +56,10 @@ export function ConsentForm({ nextPath, email }: { nextPath: string; email: stri
  * screen: terms, privacy policy, and data stored and processed outside Kuwait.
  * A real checkbox, unticked by default, with the label wired to it.
  */
-export function ConsentCheckbox({ id, checked, onChange }: { id: string; checked: boolean; onChange: (v: boolean) => void }) {
+export function ConsentCheckbox({ id, checked, onChange, attention = false }: { id: string; checked: boolean; onChange: (v: boolean) => void; attention?: boolean }) {
   const t = useT();
   return (
-    <label htmlFor={id} className="flex cursor-pointer items-start gap-2.5 rounded-[var(--radius)] border border-border bg-elevated px-3 py-2.5 text-[12.5px] leading-relaxed text-fg-secondary has-[:checked]:border-[var(--brand)]">
+    <label htmlFor={id} className={`flex cursor-pointer items-start gap-2.5 rounded-[var(--radius)] border bg-elevated px-3 py-2.5 text-[12.5px] leading-relaxed text-fg-secondary has-[:checked]:border-[var(--brand)] ${attention && !checked ? "border-critical ring-1 ring-critical" : "border-border"}`}>
       <input id={id} type="checkbox" required aria-required="true" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />
       <span>
         {t("auth.consentPrefix")}{" "}
